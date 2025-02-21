@@ -1,6 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Task.css'; 
+import React from "react";
+import { NavLink } from "react-router-dom";
 
 function VerticalNavbar() {
 
@@ -11,17 +10,21 @@ function VerticalNavbar() {
   return (
     <div className="vertical-navbar">
       <div className="menu-items">
-        <Link to="/Login" className="logout-button" onClick={handleClose}>Cerrar sesión</Link>
-        <Link to="">Inicio</Link>
-        <Link to="">Mi perfil</Link>
-        <Link to="/CreateMonitoria">Crear monitoria</Link>
-        <Link to="/">Postulaciones</Link>
-        <Link to="/Applicants">Mis postulantes</Link>
-        <Link to="">Reportes</Link>
+        <NavLink to="/Login" className="logout-button" activeClassName="active">
+          Cerrar sesión
+        </NavLink>
+        <NavLink to="/Task" activeClassName="active">Actividades</NavLink>
+        <NavLink to="/Profile" activeClassName="active">Mi perfil</NavLink>
+        <NavLink to="/CreateMonitoria" activeClassName="active">Crear monitoria</NavLink>
+        <NavLink to="/" activeClassName="active">Postulaciones</NavLink>
+        <NavLink to="/Applicants" activeClassName="active">Mis postulantes</NavLink>
+        <NavLink to="/Reports" activeClassName="active">Reportes</NavLink>
       </div>
     </div>
   );
 }
 
 export default VerticalNavbar;
+
+
 

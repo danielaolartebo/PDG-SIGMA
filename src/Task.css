@@ -1,6 +1,7 @@
 :root {
-    --main-color: #5454e8;
+  --main-color: #5454e8;
 	--hover-color: rgb(66, 65, 65);
+  --grey-color: grey;
 }
 
 .top-right-button {
@@ -48,23 +49,40 @@
     }
     }
   
-  .menu-items {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    align-items: center;
-  }
-  
-  .menu-items a {
-    color: white; 
-    padding: 15px; 
-    text-decoration: none; 
-    transition: background-color 0.3s;
-  }
-  
-  .menu-items a:hover {
-    color: black;
-  }
+    .menu-items {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      align-items: center;
+    }
+    
+    .menu-items a {
+      color: white;
+      padding: 15px;
+      text-decoration: none;
+      transition: background-color 0.3s ease-in-out; /* Suaviza la transición */
+    }
+    
+    .menu-items a:hover {
+      color: black;
+    }
+    
+    .menu-items a.active {
+      color: black;
+    }
+    
+    .logout-button {
+      background-color: red;
+      color: white;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    
+    .logout-button:hover {
+      background-color: darkred;
+    }
+    
   
   .logout-button {
     color: white; 
@@ -82,3 +100,362 @@
     background-color: var(--hover-color); 
   }
   
+  /* ==========================TITLE================================= */
+
+.title-container {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 2em;
+  padding-bottom: 1.5em;
+  padding-left: 2em;
+  margin-left: 14em; /* Avoids vertical navbar */
+}
+
+.title{
+  font-family: var(--main-font-family);
+  font-size: 1.5em;
+}
+
+/* Ipad mini size */
+@media (max-width: 768px) { 
+  .title {
+    font-size: 1.4em;
+  }
+}
+
+/* Iphone 14 pro max size */
+@media (max-width: 430px) {
+  .title {
+    font-size: 1.2em;
+  }
+}
+
+  /* ==========================BUTTON CONTAINER================================= */
+
+  .button-create-activity-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1em;
+    padding-left: 2em;
+    margin-left: 14em; /* Avoids vertical navbar */
+}
+
+  .create-activity-btn {
+    background-color: var(--main-color);
+    color: white;
+    padding: 12px 8px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    width: 250px;
+  }
+
+  /* ==========================ACTIVITY TABLE================================= */
+
+.table-container {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  margin: 20px auto;
+  padding: 0.5em;
+  margin-left: 16em; /* Avoids vertical navbar */
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.table-head-act {
+  background-color: var(--grey-color);
+  color: white;
+  font-weight: bold;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #e5e8ea;
+}
+
+.table-actions {
+  color: var(--hover-color);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.table-actions:hover {
+  color: var(--main-color);
+}
+
+.table-details {
+  background-color: #f0f4ff;
+  padding: 1em;
+  border-top: 1px solid #ddd;
+  font-size: 13px;
+}
+
+/* ========================== Responsive Design ========================== */
+
+@media (max-width: 430px) {
+  .table-container {
+    width: 100%;
+    padding: 0.5em;
+    margin-left: 0;
+  }
+
+  .table th,
+  .table td {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .table-actions {
+    font-size: 12px;
+  }
+}
+
+/* ========================== Pagination Design ========================== */
+
+.pagination-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 1em 0;
+}
+
+.pagination {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.pagination-button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.pagination-button:hover {
+  background-color: #8a8ae2;
+  color: white;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-button.active {
+  background-color: #8a8ae2;
+  color: white;
+  border: none;
+}
+
+/* Información de la paginación */
+.pagination-info {
+  margin-left: 1em;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+
+  /* ==========================FILTERS================================= */
+
+  .filter-container-activities {
+    padding-top: 2em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: 16em; 
+    margin-right: 4em;
+    gap: 1em; 
+  }
+  
+  .filter-container-activities select,
+  .filter-container-activities input {
+    min-width: 243px;
+    padding: 0.5em;
+    font-size: 1rem;
+  }
+  
+  /* Ajustes para pantallas medianas (tablets) */
+  @media (max-width: 1024px) {
+    .filter-container-activities {
+      margin-left: 12em; 
+      justify-content: center; /* Centra los filtros */
+    }
+  
+    .filter-container-activities select,
+    .filter-container-activities input {
+      min-width: 200px; 
+    }
+  }
+  
+  /* Ajustes para móviles */
+  @media (max-width: 768px) {
+    .filter-container-activities {
+      flex-direction: column;
+      align-items: center;
+      margin-left: 10em; 
+      margin-right: 0;
+    }
+  
+    .filter-container-activities select,
+    .filter-container-activities input {
+      width: 90%; /* Usa casi todo el ancho disponible */
+      min-width: auto;
+    }
+  }
+
+
+  /* ==========================VER MAS SECTION================================= */
+
+/* Contenedor en Grid */
+.edit-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas en la primera fila */
+  gap: 15px; /* Espacio entre elementos */
+  max-width: 1000px; /* Ajusta el ancho según necesites */
+  margin: auto;
+}
+
+/* Asegurar que los elementos ocupen bien el espacio */
+.edit-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: var(--main-font-family);
+}
+
+/* Campos de entrada, selects y textarea */
+.edit-form input,
+.edit-form select,
+.edit-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+  font-family: var(--main-font-family);
+}
+
+/* Asegurar que el textarea sea más grande */
+.edit-form textarea {
+  resize: vertical;
+  height: 20px;
+  min-height: 20px;
+  max-height: 100px;
+  font-size: 15px;
+  font-family: var(--main-font-family);
+}
+
+/* Ajuste para que ciertos elementos ocupen más columnas */
+.edit-form label:nth-child(1), /* Asistentes */
+.edit-form label:nth-child(2) /* Fecha Última Edición */
+.edit-form label:nth-child(3) /* Fecha Última Edición */{ 
+  grid-column: span 2; /* Que ocupen 2 columnas */
+}
+
+.edit-form label:nth-child(8) { /* Descripción */
+  font-family: var(--main-font-family);
+  font-size: 15px;
+  grid-column: span 4; /* Que ocupen 4 columnas */
+}
+
+/* Botones alineados en fila */
+.button-container {
+  grid-column: span 4; /* Que ocupe todo el ancho */
+  display: flex;
+  justify-content: center;
+  gap: 15px; 
+}
+
+/* Estilos uniformes para todos los botones */
+.button-container button {
+  width: 100px; /* Mismo ancho */
+  height: 35px; /* Mismo alto */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Colores específicos para cada botón */
+.save-button-act {
+  background-color: #4CAF50;
+}
+
+.cancel-button-act {
+  background-color: #9e9e9e;
+}
+
+.delete-button-act {
+  background-color: #c9302c;
+}
+
+/* Efectos hover */
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.cancel-button:hover {
+  background-color: #9e9e9e;
+}
+
+.delete-button:hover {
+  background-color: #c9302c;
+}
+
+  /* ==========================ESTADOS================================= */
+
+  .table-actions {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: inherit; /* Mantiene el tamaño original */
+  }
+  
+  
+  .pending {
+    color: grey; /* Pendiente pero dentro del tiempo */
+  }
+  
+  .pending-late {
+    color: #a6370b; /* Pendiente tardío */
+  }
+
+  .completed {
+    color: green;  /* Completado a tiempo */
+  }
+
+  .completed-late {
+    color: green;
+    background-color: yellow;
+    padding: 2px 4px;   /* Completado pero entregado tarde: texto verde con fondo amarillo */
+    border-radius: 4px;
+  }

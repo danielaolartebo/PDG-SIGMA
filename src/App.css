@@ -75,14 +75,14 @@
 
 /* ==========================TITLE================================= */
 
-.title-container {
+.title-container-app {
   display: flex;
   padding-top: 2em;
   justify-content: center;
   padding-bottom: 3em;
 }
 
-.title{
+.title-app{
   font-family: var(--main-font-family);
   font-size: 1.5em;
 }

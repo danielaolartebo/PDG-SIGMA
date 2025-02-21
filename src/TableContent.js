@@ -173,7 +173,7 @@ function TableContent() {
         }
         try{
             if(state === "Activo"){
-                const response = await fetch('http://localhost:5433/candidature/create', {
+                const response = await fetch('http://localhost:5433/monitor/create', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'

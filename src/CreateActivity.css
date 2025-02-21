@@ -1,0 +1,210 @@
+:root {
+    --main-color: #5454e8;
+    --hover-color: rgb(66, 65, 65);
+    --main-font-family: jakarta_bold, Arial, cursive;
+  }
+  
+  /* Contenedor principal del formulario */
+  .create-activity-container {
+    margin-top: 3em;
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Contenedor del contenido del formulario con bordes y sombra */
+  .create-activity-content {
+    flex: 1;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-left: 400px; /* Espacio reservado para el navbar */
+    margin-right: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Encabezado del formulario */
+  .form-header {
+    background-color: var(--main-color); /* Fondo morado */
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 20px;
+  }
+  
+  /* Título principal (si se utiliza dentro de form-header) */
+  .create-activity-content h2 {
+    margin: 0;
+  }
+  
+  /* Contenedor de filas para agrupar campos en la misma línea */
+  .form-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+  
+  /* Grupo de formulario individual */
+  .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Labels */
+  label {
+    margin-top: 1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    width: 94%;
+  }
+  
+  .label-description {
+    font-weight: bold;
+    margin-bottom: 5px;
+    width: 94%;
+  }
+  
+  .required {
+    color: red;
+  }
+  
+  /* Estilos unificados para inputs de texto y fecha */
+  .input-text,
+  .input-date {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 94%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Estilos únicos para select y textarea */
+  .activity-select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 94%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .activity-textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 97%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Hover para inputs, select y textarea */
+  .input-text:hover,
+  .input-date:hover,
+  .activity-select:hover,
+  .activity-textarea:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Grupo para categoría con botón de agregar */
+  .categoria-group {
+    position: relative;
+    width: 100%;
+  }
+  
+  .categoria-dropdown {
+    display: flex;
+    align-items: center;
+  }
+  
+  .add-category-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .add-category-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Campo para nueva categoría */
+  .new-category-field {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .new-category-actions {
+    margin-top: 5px;
+  }
+  
+  .new-category-actions button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .new-category-actions button:first-child {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .new-category-actions button:last-child {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Botón Confirmar */
+  .confirm-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 15%;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .confirm-button:hover {
+    background-color: #218838;
+  }
+  
+  /* Responsividad */
+  @media (max-width: 768px) {
+    .create-activity-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .create-activity-content {
+      margin-left: 0;
+      margin-right: 0;
+      width: 90%;
+      padding: 15px;
+    }
+    .form-row {
+      flex-direction: column;
+    }
+    .confirm-button {
+      width: 100%;
+      font-size: 18px;
+    }
+  }
+  

@@ -31,9 +31,11 @@
 
 .applicants-title-container {
   display: flex;
-  padding-top: 3em;
-  justify-content: center;
+  justify-content: left;
   margin-bottom: 3em;
+  margin-left: 9em; /* Avoids vertical navbar */
+  margin-right: 9em;
+  
 }
 
 .applicants-title {
@@ -54,6 +56,42 @@
       font-size: 1.2em;
   }
 }
+
+/* ============================SUBJECT AND STATUS================================= */
+
+.applicants-subject-status-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-left: 9em; /* Avoids vertical navbar */
+    margin-right: 9em;
+
+}
+
+.applicants-subject,
+.applicants-status {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    gap: 10px;
+    margin-bottom: 1em;
+    width: 16em;
+}
+
+.applicants-dropdown {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 16em;
+    font-size: 18px;
+}
+
+.applicants-status-selected {
+    color: #28a745;
+    font-weight: bold;
+}
+
 
 /* ============================TABLE================================= */
 
