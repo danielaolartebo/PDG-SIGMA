@@ -6,7 +6,7 @@ function TableContent() {
     const [column, setColumn] = useState([]);
     const [records, setRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const recordsPerPage = 6;
+    const recordsPerPage = 10;
 
     const columnNames = {
         id: "Identificador",

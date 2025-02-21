@@ -57,9 +57,29 @@ function Applicants() {
             <div className="applicants-content">
                 {/* Title begins */}
                 <div className="applicants-title-container">
-                    <h2 className="applicants-title">Aplicantes</h2>
+                    <h2 className="applicants-title">Mis postulantes</h2>
                 </div>
                 {/* Title ends */}
+
+                {/* Subject and status begins */}
+                <div className="applicants-subject-status-container">
+                    <div className="applicants-subject-status">
+                        <div className="applicants-subject">
+                            <span>Curso:</span>
+                            <select className="applicants-dropdown">
+                                <option value="all">Seleccionar</option>
+                                <option value="APO I">APO I</option>
+                                <option value="Estructuras de Datos">Estructuras de Datos</option>
+                                <option value="Bases de Datos">Bases de Datos</option>
+                            </select>
+                        </div>
+                        <div className="applicants-status">
+                            <span>Estado:</span>
+                            <span className="applicants-status-selected">Postulante seleccionado</span>
+                        </div>
+                    </div>
+                </div>
+                {/* Subject and status ends */}
 
                 {/* Table starts */}
                 <div className="applicants-main-container">
