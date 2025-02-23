@@ -5,10 +5,12 @@ import AlertElect from './AlertElect';
 
 function Applicants() {
     const [records, setRecords] = useState([]);
+    const [filteredRecords, setFilteredRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [electionStatuses, setElectionStatuses] = useState({});
     const recordsPerPage = 8;
     const [showElectAlert, setShowElectAlert] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState("Todos"); // Selected course
 
     const handleFinishClick = async () => {
 
@@ -16,7 +18,6 @@ function Applicants() {
         //     const applicantIndex = indexOfFirstRecord + index;
         //     return electionStatuses[applicantIndex] === true;
         //   });
-  
         
         //   setRecords(electedApplicants);
         
@@ -27,7 +28,7 @@ function Applicants() {
             );
             
             for (const applicant of nonElectedApplicants) {
-                await fetch(`http://localhost:5433/candidature/${applicant.code}`, {
+                await fetch(`http://localhost:5433/monitor/${applicant.code}`, {
                     method: 'DELETE',
                 });
             }
@@ -69,20 +70,37 @@ function Applicants() {
 
     useEffect(() => {
         // Load data from Applicants.json
-        fetch('http://localhost:5433/candidature/getA')
+        fetch('http://localhost:5433/monitor/getA')
             .then(response => response.json())
             .then(data => {
                 // Sort records by 'pacumulado' (promedio acumulado) descending
                 const sortedRecords = data.sort((a, b) => b.gradeAverage - a.gradeAverage);
                 setRecords(sortedRecords);
+                setFilteredRecords(sortedRecords);
             })
             .catch(error => console.error("Error loading data:", error));
     }, []);
 
+    // Get course list by apl
+    const courses = ["Todos", ...new Set(records.map(a => a.course))];
+
+    //Manage Course Selected
+    const handleCourseChange = (e) => {
+        const selected = e.target.value;
+        setSelectedCourse(selected);
+
+        // Filter list
+        if (selected === "Todos") {
+            setFilteredRecords(records);
+        } else {
+            setFilteredRecords(records.filter(a => a.course === selected));
+        }
+    };
+
     // Pagination logic
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
+    const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
 
     const totalPages = Math.ceil(records.length / recordsPerPage);
 
@@ -131,11 +149,16 @@ function Applicants() {
                     <div className="applicants-subject-status">
                         <div className="applicants-subject">
                             <span>Curso:</span>
-                            <select className="applicants-dropdown">
-                                <option value="all">Seleccionar</option>
-                                <option value="APO I">APO I</option>
-                                <option value="Estructuras de Datos">Estructuras de Datos</option>
-                                <option value="Bases de Datos">Bases de Datos</option>
+                            <select 
+                                className="applicants-dropdown" 
+                                value={selectedCourse} 
+                                onChange={handleCourseChange}
+                            >
+                                {courses.map(course => (
+                                    <option key={course} value={course}>
+                                        {course}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="applicants-status">
@@ -157,6 +180,7 @@ function Applicants() {
                                     <th className="applicants-table-head">Código</th>
                                     <th className="applicants-table-head">Promedio acumulado</th>
                                     <th className="applicants-table-head">Promedio materia</th>
+                                    <th className="applicants-table-head">Curso</th>
                                     <th className="applicants-table-head">Postulación</th>
                                 </tr>
                             </thead>
@@ -172,6 +196,7 @@ function Applicants() {
                                             <td className="applicants-table-data">{applicant.code}</td>
                                             <td className="applicants-table-data">{applicant.gradeAverage}</td>
                                             <td className="applicants-table-data">{applicant.gradeCourse}</td>
+                                            <td className="applicants-table-data">{applicant.course}</td>
                                             <td className="applicants-table-data">
                                                 <div className="applicants-requirement-container">
                                                     <button 

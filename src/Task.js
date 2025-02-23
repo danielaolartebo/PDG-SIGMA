@@ -142,7 +142,8 @@ function Task() {
   const toggleStatus = (id) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity) => {
-        if (activity.id === id && activity.state === "PENDENTE") {
+        if (activity.id === id && activity.state === "PENDIENTE") {
+          sendState(id)
           return {
             ...activity,
             state: "COMPLETADO",
@@ -153,6 +154,16 @@ function Task() {
       })
     );
   };
+
+  const sendState = async (id) =>{
+    const response = await fetch('http://localhost:5433/activity/updateState', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(id),
+    });
+  }
 
   const navigate = useNavigate(); 
 
