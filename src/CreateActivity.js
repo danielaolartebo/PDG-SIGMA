@@ -1,5 +1,5 @@
 import './CreateActivity.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 
 function CreateActivity() {
@@ -12,11 +12,29 @@ function CreateActivity() {
   const [asistentes, setAsistentes] = useState('');
   const [descripcion, setDescripcion] = useState('');
 
-  // Listas para los dropdowns (estos podrían provenir de una API o props)
-  const [cursos, setCursos] = useState(['Curso 1', 'Curso 2', 'Curso 3']);
+  const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Categoría A', 'Categoría B']);
-  const [monitoresProfesores, setMonitoresProfesores] = useState(['Monitor 1', 'Profesor 1', 'Monitor 2']);
+  const [monitoresProfesores, setMonitoresProfesores] = useState([]);
   const [asistentesList, setAsistentesList] = useState(['Asistente 1', 'Asistente 2']);
+
+  useEffect(() => {
+    fetch('http://localhost:5433/monitoring/getA')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.length > 0) {
+                    setCursos(data); 
+                } else {
+                    console.error("Data format is incorrect or 'monitoria' is empty.");
+                }
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+  }, []);
 
   // Estados para gestionar la creación de una nueva categoría
   const [showNewCategoryField, setShowNewCategoryField] = useState(false);
@@ -28,6 +46,31 @@ function CreateActivity() {
       setNewCategory('');
       setShowNewCategoryField(false);
     }
+  };
+
+  //Cuando cambie el curso/monitoria, debe actualizarse los monitores de dicha monitoria
+  const getMonitors = async (cursoId) => {
+    
+    const response = await fetch(`http://localhost:5433/monitoring-monitor/${cursoId}/monitors`, {
+      method: "GET",
+    })
+    .then(res => {
+      if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+        if (data && data.length > 0) {
+          setMonitoresProfesores(data); 
+        } else {
+            console.warn("Data format is incorrect or 'monitores' is empty.");
+        }
+    })
+    .catch(error => console.error('Error al obtener los monitores', error));
+    
+    // const user = localStorage.getItem('userId');
+    // const role = localStorage.getItem('role');
   };
 
   const handleRemoveCategory = () => {
@@ -97,16 +140,27 @@ function CreateActivity() {
                 id="curso"
                 className="activity-select"
                 value={curso}
-                onChange={(e) => setCurso(e.target.value)}
+                onChange={(e) => {
+                  setAsignarA("");
+                  setMonitoresProfesores([]);
+                  
+                  const selectedCourse = cursos.find(c => c.id === parseInt(e.target.value, 10));
+
+                  if (selectedCourse) {
+                    setCurso(selectedCourse.id);
+                    getMonitors(selectedCourse.id);
+                  }
+                }}
                 required
               >
                 <option value="">Seleccione un curso</option>
-                {cursos.map((c, index) => (
-                  <option key={index} value={c}>
-                    {c}
+                {cursos.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.course.name}
                   </option>
                 ))}
               </select>
+
             </div>
           </div>
 
@@ -188,9 +242,9 @@ function CreateActivity() {
                 required
               >
                 <option value="">Seleccione</option>
-                {monitoresProfesores.map((persona, index) => (
-                  <option key={index} value={persona}>
-                    {persona}
+                {monitoresProfesores.map((mp) => (
+                  <option key={mp.code} value={mp.code}>
+                    {mp.code+" - "+mp.name+" "+mp.lastName}
                   </option>
                 ))}
               </select>
