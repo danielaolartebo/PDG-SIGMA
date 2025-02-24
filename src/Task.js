@@ -238,7 +238,7 @@ const handleExpand = (activityId, monitoringId) => {
           return {
             ...activity,
             state: "COMPLETADO",
-            delivery: formatDate(new Date()),
+            delivey: new Date(),
           };
         }
         return activity;
@@ -360,7 +360,7 @@ const handleExpand = (activityId, monitoringId) => {
                   }
                 } else if (activity.state === "COMPLETADO") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
-                  const fechaRealEntregaParsed = parseDate(activity.delivery);
+                  const fechaRealEntregaParsed = parseDate(activity.delivey);
 
                   // Se calcula la fecha solicitada + 2 días (Chance para que el monitor entregue la actividad)
                   const dosDiasDespues = new Date(fechaSolicitadaEntrega.getTime() + 2 * 24 * 60 * 60 * 1000);
@@ -380,7 +380,7 @@ const handleExpand = (activityId, monitoringId) => {
                     <td>{activity.category}</td>
                     <td>{activity.creation ? new Date(activity.creation).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
                     <td>{activity.finish ? new Date(activity.finish).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
-                    <td>{activity.delivery ? new Date(activity.delivery).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                    <td>{activity.delivey ? new Date(activity.delivey).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
                     <td>{activity.creatorName}</td>
                     <td>{activity.responsableName}</td>
                     <td>
