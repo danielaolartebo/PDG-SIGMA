@@ -16,8 +16,9 @@ function Task() {
   const rowsPerPage = 6; // Número de filas por página
 
   // Función para alternar filas expandibles
-  const toggleRow = (id) => {
+  const toggleRow = (id, monitoringId) => {
     setExpandedRow(expandedRow === id ? null : id);
+    handleExpand(id, monitoringId);
   };
 
   // Función para manejar el cambio de página
@@ -55,9 +56,17 @@ function Task() {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], course: value } }));
   };
 
-  const handleAsignadoAChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], responsableName: value } }));
+  const handleAsignadoAChange = (id, value, valueId) => {
+    setEditedActivities((prev) => ({
+      ...prev,
+      [id]: { 
+        ...prev[id], 
+        responsableName: value, 
+        monitorId: valueId 
+      }
+    }));
   };
+  
 
   const handleDescripcionChange = (id, value) => {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], description: value } }));
@@ -90,11 +99,13 @@ function Task() {
   };
 
    // Estados para los filtros
-   const [semesterFilter, setSemesterFilter] = useState('');
-   const [courseFilter, setCourseFilter] = useState('');
-   const [categoryFilter, setCategoryFilter] = useState('');
-   const [assignedToFilter, setAssignedToFilter] = useState('');
-   const [statusFilter, setStatusFilter] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [assignedToFilter, setAssignedToFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [monitorsByMonitoring, setMonitorsByMonitoring] = React.useState({});
+  const [expandedActivities, setExpandedActivities] = React.useState({});
 
   // Generar opciones únicas para cada filtro
   const semesters = [...new Set(activities.map(activity => activity.semester))];
@@ -118,6 +129,27 @@ function Task() {
  const currentRows = filteredActivities.slice(indexOfFirstRow, indexOfLastRow); 
  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / rowsPerPage));
  
+ const fetchMonitors = (monitoringId) => {
+  if (!monitorsByMonitoring[monitoringId]) {
+    fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`)
+      .then(response => response.json())
+      .then(data => {
+        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: data }));
+      })
+      .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
+  }
+  
+};
+
+const handleExpand = (activityId, monitoringId) => {
+  setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
+
+  if (!monitorsByMonitoring[monitoringId]) {
+    fetchMonitors(monitoringId);
+  }
+};
+
+
  const handleSave = async (activityId, updatedActivityData) => {
   console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
 
@@ -362,7 +394,7 @@ function Task() {
                     <td>
                       <span
                         className="table-actions"
-                        onClick={() => toggleRow(activity.id)}
+                        onClick={() => toggleRow(activity.id, activity.monitoring.id)}
                       >
                         {expandedRow === activity.id ? "-" : "+"}
                       </span>
@@ -403,10 +435,37 @@ function Task() {
 
                           <label>
                             Asignado a:
+                            <select 
+                              value={editedActivities[activity.id]?.responsableName || activity.responsableName} 
+                              onChange={(e) => {
+                                const selectedMonitor = monitorsByMonitoring[activity.monitoring.id]?.find(monitor =>
+                                  `${monitor.name} ${monitor.lastName}` === e.target.value
+                                );
+                                handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.code);
+                              }}
+                            >
+                              {/* Responsable actual */}
+                              <option value={activity.responsableName}>
+                                {activity.responsableName} (Actual)
+                              </option>
+
+                              {/* Otros monitores de la misma monitoring */}
+                              {monitorsByMonitoring[activity.monitoring.id]?.map((monitor) => (
+                                (monitor.name + " " + monitor.lastName) !== activity.responsableName && (
+                                  <option key={monitor.code} value={`${monitor.name} ${monitor.lastName}`}>
+                                    {monitor.name} {monitor.lastName} ({monitor.code})
+                                  </option>
+                                )
+                              ))}
+                            </select>
+                          </label>
+
+                          {/* <label>
+                            Asignado a:
                             <select value={editedActivities[activity.id]?.responsableName || activity.responsableName} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
                               {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
                             </select>
-                          </label>
+                          </label> */}
 
                           {/* Segunda fila */}
                           <label>
