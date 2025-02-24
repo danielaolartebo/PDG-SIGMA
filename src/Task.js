@@ -117,10 +117,36 @@ function Task() {
  const indexOfFirstRow = Math.max(0, indexOfLastRow - rowsPerPage);
  const currentRows = filteredActivities.slice(indexOfFirstRow, indexOfLastRow); 
  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / rowsPerPage));
- const handleSave = (activityId) => {
-    console.log(`Guardando cambios para la actividad con ID: ${activityId}`);
-    // Lógica para guardar los cambios
-  };
+ 
+ const handleSave = async (activityId, updatedActivityData) => {
+  console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
+
+  try {
+    const response = await fetch(`http://localhost:5433/activity/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({...updatedActivityData, id: activityId})
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al guardar los cambios: ${await response.text()}`);
+    }
+
+    alert("Actividad actualizada correctamente");
+
+    const user = localStorage.getItem('userId');
+    const role = localStorage.getItem('role');
+    const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+    const jsonData = await data.json();
+    setActivities(jsonData);  
+
+  } catch (error) {
+    console.error("Error guardando la actividad:", error);
+    alert("Error al guardar los cambios");
+  }
+};
   
   const handleCancel = (activityId) => {
     console.log(`Cancelando edición para la actividad con ID: ${activityId}`);
@@ -400,7 +426,8 @@ function Task() {
 
                           {/* Botones */}
                           <div className="button-container">
-                            <button className="save-button-act" onClick={() => handleSave(activity.id)}>Guardar</button>
+                            <button className="save-button-act" onClick={() => handleSave(activity.id, {
+                                                                                        ...editedActivities[activity.id]})}>Guardar</button>
                             <button className="cancel-button-act" onClick={() => handleCancel(activity.id)}>Cancelar</button>
                             <button className="delete-button-act" onClick={() => handleDelete(activity.id)}>Eliminar</button>
                           </div>
