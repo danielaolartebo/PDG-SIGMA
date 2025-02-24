@@ -7,7 +7,12 @@ function Navbar() {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
-    navigate('/Login');
+    if(localStorage.getItem('role') !== "professor"){
+      navigate('/Login');
+    }
+    else{
+      navigate('/Task')
+    }
   };
 
   return (

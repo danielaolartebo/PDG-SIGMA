@@ -16,8 +16,9 @@ function Task() {
   const rowsPerPage = 6; // Número de filas por página
 
   // Función para alternar filas expandibles
-  const toggleRow = (id) => {
+  const toggleRow = (id, monitoringId) => {
     setExpandedRow(expandedRow === id ? null : id);
+    handleExpand(id, monitoringId);
   };
 
   // Función para manejar el cambio de página
@@ -27,42 +28,56 @@ function Task() {
 
   useEffect(() => {
     const fetchActivities = async () => {
-      const data = await fetch('http://localhost:3000/Activities.json'); 
-      const jsonData = await data.json();
-      setActivities(jsonData);
+      const user = localStorage.getItem('userId')
+      const role = localStorage.getItem('role')
+      try{
+      
+        const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`); 
+        const jsonData = await data.json();
+        setActivities(jsonData);
+      }catch (error){
+        console.error('Error fetching data:', error);
+        }
     };
-
     fetchActivities();
   }, []);
 
   const [editedActivities, setEditedActivities] = useState({});
   
   const handleNameChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], nombre: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], name: value } }));
   };
 
   const handleCategoryChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], categoria: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], category: value } }));
   };
 
   const handleCursoChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], curso: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], course: value } }));
   };
 
-  const handleAsignadoAChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], asignadoA: value } }));
+  const handleAsignadoAChange = (id, value, valueId) => {
+    setEditedActivities((prev) => ({
+      ...prev,
+      [id]: { 
+        ...prev[id], 
+        responsableName: value, 
+        monitorId: valueId 
+      }
+    }));
   };
+  
 
   const handleDescripcionChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], detalles: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], description: value } }));
   };
 
   const handleFechaUltimaEdicionChange = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], fechaUltimaEdicion: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], edited: value } }));///
   };
 
   const handleFechaSolicitadaEntrega = (id, value) => {
-    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], fechaSolicitadaEntrega: value } }));
+    setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], finish: value } }));
   };
 
   const [records, setRecords] = useState([]);
@@ -84,47 +99,129 @@ function Task() {
   };
 
    // Estados para los filtros
-   const [semesterFilter, setSemesterFilter] = useState('');
-   const [courseFilter, setCourseFilter] = useState('');
-   const [categoryFilter, setCategoryFilter] = useState('');
-   const [assignedToFilter, setAssignedToFilter] = useState('');
-   const [statusFilter, setStatusFilter] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [assignedToFilter, setAssignedToFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [monitorsByMonitoring, setMonitorsByMonitoring] = React.useState({});
+  const [expandedActivities, setExpandedActivities] = React.useState({});
 
   // Generar opciones únicas para cada filtro
-  const semesters = [...new Set(activities.map(activity => activity.semestre))];
-  const courses = [...new Set(activities.map(activity => activity.curso))];
-  const requestedDueDate = [...new Set(activities.map(activity => activity.fechaSolicitadaEntrega))];
-  const categories = [...new Set(activities.map(activity => activity.categoria))];
-  const assignedTos = [...new Set(activities.map(activity => activity.asignadoA))];
-  const statuses = [...new Set(activities.map(activity => activity.estado))];
+  const semesters = [...new Set(activities.map(activity => activity.semester))];
+  const courses = [...new Set(activities.map(activity => activity.course))];
+  const requestedDueDate = [...new Set(activities.map(activity => activity.finish))];///
+  const categories = [...new Set(activities.map(activity => activity.category))];
+  const assignedTos = [...new Set(activities.map(activity => activity.responsableName))];
+  const statuses = [...new Set(activities.map(activity => activity.state))];
 
   // Filtrar actividades según los filtros seleccionados
   const filteredActivities = activities.filter(activity => (
-    (semesterFilter === '' || activity.semestre === semesterFilter) &&
-    (courseFilter === '' || activity.curso === courseFilter) &&
-    (categoryFilter === '' || activity.categoria === categoryFilter) &&
-    (assignedToFilter === '' || activity.asignadoA === assignedToFilter) &&
-    (statusFilter === '' || activity.estado === statusFilter)
+    (semesterFilter === '' || activity.semester === semesterFilter) &&
+    (courseFilter === '' || activity.course === courseFilter) &&
+    (categoryFilter === '' || activity.category === categoryFilter) &&
+    (assignedToFilter === '' || activity.responsableName === assignedToFilter) &&
+    (statusFilter === '' || activity.state === statusFilter)
  ));
  
  const indexOfLastRow = Math.min(currentPage * rowsPerPage, filteredActivities.length);
  const indexOfFirstRow = Math.max(0, indexOfLastRow - rowsPerPage);
  const currentRows = filteredActivities.slice(indexOfFirstRow, indexOfLastRow); 
  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / rowsPerPage));
- const handleSave = (activityId) => {
-    console.log(`Guardando cambios para la actividad con ID: ${activityId}`);
-    // Lógica para guardar los cambios
-  };
+ 
+ const fetchMonitors = (monitoringId) => {
+  if (!monitorsByMonitoring[monitoringId]) {
+    fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`)
+      .then(response => response.json())
+      .then(data => {
+        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: data }));
+      })
+      .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
+  }
+  
+};
+
+const handleExpand = (activityId, monitoringId) => {
+  setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
+
+  if (!monitorsByMonitoring[monitoringId]) {
+    fetchMonitors(monitoringId);
+  }
+};
+
+
+ const handleSave = async (activityId, updatedActivityData) => {
+  console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
+
+  try {
+    const response = await fetch(`http://localhost:5433/activity/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({...updatedActivityData, id: activityId})
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al guardar los cambios: ${await response.text()}`);
+    }
+
+    alert("Actividad actualizada correctamente");
+
+    const user = localStorage.getItem('userId');
+    const role = localStorage.getItem('role');
+    const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+    const jsonData = await data.json();
+    setActivities(jsonData);  
+
+  } catch (error) {
+    console.error("Error guardando la actividad:", error);
+    alert("Error al guardar los cambios");
+  }
+};
   
   const handleCancel = (activityId) => {
     console.log(`Cancelando edición para la actividad con ID: ${activityId}`);
     // Lógica para restaurar los valores originales (si aplica)
   };
   
-  const handleDelete = (activityId) => {
+  // const handleDelete = (activityId) => {
+  //   console.log(`Eliminando actividad con ID: ${activityId}`);
+  //   // Lógica para eliminar la actividad
+  // };
+
+  const handleDelete = async (activityId) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
+      return;
+    }
+  
     console.log(`Eliminando actividad con ID: ${activityId}`);
-    // Lógica para eliminar la actividad
+  
+    try {
+      const response = await fetch(`http://localhost:5433/activity/${activityId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error al eliminar la actividad: ${await response.text()}`);
+      }
+  
+      alert("Actividad eliminada correctamente");
+      
+      const user = localStorage.getItem('userId');
+      const role = localStorage.getItem('role');
+      const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+      const jsonData = await data.json();
+      setActivities(jsonData);  
+
+
+    } catch (error) {
+      console.error("Error eliminando la actividad:", error);
+      alert("No se pudo eliminar la actividad");
+    }
   };
+  
+  
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -136,17 +233,28 @@ function Task() {
   const toggleStatus = (id) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity) => {
-        if (activity.id === id && activity.estado === "Pendiente") {
+        if (activity.id === id && activity.state === "PENDIENTE") {
+          sendState(id)
           return {
             ...activity,
-            estado: "Completado",
-            fechaRealEntrega: formatDate(new Date()),
+            state: "COMPLETADO",
+            delivey: new Date(),
           };
         }
         return activity;
       })
     );
   };
+
+  const sendState = async (id) =>{
+    const response = await fetch('http://localhost:5433/activity/updateState', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(id),
+    });
+  }
 
   const navigate = useNavigate(); 
 
@@ -236,26 +344,23 @@ function Task() {
               {currentRows.map((activity) => {
 
               // Formato fecha "DD/MM/YYYY"
-                const parseDate = (dateString) => {
-                  const [day, month, year] = dateString.split("/").map(Number);
-                  return new Date(year, month - 1, day); 
-                };
+                const parseDate = (dateString) => new Date(dateString);
 
-                const fechaSolicitadaEntrega = parseDate(activity.fechaSolicitadaEntrega);
+                const fechaSolicitadaEntrega = parseDate(activity.finish);
                 const fechaActual = new Date();
 
                 let estadoClase = "";
 
-                if (activity.estado === "Pendiente") {
+                if (activity.state === "PENDIENTE") {
                   // Si está pendiente, se determina si está tarde o no
                   if (fechaActual > fechaSolicitadaEntrega) {
                     estadoClase = "pending-late"; // Color rojo
                   } else {
                     estadoClase = "pending"; // Color gris
                   }
-                } else if (activity.estado === "Completado") {
+                } else if (activity.state === "COMPLETADO") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
-                  const fechaRealEntregaParsed = parseDate(activity.fechaRealEntrega);
+                  const fechaRealEntregaParsed = parseDate(activity.delivey);
 
                   // Se calcula la fecha solicitada + 2 días (Chance para que el monitor entregue la actividad)
                   const dosDiasDespues = new Date(fechaSolicitadaEntrega.getTime() + 2 * 24 * 60 * 60 * 1000);
@@ -270,26 +375,26 @@ function Task() {
                 return (
                   <React.Fragment key={activity.id}>
                   <tr>
-                    <td>{activity.nombre}</td>
-                    <td>{activity.curso}</td>
-                    <td>{activity.categoria}</td>
-                    <td>{activity.fechaCreacion}</td>
-                    <td>{activity.fechaSolicitadaEntrega}</td>
-                    <td>{activity.fechaRealEntrega}</td>
-                    <td>{activity.creadoPor}</td>
-                    <td>{activity.asignadoA}</td>
+                    <td>{activity.name}</td>
+                    <td>{activity.course}</td>
+                    <td>{activity.category}</td>
+                    <td>{activity.creation ? new Date(activity.creation).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                    <td>{activity.finish ? new Date(activity.finish).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                    <td>{activity.delivey ? new Date(activity.delivey).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                    <td>{activity.creatorName}</td>
+                    <td>{activity.responsableName}</td>
                     <td>
                     <span
                     className={`table-actions ${estadoClase}`}
-                    onClick={activity.estado === "Pendiente" ? () => toggleStatus(activity.id) : null}
+                    onClick={activity.state === "PENDIENTE" ? () => toggleStatus(activity.id) : null}
                   >
-                    {activity.estado}
+                    {activity.state === "COMPLETADOT" ? "COMPLETADO": activity.state}
                   </span>
                     </td>
                     <td>
                       <span
                         className="table-actions"
-                        onClick={() => toggleRow(activity.id)}
+                        onClick={() => toggleRow(activity.id, activity.monitoring.id)}
                       >
                         {expandedRow === activity.id ? "-" : "+"}
                       </span>
@@ -302,12 +407,12 @@ function Task() {
                           {/* Primera fila */}
                           <label>
                             Nombre:
-                            <input type="text" value={editedActivities[activity.id]?.nombre || activity.nombre} onChange={(e) => handleNameChange(activity.id, e.target.value)} />
+                            <input type="text" value={editedActivities[activity.id]?.name || activity.name} onChange={(e) => handleNameChange(activity.id, e.target.value)} />
                           </label>
 
                           <label>
                             Curso:
-                            <select value={editedActivities[activity.id]?.curso || activity.curso} onChange={(e) => handleCursoChange(activity.id, e.target.value)}>
+                            <select value={editedActivities[activity.id]?.course || activity.course} onChange={(e) => handleCursoChange(activity.id, e.target.value)}>
                               {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
                             </select>
                           </label>
@@ -316,24 +421,51 @@ function Task() {
                             Fecha solicitada entrega:
                             <input 
                               type="date"
-                              value={editedActivities[activity.id]?.fechaSolicitadaEntrega || activity.fechaSolicitadaEntrega}
+                              value={editedActivities[activity.id]?.finish || activity.finish}
                               onChange={(e) => handleFechaSolicitadaEntrega(activity.id, e.target.value)}
                             />
                           </label>
 
                           <label>
                             Categoría:
-                            <select value={editedActivities[activity.id]?.categoria || activity.categoria} onChange={(e) => handleCategoryChange(activity.id, e.target.value)}>
+                            <select value={editedActivities[activity.id]?.category || activity.category} onChange={(e) => handleCategoryChange(activity.id, e.target.value)}>
                               {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
                             </select>
                           </label>
 
                           <label>
                             Asignado a:
-                            <select value={editedActivities[activity.id]?.asignadoA || activity.asignadoA} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
-                              {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
+                            <select 
+                              value={editedActivities[activity.id]?.responsableName || activity.responsableName} 
+                              onChange={(e) => {
+                                const selectedMonitor = monitorsByMonitoring[activity.monitoring.id]?.find(monitor =>
+                                  `${monitor.name} ${monitor.lastName}` === e.target.value
+                                );
+                                handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.code);
+                              }}
+                            >
+                              {/* Responsable actual */}
+                              <option value={activity.responsableName}>
+                                {activity.responsableName} (Actual)
+                              </option>
+
+                              {/* Otros monitores de la misma monitoring */}
+                              {monitorsByMonitoring[activity.monitoring.id]?.map((monitor) => (
+                                (monitor.name + " " + monitor.lastName) !== activity.responsableName && (
+                                  <option key={monitor.code} value={`${monitor.name} ${monitor.lastName}`}>
+                                    {monitor.name} {monitor.lastName} ({monitor.code})
+                                  </option>
+                                )
+                              ))}
                             </select>
                           </label>
+
+                          {/* <label>
+                            Asignado a:
+                            <select value={editedActivities[activity.id]?.responsableName || activity.responsableName} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
+                              {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
+                            </select>
+                          </label> */}
 
                           {/* Segunda fila */}
                           <label>
@@ -343,17 +475,18 @@ function Task() {
 
                           <label>
                             Fecha última edición:
-                            <input type="text" value={activity.fechaUltimaEdicion} readOnly />
+                            <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
 
                           <label>
                             Descripción:
-                            <textarea rows="4" value={editedActivities[activity.id]?.detalles || activity.detalles} onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} />
+                            <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} />
                           </label>
 
                           {/* Botones */}
                           <div className="button-container">
-                            <button className="save-button-act" onClick={() => handleSave(activity.id)}>Guardar</button>
+                            <button className="save-button-act" onClick={() => handleSave(activity.id, {
+                                                                                        ...editedActivities[activity.id]})}>Guardar</button>
                             <button className="cancel-button-act" onClick={() => handleCancel(activity.id)}>Cancelar</button>
                             <button className="delete-button-act" onClick={() => handleDelete(activity.id)}>Eliminar</button>
                           </div>

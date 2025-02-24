@@ -8,6 +8,7 @@ import Task from './Task';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import CreateMonitoria from './CreateMonitoria';
 import Applicants from './Applicants';
+import { MyProvider } from './MyContext';
 import CreateActivity from './CreateActivity';
 
 function App() {
@@ -30,14 +31,15 @@ function App() {
               </div>
             </div>
             {/* Title ends */}
+            <MyProvider>
+              {/* Filter starts */}
+              <Dropdown />
+              {/* Filter ends */}
 
-            {/* Filter starts */}
-            <Dropdown />
-            {/* Filter ends */}
-
-            {/* TableContent begins */}
-            <TableContent />
-            {/* TableContent ends */}
+              {/* TableContent begins */}
+              <TableContent />
+              {/* TableContent ends */}
+            </MyProvider>
           </>
         } />
 

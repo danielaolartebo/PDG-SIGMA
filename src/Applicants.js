@@ -1,29 +1,106 @@
 import './Applicants.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
+import AlertElect from './AlertElect';
 
 function Applicants() {
     const [records, setRecords] = useState([]);
+    const [filteredRecords, setFilteredRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [electionStatuses, setElectionStatuses] = useState({});
     const recordsPerPage = 8;
+    const [showElectAlert, setShowElectAlert] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState("Todos"); // Selected course
+
+    const handleFinishClick = async () => {
+
+        // const electedApplicants = records.filter((applicant, index) => {
+        //     const applicantIndex = indexOfFirstRecord + index;
+        //     return electionStatuses[applicantIndex] === true;
+        //   });
+        
+        //   setRecords(electedApplicants);
+        
+        
+        try {
+            const nonElectedApplicants = currentRecords.filter(
+                (_, index) => !electionStatuses[indexOfFirstRecord + index]
+            );
+            
+            for (const applicant of nonElectedApplicants) {
+                await fetch(`http://localhost:5433/monitor/${applicant.code}`, {
+                    method: 'DELETE',
+                });
+            }
+            
+            //setElectionStatuses(new Array(electedApplicants.length).fill(true))
+            //setElectionStatuses(new Array(electionStatuses.length).fill(true))
+    
+            // Update applicants
+            setRecords((prevRecords) =>
+                prevRecords.filter((_, index) => electionStatuses[indexOfFirstRecord + index])
+            );
+    
+        } catch (error) {
+            console.error('Error during end of selection:', error);
+            alert('Hubo un error al finalizar la selección.');
+        }
+
+        const electedCodes = currentRecords
+        .filter((applicant, index) => electionStatuses[indexOfFirstRecord + index])
+        .map(applicant => applicant.code); 
+
+        console.log(electedCodes)
+        try {
+            const response = await fetch('http://localhost:5433/email-finish-selection', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(electedCodes),
+            });
+
+            const result = await response.text();
+            alert(result);
+        } catch (error) {
+            console.error("Error finishing selection:", error);
+            alert("Failed to finalize the selection.");
+        }
+        setShowElectAlert(true)
+    };
+    
 
     useEffect(() => {
         // Load data from Applicants.json
-        fetch('/Applicants.json')
+        fetch('http://localhost:5433/monitor/getA')
             .then(response => response.json())
             .then(data => {
                 // Sort records by 'pacumulado' (promedio acumulado) descending
-                const sortedRecords = data.applicants.sort((a, b) => b.pacumulado - a.pacumulado);
+                const sortedRecords = data.sort((a, b) => b.gradeAverage - a.gradeAverage);
                 setRecords(sortedRecords);
+                setFilteredRecords(sortedRecords);
             })
             .catch(error => console.error("Error loading data:", error));
     }, []);
 
+    // Get course list by apl
+    const courses = ["Todos", ...new Set(records.map(a => a.course))];
+
+    //Manage Course Selected
+    const handleCourseChange = (e) => {
+        const selected = e.target.value;
+        setSelectedCourse(selected);
+
+        // Filter list
+        if (selected === "Todos") {
+            setFilteredRecords(records);
+        } else {
+            setFilteredRecords(records.filter(a => a.course === selected));
+        }
+    };
+
     // Pagination logic
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
+    const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
 
     const totalPages = Math.ceil(records.length / recordsPerPage);
 
@@ -46,11 +123,17 @@ function Applicants() {
         }));
     };
 
+    
+
     return (
         <div>
+            <AlertElect show={showElectAlert} onClose={() => setShowElectAlert(false)} />
             {/* Load file button starts */}
-            <button className="applicants-top-right-button"> Terminar selección </button>
+            
+            <button className="applicants-top-right-button" onClick={handleFinishClick}>Terminar selección</button>
+            
             {/* Load file button ends */}
+            
 
             <VerticalNavbar />
 
@@ -66,11 +149,16 @@ function Applicants() {
                     <div className="applicants-subject-status">
                         <div className="applicants-subject">
                             <span>Curso:</span>
-                            <select className="applicants-dropdown">
-                                <option value="all">Seleccionar</option>
-                                <option value="APO I">APO I</option>
-                                <option value="Estructuras de Datos">Estructuras de Datos</option>
-                                <option value="Bases de Datos">Bases de Datos</option>
+                            <select 
+                                className="applicants-dropdown" 
+                                value={selectedCourse} 
+                                onChange={handleCourseChange}
+                            >
+                                {courses.map(course => (
+                                    <option key={course} value={course}>
+                                        {course}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="applicants-status">
@@ -92,6 +180,7 @@ function Applicants() {
                                     <th className="applicants-table-head">Código</th>
                                     <th className="applicants-table-head">Promedio acumulado</th>
                                     <th className="applicants-table-head">Promedio materia</th>
+                                    <th className="applicants-table-head">Curso</th>
                                     <th className="applicants-table-head">Postulación</th>
                                 </tr>
                             </thead>
@@ -103,10 +192,11 @@ function Applicants() {
                                     return (
                                         <tr key={index}>
                                             <td className="applicants-table-data">{applicant.name}</td>
-                                            <td className="applicants-table-data">{applicant.lastname}</td>
+                                            <td className="applicants-table-data">{applicant.lastName}</td>
                                             <td className="applicants-table-data">{applicant.code}</td>
-                                            <td className="applicants-table-data">{applicant.pacumulado}</td>
-                                            <td className="applicants-table-data">{applicant.pmateria}</td>
+                                            <td className="applicants-table-data">{applicant.gradeAverage}</td>
+                                            <td className="applicants-table-data">{applicant.gradeCourse}</td>
+                                            <td className="applicants-table-data">{applicant.course}</td>
                                             <td className="applicants-table-data">
                                                 <div className="applicants-requirement-container">
                                                     <button 
