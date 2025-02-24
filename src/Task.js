@@ -127,10 +127,43 @@ function Task() {
     // Lógica para restaurar los valores originales (si aplica)
   };
   
-  const handleDelete = (activityId) => {
+  // const handleDelete = (activityId) => {
+  //   console.log(`Eliminando actividad con ID: ${activityId}`);
+  //   // Lógica para eliminar la actividad
+  // };
+
+  const handleDelete = async (activityId) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
+      return;
+    }
+  
     console.log(`Eliminando actividad con ID: ${activityId}`);
-    // Lógica para eliminar la actividad
+  
+    try {
+      const response = await fetch(`http://localhost:5433/activity/${activityId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error al eliminar la actividad: ${await response.text()}`);
+      }
+  
+      alert("Actividad eliminada correctamente");
+      
+      const user = localStorage.getItem('userId');
+      const role = localStorage.getItem('role');
+      const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+      const jsonData = await data.json();
+      setActivities(jsonData);  
+
+
+    } catch (error) {
+      console.error("Error eliminando la actividad:", error);
+      alert("No se pudo eliminar la actividad");
+    }
   };
+  
+  
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
