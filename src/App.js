@@ -10,11 +10,17 @@ import CreateMonitoria from './CreateMonitoria';
 import Applicants from './Applicants';
 import { MyProvider } from './MyContext';
 import CreateActivity from './CreateActivity';
+import { useEffect } from "react";
 
 function App() {
   // Hook para obtener la ruta actual
   const location = useLocation();
-
+  
+  useEffect(() => {
+      return () => {
+          localStorage.clear(); // Se borra el localStorage al desmontar el frontend
+      };
+    }, []);
   return (
     <div className="App">
      {/* Mostrar Navbar solo en la ruta principal */}
