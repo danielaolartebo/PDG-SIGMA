@@ -421,10 +421,13 @@ const handleExpand = (activityId, monitoringId) => {
                             Fecha solicitada entrega:
                             <input 
                               type="date"
-                              value={editedActivities[activity.id]?.finish || activity.finish}
+                              // value={activity.finish ? formatDate(new Date(activity.finish)) : ""}
+                              value={activity.finish ? new Date(activity.finish).toISOString().split('T')[0] : ""}
+
                               onChange={(e) => handleFechaSolicitadaEntrega(activity.id, e.target.value)}
                             />
                           </label>
+
 
                           <label>
                             Categoría:

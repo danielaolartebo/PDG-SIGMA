@@ -42,7 +42,7 @@ function CreateActivity() {
     const nuevaActividad = {
         name: nombre,
         creation: new Date().toISOString(),
-        finish: fechaFinalizacion,
+        finish: new Date(fechaFinalizacion+"T00:00:00"),
         roleCreator: localStorage.getItem('role').charAt(0).toUpperCase(),
         roleResponsable: 'M',
         category: categoria,
