@@ -5,6 +5,7 @@ import TableContent from './TableContent';
 import Dropdown from './Filters';
 import Login from './Login'; 
 import Task from './Task'; 
+import ApplyMonitor from './ApplyMonitor';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import CreateMonitoria from './CreateMonitoria';
 import Applicants from './Applicants';
@@ -63,6 +64,9 @@ function App() {
 
          {/* Route for Create Activity */}
          <Route path="/CreateActivity" element={<CreateActivity />} />
+
+         {/* Route for ApplyMonitor */}
+         <Route path="/ApplyMonitor" element={<ApplyMonitor />} />
       </Routes>
     </div>
   );

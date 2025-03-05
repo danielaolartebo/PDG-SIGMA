@@ -328,7 +328,7 @@ const handleExpand = (activityId, monitoringId) => {
           <table className="table">
             <thead className="table-head-act">
               <tr>
-                <th>Nombre</th>
+                <th>Actividad</th>
                 <th>Curso</th>
                 <th>Categoría</th>
                 <th>Fecha creación</th>

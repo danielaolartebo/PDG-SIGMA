@@ -287,7 +287,7 @@ function CreateMonitoria() {
                 <form className="cm-grid-container">
 
                     {/* Facultad */}
-                    <label>Facultad</label>
+                    <label>Nombre de facultad</label>
                     <select className="cm-faculty"
                             id="faculty-dropdown" 
                             value={selectedFaculty} 
@@ -301,7 +301,7 @@ function CreateMonitoria() {
                     </select>
 
                     {/* Programa */}
-                    <label>Programa</label>
+                    <label>Nombre de programa</label>
                     <select className="cm-program"
                             id="program-dropdown" 
                             value={selectedProgram} 
@@ -315,7 +315,7 @@ function CreateMonitoria() {
                     </select>
 
                     {/* Materia/Curso */}
-                    <label>Curso</label>
+                    <label>Curso académico</label>
                     <select className="cm-program"
                             id="subject-dropdown" 
                             value={selectedSubject} 

@@ -1,200 +1,143 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { MyContext } from './MyContext';
-import { useContext } from 'react';
 
 function Dropdown() {
-    const [faculties, setFaculties] = useState([]); // State for Faculty options
-    const [programs, setPrograms] = useState([]); // State for Program options
-    const [subject, setSubject] = useState([]); // State for Subject options
-    const [state, setState] = useState([]); // State for State options
+    const [faculties, setFaculties] = useState([]);
+    const [programs, setPrograms] = useState([]);
+    const [subjects, setSubjects] = useState([]);
+    const [states, setStates] = useState([]);
 
-    const [selectedFaculty, setSelectedFaculty] = useState(""); // Selected Faculty
-    const [selectedProgram, setSelectedProgram] = useState(""); // Selected Program
-    const [selectedSubject, setSelectedSubject] = useState(""); // Selected Subject
-    const [selectedState, setSelectedState] = useState(""); // Selected State
-    const { selectedValue, setSelectedValue, selectedCondition, setSelectedCondition, selectedRequest, setSelectedRequest } = useContext(MyContext)
+    const [selectedFaculty, setSelectedFaculty] = useState("");
+    const [selectedProgram, setSelectedProgram] = useState("");
+    const [selectedSubject, setSelectedSubject] = useState("");
+    const [selectedState, setSelectedState] = useState("");
+
+    // Obtener el contexto y verificar que esté definido
+    const context = useContext(MyContext);
+    const setSelectedValue = context?.setSelectedValue;
+    const setSelectedCondition = context?.setSelectedCondition;
+    const setSelectedRequest = context?.setSelectedRequest;
 
     // Fetch Faculty options
     useEffect(() => {
         fetch('http://localhost:5433/school/getSchools')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data) {
-                    setFaculties(data);
-                } else {
-                    console.error("Faculty data format is incorrect.");
-                }
-            })
+            .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+            .then(data => setFaculties(data || []))
             .catch(error => console.error('Error fetching faculty data:', error));
     }, []);
 
-    // Fetch Program options
+    // Fetch Program options based on selected faculty
     useEffect(() => {
-        const prog = {
-            name:selectedFaculty
+        if (!selectedFaculty) {
+            setPrograms([]);
+            return;
         }
-        fetch('http://localhost:5433/program/getProgramsSchool',{
+        fetch('http://localhost:5433/program/getProgramsSchool', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(prog),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: selectedFaculty }),
         })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
             .then(data => {
-                if (data) {
-                    setPrograms(data);
-                    setSubject([])
-                } else {
-                    console.error("Program data format is incorrect.");
-                }
+                setPrograms(data || []);
+                setSubjects([]); // Reset subjects when faculty changes
             })
             .catch(error => console.error('Error fetching program data:', error));
     }, [selectedFaculty]);
 
-    // Fetch Subject options
+    // Fetch Subject options based on selected program
     useEffect(() => {
-        const prog = {
-            name:selectedProgram
+        if (!selectedProgram) {
+            setSubjects([]);
+            return;
         }
-        fetch('http://localhost:5433/course/getCoursesProgram',{
+        fetch('http://localhost:5433/course/getCoursesProgram', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(prog),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: selectedProgram }),
         })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data) {
-                    setSubject(data);
-                } else {
-                    console.error("Program data format is incorrect.");
-                }
-            })
-            .catch(error => console.error('Error fetching program data:', error));
+            .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+            .then(data => setSubjects(data || []))
+            .catch(error => console.error('Error fetching course data:', error));
     }, [selectedProgram]);
 
     // Fetch State options
     useEffect(() => {
         fetch('http://localhost:3000/State.json')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.state) {
-                    setState(data.state);
-                } else {
-                    console.error("Program data format is incorrect.");
-                }
-            })
-            .catch(error => console.error('Error fetching program data:', error));
+            .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+            .then(data => setStates(data.state || []))
+            .catch(error => console.error('Error fetching state data:', error));
     }, []);
 
-
-    // Handle change for Faculty dropdown
+    // Manejo de cambios con verificación de contexto
     const handleFacultyChange = (event) => {
-        setSelectedFaculty(event.target.value);
-        setSelectedValue(event.target.value);
-        setSelectedCondition(selectedState);
-        setSelectedRequest('faculty')
+        const value = event.target.value;
+        setSelectedFaculty(value);
+        if (setSelectedValue) setSelectedValue(value);
+        if (setSelectedCondition) setSelectedCondition(selectedState);
+        if (setSelectedRequest) setSelectedRequest('faculty');
     };
 
-    // Handle change for Program dropdown
     const handleProgramChange = (event) => {
-        setSelectedProgram(event.target.value);
-        setSelectedValue(event.target.value);
-        setSelectedCondition(selectedState);
-        setSelectedRequest('program')
+        const value = event.target.value;
+        setSelectedProgram(value);
+        if (setSelectedValue) setSelectedValue(value);
+        if (setSelectedCondition) setSelectedCondition(selectedState);
+        if (setSelectedRequest) setSelectedRequest('program');
     };
 
-     // Handle change for Subject dropdown
-     const handleSubjectChange = (event) => {
-        setSelectedSubject(event.target.value);
-        setSelectedValue(event.target.value);
-        setSelectedCondition(selectedState);
-        setSelectedRequest('course')
+    const handleSubjectChange = (event) => {
+        const value = event.target.value;
+        setSelectedSubject(value);
+        if (setSelectedValue) setSelectedValue(value);
+        if (setSelectedCondition) setSelectedCondition(selectedState);
+        if (setSelectedRequest) setSelectedRequest('course');
     };
 
-    // Handle change for State dropdown
-     const handleStateChange = (event) => {
-        setSelectedState(event.target.value);
-        setSelectedCondition(event.target.value);
+    const handleStateChange = (event) => {
+        const value = event.target.value;
+        setSelectedState(value);
+        if (setSelectedCondition) setSelectedCondition(value);
     };
-
 
     return (
         <div className="filter">
             <div className="filter-container">
                 {/* Faculty Dropdown */}
-                <select className="faculty"
-                    id="faculty-dropdown" 
-                    value={selectedFaculty} 
-                    onChange={handleFacultyChange}
-                >
-                    <option value=""> Facultad </option>
+                <select className="faculty" id="faculty-dropdown" value={selectedFaculty} onChange={handleFacultyChange}>
+                    <option value="">Facultad</option>
                     {faculties.map(faculty => (
-                        <option key={faculty.name} value={faculty.name}>
+                        <option key={faculty.id || faculty.name} value={faculty.name}>
                             {faculty.name}
                         </option>
                     ))}
                 </select>
 
                 {/* Program Dropdown */}
-                <select className="program"
-                    id="program-dropdown" 
-                    value={selectedProgram} 
-                    onChange={handleProgramChange}
-                >
-                    <option value=""> Programa </option>
+                <select className="program" id="program-dropdown" value={selectedProgram} onChange={handleProgramChange}>
+                    <option value="">Programa</option>
                     {programs.map(program => (
-                        <option key={program.name} value={program.name}>
+                        <option key={program.id || program.name} value={program.name}>
                             {program.name}
                         </option>
                     ))}
                 </select>
 
-                {/* Curso Dropdown */}
-                <select className="program"
-                    id="program-dropdown" 
-                    value={selectedSubject} 
-                    onChange={handleSubjectChange}
-                >
-                    <option value=""> Curso </option>
-                    {subject.map(subject => (
-                        <option key={subject.name} value={subject.name}>
+                {/* Course Dropdown */}
+                <select className="course" id="course-dropdown" value={selectedSubject} onChange={handleSubjectChange}>
+                    <option value="">Curso</option>
+                    {subjects.map(subject => (
+                        <option key={subject.id || subject.name} value={subject.name}>
                             {subject.name}
                         </option>
                     ))}
                 </select>
 
                 {/* State Dropdown */}
-                <select className="state"
-                    id="state-dropdown" 
-                    value={selectedState} 
-                    onChange={handleStateChange}
-                >
-                    <option value=""> Estado </option>
-                    {state.map(state => (
-                        <option key={state.name} value={state.name}>
+                <select className="state" id="state-dropdown" value={selectedState} onChange={handleStateChange}>
+                    <option value="">Estado</option>
+                    {states.map(state => (
+                        <option key={state.id || state.name} value={state.name}>
                             {state.name}
                         </option>
                     ))}

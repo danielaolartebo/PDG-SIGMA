@@ -19,7 +19,9 @@ function TableContent() {
     const [state, setState] = useState("")
     const [alertVisible, setAlertVisible] = useState(false);
     const recordsPerPage = 6;
-    const { selectedValue, setSelectedValue, selectedCondition, setSelectedCondition, selectedRequest, setSelectedRequest } = useContext(MyContext)
+    const [selectedValue, setSelectedValue] = useState('');
+    const [selectedCondition, setSelectedCondition] = useState('');
+    const [selectedRequest, setSelectedRequest] = useState('');
 
     const columnNames = {
         id: "ID - CRN",
@@ -349,5 +351,7 @@ function TableContent() {
 }
 
 export default TableContent;
+
+
 
 

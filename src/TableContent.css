@@ -1,0 +1,21 @@
+.main-container {
+    width: 100%;  /* Ocupa todo el ancho de la ventana */
+    height: 70%; /* Ocupa todo el alto de la ventana */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none; /* Elimina cualquier sombra */
+  }
+  
+  .table-main-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Asegura que la tabla no se corte */
+    border: none;
+    box-shadow: none;
+  }
+
