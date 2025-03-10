@@ -18,8 +18,15 @@ function CreateActivity() {
   const [searchTerm, setSearchTerm] = useState(""); 
 
 
-  const [asistentesList, setAsistentesList] = useState(['Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado', 'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz']);
-
+  const [asistentesList, setAsistentesList] = useState([
+    'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
+    'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
+    'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
+    'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
+    'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
+    'Samuel Cortés', 'Paula Mejía'  
+  ]);
+  
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
       .then(res => res.json())

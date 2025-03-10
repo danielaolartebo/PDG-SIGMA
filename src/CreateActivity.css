@@ -218,15 +218,6 @@
   }
 
   /* Asistentes */
-  .checkbox-container {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-top: 5px;
-    max-width: 100%; 
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 8px; 
-  }
   
   .checkbox-label {
     display: flex;
@@ -249,13 +240,13 @@
   }
   
   .checkbox-container {
-    border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    column-gap: 41px;
+    row-gap: 0;
     width: 95%;
+    padding-bottom: 10px;
   }
   
   .checkbox-label {
