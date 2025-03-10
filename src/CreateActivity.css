@@ -222,7 +222,7 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     margin-top: 5px;
-    max-width: 97%; 
+    max-width: 100%; 
     display: flex;
     flex-wrap: wrap; 
     gap: 8px; 
@@ -238,6 +238,37 @@
   .checkbox-container .checkbox-label {
     width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
   }
+
+  .search-input {
+    width: 95.5%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .checkbox-container {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 95%;
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  
+  .checkbox-container .checkbox-label {
+    width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
+  }
+  
   
   
   

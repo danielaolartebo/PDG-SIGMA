@@ -15,6 +15,8 @@ function CreateActivity() {
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); 
+
 
   const [asistentesList, setAsistentesList] = useState(['Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado', 'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz']);
 
@@ -104,6 +106,7 @@ function CreateActivity() {
     setNewCategory('');
     setShowNewCategoryField(false);
   };
+  
 
 
   return (
@@ -204,28 +207,46 @@ function CreateActivity() {
           </div>
 
           {/* Asistentes */}
+
           <div className="form-group">
             <label>Asistentes</label>
+            
+            {/* Campo de búsqueda */}
+            <input
+              type="text"
+              placeholder="Buscar asistente..."
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            {/* Contenedor de checkboxes */}
             <div className="checkbox-container">
-              {asistentesList.map((asistente, index) => (
-                <label key={index} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    value={asistente}
-                    checked={asistentes.includes(asistente)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setAsistentes([...asistentes, asistente]); // Agregar asistente
-                      } else {
-                        setAsistentes(asistentes.filter(a => a !== asistente)); // Eliminar asistente
-                      }
-                    }}
-                  />
-                  {asistente}
-                </label>
-              ))}
+              {asistentesList
+                .filter(asistente =>
+                  asistente.toLowerCase().includes(searchTerm.toLowerCase()) // Filtra por búsqueda
+                )
+                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
+                .map((asistente, index) => (
+                  <label key={index} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      value={asistente}
+                      checked={asistentes.includes(asistente)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setAsistentes([...asistentes, asistente]); // Agregar asistente
+                        } else {
+                          setAsistentes(asistentes.filter(a => a !== asistente)); // Eliminar asistente
+                        }
+                      }}
+                    />
+                    {asistente}
+                  </label>
+                ))}
             </div>
           </div>
+
 
           {/* Descripción */}
           
