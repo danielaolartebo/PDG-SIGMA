@@ -7,15 +7,16 @@ function CreateActivity() {
   const [nombre, setNombre] = useState('');
   const [curso, setCurso] = useState('');
   const [categoria, setCategoria] = useState('');
-  // const [fechaCreacion, setFechaCreacion] = useState('');
   const [fechaFinalizacion, setFechaFinalizacion] = useState('');
   const [asignarA, setAsignarA] = useState('');
-  // const [estado, setEstado] = useState('');
+  const [asistentes, setAsistentes] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [semestre, setSemestre] = useState('2025-1');
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
+
+  const [asistentesList, setAsistentesList] = useState(['Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado', 'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz']);
 
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
@@ -87,6 +88,23 @@ function CreateActivity() {
         }
   };
 
+  // Estados para gestionar la creación de una nueva categoría
+  const [showNewCategoryField, setShowNewCategoryField] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() !== '') {
+      setCategorias(prev => [...prev, newCategory.trim()]);
+      setNewCategory('');
+      setShowNewCategoryField(false);
+    }
+  };
+
+  const handleRemoveCategory = () => {
+    setNewCategory('');
+    setShowNewCategoryField(false);
+  };
+
 
   return (
     <div className="create-activity-container">
@@ -98,11 +116,11 @@ function CreateActivity() {
           <div className="form-row">
             <div className="form-group">
               <label>Nombre*</label>
-              <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+              <input type="text" className="input-text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
             </div>
             <div className="form-group">
               <label>Curso*</label>
-              <select value={curso} onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); }} required>
+              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); }} required>
                 <option value="">Seleccione un curso</option>
                 {cursos.map(c => <option key={c.id} value={c.id}>{c.course.name}</option>)}
               </select>
@@ -111,36 +129,109 @@ function CreateActivity() {
 
           {/* Categoría y Fechas */}
           <div className="form-row">
-            <div className="form-group">
-              <label>Categoría*</label>
-              <select value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
-                <option value="">Seleccione una categoría</option>
-                {categorias.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
-              </select>
+            <div className="form-group categoria-group">
+              <label htmlFor="categoria">
+                Categoría<span className="required">*</span>
+              </label>
+              <div className="categoria-dropdown">
+                <select
+                  id="categoria"
+                  className="activity-select"
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  required
+                >
+                  <option value="">Seleccione una categoría</option>
+                  {categorias.map((cat, index) => (
+                    <option key={index} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="add-category-btn"
+                  onClick={() => setShowNewCategoryField(true)}
+                >
+                  +
+                </button>
+              </div>
+              {showNewCategoryField && (
+                <div className="new-category-field">
+                  <input
+                    type="text"
+                    placeholder="Nueva categoría"
+                    className="input-text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                  />
+                  <div className="new-category-actions">
+                    <button type="button" onClick={handleAddCategory}>
+                      Añadir
+                    </button>
+                    <button type="button" onClick={handleRemoveCategory}>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="form-group">
-              <label>Fecha de Finalización*</label>
-              <input type="date" value={fechaFinalizacion} onChange={(e) => setFechaFinalizacion(e.target.value)} required />
+              <label htmlFor="fechaFinalizacion">
+                Fecha de Finalización<span className="required">*</span>
+              </label>
+              <input
+                type="date"
+                id="fechaFinalizacion"
+                className="input-date"
+                value={fechaFinalizacion}
+                onChange={(e) => setFechaFinalizacion(e.target.value)}
+                required
+              />
             </div>
           </div>
 
-          {/* Asignar y Estado */}
+          {/* Asignar */}
           <div className="form-row">
             <div className="form-group">
               <label>Asignar a*</label>
-              <select value={asignarA} onChange={(e) => setAsignarA(e.target.value)} required>
-                <option value="">Seleccione</option>
+              <select value={asignarA} className="asign-to-select" onChange={(e) => setAsignarA(e.target.value)} required>
+                <option value="">Seleccione al responsable</option>
                 {monitoresProfesores.map(mp => <option key={mp.code} value={mp.code}>{mp.name} {mp.lastName} {mp.code}</option>)}
               </select>
             </div>
             
           </div>
 
+          {/* Asistentes */}
+          <div className="form-group">
+            <label>Asistentes</label>
+            <div className="checkbox-container">
+              {asistentesList.map((asistente, index) => (
+                <label key={index} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    value={asistente}
+                    checked={asistentes.includes(asistente)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setAsistentes([...asistentes, asistente]); // Agregar asistente
+                      } else {
+                        setAsistentes(asistentes.filter(a => a !== asistente)); // Eliminar asistente
+                      }
+                    }}
+                  />
+                  {asistente}
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Descripción */}
           
           <div className="form-group">
             <label>Descripción</label>
-            <textarea rows="4" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}></textarea>
+            <textarea rows="4" className="activity-textarea" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}></textarea>
           </div>
 
           <button type="submit" className="confirm-button">Confirmar</button>

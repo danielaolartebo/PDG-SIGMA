@@ -1,8 +1,10 @@
 import './Task.css';
 import VerticalNavbar from './VerticalNavbar';
 import './Login.css';
+import AlertIcon from './NotificationIcon';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NotificationIcon from './NotificationIcon';
 
 function Task() {
   // Estado para almacenar las actividades
@@ -269,9 +271,12 @@ const handleExpand = (activityId, monitoringId) => {
       <div className="content">
 
         {/* Title starts*/}
-        <div className="title-container" id="title-container">
-          <div className="title" id="title">
-            Historial de Actividades
+        <div className="header">
+          <div className="title-container" id="title-container">
+            <div className="title" id="title">
+              Historial de Actividades
+            </div>
+            <NotificationIcon />
           </div>
         </div>
         {/* Title ends*/}
@@ -406,14 +411,18 @@ const handleExpand = (activityId, monitoringId) => {
                       <div className="edit-form">
                           {/* Primera fila */}
                           <label>
-                            Nombre:
-                            <input type="text" value={editedActivities[activity.id]?.name || activity.name} onChange={(e) => handleNameChange(activity.id, e.target.value)} />
+                            Actividad:
+                            <input type="text" value={editedActivities[activity.id]?.name || activity.name} 
+                            onChange={(e) => handleNameChange(activity.id, e.target.value)} 
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}/>
                           </label>
 
                           <label>
                             Curso:
-                            <select value={editedActivities[activity.id]?.course || activity.course} onChange={(e) => handleCursoChange(activity.id, e.target.value)}>
-                              {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
+                            <select value={editedActivities[activity.id]?.course || activity.course} 
+                            onChange={(e) => handleCursoChange(activity.id, e.target.value)}
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}>
+                            {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
                             </select>
                           </label>
 
@@ -425,14 +434,17 @@ const handleExpand = (activityId, monitoringId) => {
                               value={activity.finish ? new Date(activity.finish).toISOString().split('T')[0] : ""}
 
                               onChange={(e) => handleFechaSolicitadaEntrega(activity.id, e.target.value)}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}
                             />
                           </label>
 
 
                           <label>
                             Categoría:
-                            <select value={editedActivities[activity.id]?.category || activity.category} onChange={(e) => handleCategoryChange(activity.id, e.target.value)}>
-                              {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
+                            <select value={editedActivities[activity.id]?.category || activity.category} 
+                            onChange={(e) => handleCategoryChange(activity.id, e.target.value)}
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}>
+                            {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
                             </select>
                           </label>
 
@@ -446,6 +458,7 @@ const handleExpand = (activityId, monitoringId) => {
                                 );
                                 handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.code);
                               }}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}
                             >
                               {/* Responsable actual */}
                               <option value={activity.responsableName}>
@@ -483,7 +496,9 @@ const handleExpand = (activityId, monitoringId) => {
 
                           <label>
                             Descripción:
-                            <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} />
+                            <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} 
+                            onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} 
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}/>
                           </label>
 
                           {/* Botones */}

@@ -94,6 +94,15 @@
     box-sizing: border-box;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
+
+  .asign-to-select{
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 97%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
   
   .activity-textarea {
     padding: 10px;
@@ -207,4 +216,28 @@
       font-size: 18px;
     }
   }
+
+  /* Asistentes */
+  .checkbox-container {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+    max-width: 97%; 
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 8px; 
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap; 
+  }
+  
+  .checkbox-container .checkbox-label {
+    width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
+  }
+  
+  
   
