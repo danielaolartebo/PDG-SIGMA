@@ -1,4 +1,5 @@
   .profile-container {
+
     display: flex;
     margin-left: 13em;
   }
@@ -50,7 +51,7 @@
   }
   
   .courses-table th {
-    background: #f4f4f4;
+    background: grey;
     font-weight: bold;
   }
   
