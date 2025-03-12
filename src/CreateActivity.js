@@ -9,20 +9,32 @@ function CreateActivity() {
   const [categoria, setCategoria] = useState('');
   const [fechaFinalizacion, setFechaFinalizacion] = useState('');
   const [asignarA, setAsignarA] = useState('');
-  const [asistentes, setAsistentes] = useState('');
+  // const [asistentes, setAsistentes] = useState([]);
   const [descripcion, setDescripcion] = useState('');
   const [semestre, setSemestre] = useState('2025-1');
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
 
-  const [asistentesList, setAsistentesList] = useState(['Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado', 'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz']);
+  
+  // const [students, setStudents] = useState([]);
+  
+  const [allStudents, setAllStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [estudiantesList, setEstudiantesList] = useState([]);
+  const [asistentesList, setAsistentesList] = useState([]);
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
+
 
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
       .then(res => res.json())
       .then(data => setCursos(data))
       .catch(error => console.error('Error al obtener los cursos:', error));
+    fetch('http://localhost:5433/student/getA')
+      .then(res => res.json())
+      .then(data => setAllStudents(data))
+      .catch(error => console.error('Error al obtener los all students:', error));
   }, []);
 
   const getMonitors = async (cursoId) => {
@@ -31,6 +43,32 @@ function CreateActivity() {
       .then(data => setMonitoresProfesores(data))
       .catch(error => console.error('Error al obtener los monitores:', error));
   };
+
+  // useEffect(() => { //curso is courseId selected
+  //     if (!curso) return;  // No hace fetch si no hay curso seleccionado
+      
+  //     fetch(`http://localhost:5433/student/course/${curso}`)
+  //         .then((res) => res.json())
+  //         .then((data) => setAsistentesList(data))
+  //         .catch((error) => console.error("Error al cargar estudiantes:", error));
+  // }, [curso]);
+
+  const getStudentsByCourse  = async (cursoId) => {
+    fetch(`http://localhost:5433/student/course/${cursoId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Datos recibidos:", data);
+            setEstudiantesList(data);
+          })
+          .catch((error) => console.error("Error al cargar estudiantes:", error));
+  };
+
+  // const getAssistantsByCourse = async (actId) => {
+  //   fetch(`http://localhost:5433/attendance/activity/${actId}`)
+  //     .then(res => res.json())
+  //     .then(data => setAsistentesList(data))
+  //     .catch(error => console.error("Error al cargar asistentes:", error));
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,7 +158,7 @@ function CreateActivity() {
             </div>
             <div className="form-group">
               <label>Curso*</label>
-              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); }} required>
+              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); getStudentsByCourse(e.target.value);}} required > {/*getAsistant*/}
                 <option value="">Seleccione un curso</option>
                 {cursos.map(c => <option key={c.id} value={c.id}>{c.course.name}</option>)}
               </select>
@@ -204,27 +242,48 @@ function CreateActivity() {
           </div>
 
           {/* Asistentes */}
-          <div className="form-group">
-            <label>Asistentes</label>
-            <div className="checkbox-container">
-              {asistentesList.map((asistente, index) => (
+          <label>Asistentes</label>
+          {/* Campo de búsqueda */}
+          <input
+            type="text"
+            placeholder="Buscar asistente..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          {/* Contenedor de checkboxes */}
+          <div className="checkbox-container">
+            {estudiantesList
+              .map(asistente => {
+                const studentData = allStudents.find(s => s.code === asistente.studentId);
+                return {
+                  ...asistente,
+                  name: studentData ? studentData.name : "Nombre no encontrado",
+                  code: studentData ? studentData.code : "code no encontrado",
+                };
+              })
+              .filter(asistente =>
+                (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  asistente.code.toLowerCase().includes(searchTerm.toLowerCase()))// Filtra por búsqueda
+              )
+              .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
+              .map((asistente, index) => (
                 <label key={index} className="checkbox-label">
                   <input
                     type="checkbox"
-                    value={asistente}
-                    checked={asistentes.includes(asistente)}
+                    value={asistente.studentId}
+                    checked={asistentesList.includes(asistente.studentId)}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setAsistentes([...asistentes, asistente]); // Agregar asistente
+                        setAsistentesList([...asistentesList, asistente.studentId]); // Agregar asistente
                       } else {
-                        setAsistentes(asistentes.filter(a => a !== asistente)); // Eliminar asistente
+                        setAsistentesList(asistentesList.filter(a => a !== asistente.studentId)); // Eliminar asistente
                       }
                     }}
                   />
-                  {asistente}
+                  {asistente.name+" - "+asistente.code}
                 </label>
               ))}
-            </div>
           </div>
 
           {/* Descripción */}
