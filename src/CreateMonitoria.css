@@ -85,10 +85,142 @@ label {
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Estilos únicos para select y textarea */
-.activity-select {
-  padding: 10px;
-  border: 1px solid #ccc;
+
+/* ==========================TABLE================================= */
+
+
+.main-container{
+  background-color: #fff; 
+  border: 1px solid #ddd;
+  border-radius: 12px; 
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  margin: 0 auto;
+}
+
+.table-main-container{
+  display: flex;
+  justify-content: center;
+}
+
+.table{
+  height: 100%;
+  width: 100%;
+}
+
+.table-data{
+  padding-top: 1em;
+  padding-bottom: 1em;
+  justify-items: center;
+}
+
+.table-head{
+  padding-top: 1em;
+  padding-bottom: 1em;
+  background-color: gray;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9; /* Color de fondo para filas impares (1ra, 3ra, etc.) */
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #e5e8ea; /* Color de fondo para filas pares (2da, 4ta, etc.) */
+}
+
+/* Pagination */
+
+.div-pagination{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 auto;
+  padding-top: 0.5em;
+}
+
+/* Iphone 14 pro max size */
+@media (max-width: 430px) {
+
+  .div-pagination {
+    width: 100%; 
+    margin: 0; 
+    padding: 0.5em 0; 
+    justify-content: space-evenly;
+  }
+
+  .pagination-info {
+    margin-top: 8px;
+    color: #555;
+    text-align: center;
+  }
+
+  .pagination button:hover{
+    background-color: var(--hover-color);
+  }
+
+  .pagination button {
+    margin: 2px;
+    width: 5em;
+    font-size: 10px;
+    text-align: center;
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+  }
+
+  .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      width: 5em;
+      font-size: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+  .pagination .active {
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      width: 5em;
+      font-size: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+
+  .main-container {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 0 auto; 
+  }
+
+  .pagination{
+    display: flex;
+    flex-direction: row;
+  }
+
+}
+
+.pagination{
+  display: flex;
+  flex-direction: row;
+}
+
+.main-pagination{
+  justify-content: center;
+}
+
+.pagination button {
+  margin: 5px;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  cursor: pointer;
   border-radius: 4px;
   width: 94%;
   box-sizing: border-box;
@@ -222,12 +354,12 @@ label {
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 15px;
   white-space: nowrap; 
 }
 
 .checkbox-container .checkbox-label {
-  width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
+  width: calc(100% / 3 - 10px); /* Hasta 4 elementos por fila */
 }
 
 .search-input {
@@ -237,25 +369,4 @@ label {
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-}
-
-.checkbox-container {
-  border-radius: 5px;
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 41px;
-  row-gap: 0;
-  width: 95%;
-  padding-bottom: 10px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-}
-
-.checkbox-container .checkbox-label {
-  width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
 }

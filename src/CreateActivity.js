@@ -9,23 +9,18 @@ function CreateActivity() {
   const [categoria, setCategoria] = useState('');
   const [fechaFinalizacion, setFechaFinalizacion] = useState('');
   const [asignarA, setAsignarA] = useState('');
-  // const [asistentes, setAsistentes] = useState([]);
   const [descripcion, setDescripcion] = useState('');
   const [semestre, setSemestre] = useState('2025-1');
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
 
-  
-  // const [students, setStudents] = useState([]);
-  
   const [allStudents, setAllStudents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [estudiantesList, setEstudiantesList] = useState([]);
   const [asistentesList, setAsistentesList] = useState([]);
   const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
-
-
+  
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
       .then(res => res.json())
@@ -43,15 +38,6 @@ function CreateActivity() {
       .then(data => setMonitoresProfesores(data))
       .catch(error => console.error('Error al obtener los monitores:', error));
   };
-
-  // useEffect(() => { //curso is courseId selected
-  //     if (!curso) return;  // No hace fetch si no hay curso seleccionado
-      
-  //     fetch(`http://localhost:5433/student/course/${curso}`)
-  //         .then((res) => res.json())
-  //         .then((data) => setAsistentesList(data))
-  //         .catch((error) => console.error("Error al cargar estudiantes:", error));
-  // }, [curso]);
 
   const getStudentsByCourse  = async (cursoId) => {
     fetch(`http://localhost:5433/student/course/${cursoId}`)
@@ -142,6 +128,7 @@ function CreateActivity() {
     setNewCategory('');
     setShowNewCategoryField(false);
   };
+  
 
 
   return (
@@ -258,7 +245,7 @@ function CreateActivity() {
               .map(asistente => {
                 const studentData = allStudents.find(s => s.code === asistente.studentId);
                 return {
-                  ...asistente,
+                  ...asistente, 
                   name: studentData ? studentData.name : "Nombre no encontrado",
                   code: studentData ? studentData.code : "code no encontrado",
                 };
@@ -266,7 +253,7 @@ function CreateActivity() {
               .filter(asistente =>
                 (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  asistente.code.toLowerCase().includes(searchTerm.toLowerCase()))// Filtra por búsqueda
               )
-              .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
+              .sort((a, b) => a.name.localeCompare(b.name)) // Orden alfabético
               .map((asistente, index) => (
                 <label key={index} className="checkbox-label">
                   <input
@@ -286,13 +273,13 @@ function CreateActivity() {
               ))}
           </div>
 
+
           {/* Descripción */}
-          
           <div className="form-group">
             <label>Descripción</label>
             <textarea rows="4" className="activity-textarea" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}></textarea>
           </div>
-
+        
           <button type="submit" className="confirm-button">Confirmar</button>
         </form>
       </div>
