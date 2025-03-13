@@ -67,7 +67,7 @@ function CreateActivity() {
     const nuevaActividad = {
         name: nombre,
         creation: new Date().toISOString(),
-        finish: new Date(fechaFinalizacion+"T00:00:00"),
+        finish: new Date(fechaFinalizacion + "T00:00:00"),
         roleCreator: localStorage.getItem('role').charAt(0).toUpperCase(),
         roleResponsable: 'M',
         category: categoria,
@@ -81,6 +81,7 @@ function CreateActivity() {
     };
 
     try {
+        // 
         const response = await fetch('http://localhost:5433/activity/create', {
             method: 'POST',
             headers: {
@@ -93,24 +94,47 @@ function CreateActivity() {
             throw new Error(`Error al crear la actividad: ${response.statusText}`);
         }
 
-          const data = await response.json();
-          console.log('Actividad creada:', data);
-          alert('¡Actividad creada exitosamente!');
-          
-          setNombre('');
-          setCurso('');
-          setCategoria('');
-          setFechaFinalizacion('');
-          setAsignarA('');
-          setDescripcion('');
-          setSemestre('2025-1');
+        const data = await response.json();
+        console.log('Actividad creada:', data);
+        const actividadId = data.id; //
 
-      } 
-        catch (error) {
-            console.error('Error:', error);
-            alert('Hubo un problema al crear la actividad.');
-        }
-  };
+        // 
+        await Promise.all(asistentesList.map(async (studentId) => {
+          const attendanceResponse = await fetch('http://localhost:5433/attendance/create', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  activity: { id: actividadId }, 
+                  student: { code: studentId }
+              })
+          });
+      
+          if (!attendanceResponse.ok) {
+              console.error(`Error al guardar asistencia para el estudiante ${studentId}`);
+          }
+      }));
+      
+
+        alert('¡Actividad y asistencia guardadas exitosamente!');
+
+        // 
+        setNombre('');
+        setCurso('');
+        setCategoria('');
+        setFechaFinalizacion('');
+        setAsignarA('');
+        setDescripcion('');
+        setSemestre('2025-1');
+        setAsistentesList([]); // 🔄 Limpiar los checkboxes
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un problema al crear la actividad y/o asistencia.');
+    }
+};
+
 
   // Estados para gestionar la creación de una nueva categoría
   const [showNewCategoryField, setShowNewCategoryField] = useState(false);
