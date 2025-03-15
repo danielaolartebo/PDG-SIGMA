@@ -17,6 +17,9 @@ function Task() {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 6; // Número de filas por página
 
+  const [asistentesList, setAsistentesList] = useState([]);
+  const [allStudents, setAllStudents] = useState([]);
+
   // Función para alternar filas expandibles
   const toggleRow = (id, monitoringId) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -42,6 +45,11 @@ function Task() {
         }
     };
     fetchActivities();
+    fetch('http://localhost:5433/student/getA')
+      .then(res => res.json())
+      .then(data => setAllStudents(data))
+      .catch(error => console.error('Error al obtener los all students:', error));
+    
   }, []);
 
   const [editedActivities, setEditedActivities] = useState({});
@@ -149,6 +157,16 @@ const handleExpand = (activityId, monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
+  const getAsistantList  = async (activityId) => {
+    fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Datos recibidos:", data);
+            setAsistentesList(data);
+          })
+          .catch((error) => console.error("Error al cargar asistentes:", error));
+  };
+  getAsistantList();
 };
 
 
@@ -484,10 +502,19 @@ const handleExpand = (activityId, monitoringId) => {
                           </label> */}
 
                           {/* Segunda fila */}
-                          <label>
-                            Asistentes:
-                            <select></select>
-                          </label>
+                          <label>Asistentes:</label>
+                          {/* <div>{
+                            asistentesList.map(asistente => {
+                              const studentData = allStudents.find(s => s.code === asistente.studentId);
+                              // return {
+                              //   ...asistente, 
+                              //   name: studentData ? studentData.name : "Nombre no encontrado",
+                              //   code: studentData ? studentData.code : "code no encontrado",
+                              // };
+                              {studentData.name+" - "+studentData.code}
+                            })
+                          }</div> */}
+                          
 
                           <label>
                             Fecha última edición:

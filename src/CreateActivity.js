@@ -30,6 +30,7 @@ function CreateActivity() {
       .then(res => res.json())
       .then(data => setAllStudents(data))
       .catch(error => console.error('Error al obtener los all students:', error));
+    
   }, []);
 
   const getMonitors = async (cursoId) => {
@@ -37,6 +38,19 @@ function CreateActivity() {
       .then(res => res.json())
       .then(data => setMonitoresProfesores(data))
       .catch(error => console.error('Error al obtener los monitores:', error));
+  };
+
+  const fetchCategorias = async (cursoId) => {
+    try {
+      const response = await fetch(`http://localhost:5433/category/course/${cursoId}`);
+      if (!response.ok) {
+        throw new Error("Error al obtener las categorías");
+      }
+      const data = await response.json();
+      setCategorias(data);
+    } catch (error) {
+      console.error("Error al obtener las categorías:", error);
+    }
   };
 
   const getStudentsByCourse  = async (cursoId) => {
@@ -127,7 +141,7 @@ function CreateActivity() {
         setAsignarA('');
         setDescripcion('');
         setSemestre('2025-1');
-        setAsistentesList([]); // 🔄 Limpiar los checkboxes
+        setAsistentesList([]); 
 
     } catch (error) {
         console.error('Error:', error);
@@ -140,13 +154,41 @@ function CreateActivity() {
   const [showNewCategoryField, setShowNewCategoryField] = useState(false);
   const [newCategory, setNewCategory] = useState('');
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() !== '') {
-      setCategorias(prev => [...prev, newCategory.trim()]);
-      setNewCategory('');
+  const handleAddCategory = async () => {
+    if (!newCategory.trim() || !curso) {
+      alert("Debe ingresar una categoría y seleccionar un curso");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:5433/category/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          name: newCategory.trim(), 
+          course: { id: Number(curso) } 
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear la categoría");
+      }
+  
+      const createdCategory = await response.json();
+  
+      setCategorias((prev) => [...prev, createdCategory]); // Guarda el objeto completo
+      setNewCategory("");
       setShowNewCategoryField(false);
+    } catch (error) {
+      console.error("Error al crear la categoría:", error);
+      alert("No se pudo crear la categoría");
     }
   };
+  
+  
 
   const handleRemoveCategory = () => {
     setNewCategory('');
@@ -169,7 +211,7 @@ function CreateActivity() {
             </div>
             <div className="form-group">
               <label>Curso*</label>
-              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); getStudentsByCourse(e.target.value);}} required > {/*getAsistant*/}
+              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); getStudentsByCourse(e.target.value); fetchCategorias(e.target.value)}} required > {/*getAsistant*/}
                 <option value="">Seleccione un curso</option>
                 {cursos.map(c => <option key={c.id} value={c.id}>{c.course.name}</option>)}
               </select>
@@ -191,9 +233,9 @@ function CreateActivity() {
                   required
                 >
                   <option value="">Seleccione una categoría</option>
-                  {categorias.map((cat, index) => (
-                    <option key={index} value={cat}>
-                      {cat}
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -239,6 +281,7 @@ function CreateActivity() {
               />
             </div>
           </div>
+
 
           {/* Asignar */}
           <div className="form-row">
