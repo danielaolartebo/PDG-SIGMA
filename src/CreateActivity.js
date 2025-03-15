@@ -18,14 +18,14 @@ function CreateActivity() {
   const [searchTerm, setSearchTerm] = useState(""); 
 
 
-  const [asistentesList, setAsistentesList] = useState([
+  {/*  const [asistentesList, setAsistentesList] = useState([
     'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
     'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
     'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
     'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
     'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
     'Samuel Cortés', 'Paula Mejía'  
-  ]);
+  ]); */}
   
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
@@ -215,20 +215,20 @@ function CreateActivity() {
 
           {/* Asistentes */}
 
-          <div className="form-group">
-            <label>Asistentes</label>
+          {/* <div className="form-group">
+            <label>Asistentes</label> */}
             
             {/* Campo de búsqueda */}
-            <input
+            {/* <input
               type="text"
               placeholder="Buscar asistente..."
               className="search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            />  */}
 
             {/* Contenedor de checkboxes */}
-            <div className="checkbox-container">
+            {/* <div className="checkbox-container">
               {asistentesList
                 .filter(asistente =>
                   asistente.toLowerCase().includes(searchTerm.toLowerCase()) // Filtra por búsqueda
@@ -252,7 +252,7 @@ function CreateActivity() {
                   </label>
                 ))}
             </div>
-          </div>
+          </div>  */}
 
 
           {/* Descripción */}

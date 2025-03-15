@@ -262,8 +262,19 @@ const handleExpand = (activityId, monitoringId) => {
 
     const handleCreateActivity = () => {
         navigate('/CreateActivity'); 
-    };
+  };
 
+  const [asistentesList, setAsistentesList] = useState([
+    'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
+    'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
+    'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
+    'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
+    'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
+    'Samuel Cortés', 'Paula Mejía'  
+  ]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [asistentes, setAsistentes] = useState([]);
 
   return (
     <div className="task-container">
@@ -486,7 +497,40 @@ const handleExpand = (activityId, monitoringId) => {
                           {/* Segunda fila */}
                           <label>
                             Asistentes:
-                            <select></select>
+                            {/* Campo de búsqueda */}
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            {/* Contenedor de checkboxes */}
+                            <div className="checkbox-container">
+                              {asistentesList
+                                .filter(asistente =>
+                                  asistente.toLowerCase().includes(searchTerm.toLowerCase())
+                                ) // Filtra por búsqueda
+                                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente}
+                                      checked={asistentes.includes(asistente)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setAsistentes([...asistentes, asistente]);
+                                        } else {
+                                          setAsistentes(asistentes.filter(a => a !== asistente));
+                                        }
+                                      }}
+                                    />
+                                    {asistente}
+                                  </label>
+                                ))}
+                            </div>
                           </label>
 
                           <label>
