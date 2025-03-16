@@ -165,7 +165,7 @@
 .table-head{
   padding-top: 1em;
   padding-bottom: 1em;
-  background-color: #8a8ae2;
+  background-color: gray;
 }
 
 .table tbody tr:nth-child(odd) {
