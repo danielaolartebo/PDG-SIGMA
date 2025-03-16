@@ -363,7 +363,7 @@ const handleExpand = (activityId, monitoringId) => {
                   } else {
                     estadoClase = "pending"; // Color gris
                   }
-                } else if (activity.state === "COMPLETADO") {
+                } else if (activity.state === "COMPLETADO" || activity.state ==="COMPLETADOT") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
                   const fechaRealEntregaParsed = parseDate(activity.delivey);
 

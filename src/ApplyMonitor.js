@@ -3,6 +3,7 @@ import React from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import TableContent from './TableContent';
 import Dropdown from './Filters';
+import { MyProvider } from './MyContext';
 
 function ApplyMonitor() {
     console.log("ApplyMonitor se está renderizando");
@@ -17,8 +18,11 @@ function ApplyMonitor() {
                 </div>
                 
                 <div className="apply-monitor-cont">
-                    <Dropdown />
-                    <TableContent />
+                     <MyProvider>
+                        <Dropdown />
+                        <TableContent />
+                     </MyProvider>
+                    
                 </div> 
             </div>
 

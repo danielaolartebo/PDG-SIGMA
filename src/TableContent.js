@@ -19,10 +19,11 @@ function TableContent() {
     const [state, setState] = useState("")
     const [alertVisible, setAlertVisible] = useState(false);
     const recordsPerPage = 6;
-    const [selectedValue, setSelectedValue] = useState('');
-    const [selectedCondition, setSelectedCondition] = useState('');
-    const [selectedRequest, setSelectedRequest] = useState('');
-
+    
+    const context = useContext(MyContext);
+    const selectedValue = context?.selectedValue;
+    const selectedCondition = context?.selectedCondition;
+    const selectedRequest = context?.selectedRequest;
     const columnNames = {
         id: "ID - CRN",
         school: "Facultad",
@@ -62,7 +63,11 @@ function TableContent() {
         let prog ={
 
         }
-        if ((!selectedValue && selectedCondition.trim() === "") || (selectedValue.trim() === "" && selectedCondition.trim() === "")) {
+
+        const safeSelectedValue = selectedValue?.trim() || "";
+        const safeSelectedCondition = selectedCondition?.trim() || "";
+
+        if ((!safeSelectedValue && safeSelectedCondition === "") || (safeSelectedValue === "" && safeSelectedCondition === "")) {
             console.log("selectedValue está vacío, no se realizará ninguna solicitud.");
             return; // Evita ejecutar el efecto si selectedValue es inválido
         }
