@@ -84,7 +84,7 @@ function CreateActivity() {
         finish: new Date(fechaFinalizacion + "T00:00:00"),
         roleCreator: localStorage.getItem('role').charAt(0).toUpperCase(),
         roleResponsable: 'M',
-        category: categoria,
+        category: categoria?.name ?? categoria,
         description: descripcion,
         monitoringId: curso,
         monitorId: asignarA,
@@ -179,7 +179,15 @@ function CreateActivity() {
   
       const createdCategory = await response.json();
   
+      console.log("Categoría creada:", createdCategory); // Verifica qué datos devuelve el backend
+  
+      // Accede al nombre de la categoría
+      const categoryName = createdCategory.name || "Sin nombre";
+  
       setCategorias((prev) => [...prev, createdCategory]); // Guarda el objeto completo
+  
+      alert(`Categoría creada: ${categoryName}`);
+  
       setNewCategory("");
       setShowNewCategoryField(false);
     } catch (error) {
@@ -187,6 +195,8 @@ function CreateActivity() {
       alert("No se pudo crear la categoría");
     }
   };
+  
+  
   
   
 
