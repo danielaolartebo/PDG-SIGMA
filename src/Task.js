@@ -374,7 +374,7 @@ const handleExpand = (activityId, monitoringId) => {
                   } else {
                     estadoClase = "pending"; // Color gris
                   }
-                } else if (activity.state === "COMPLETADO" || activity.state ==="COMPLETADOT") {
+                } else if (activity.state === "COMPLETADO") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
                   const fechaRealEntregaParsed = parseDate(activity.delivey);
 
@@ -487,56 +487,48 @@ const handleExpand = (activityId, monitoringId) => {
                             </select>
                           </label>
 
-                          {/* <label>
-                            Asignado a:
-                            <select value={editedActivities[activity.id]?.responsableName || activity.responsableName} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
-                              {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
-                            </select>
-                          </label> */}
-
-                          {/* Segunda fila */}
-                          <label>
-                            Asistentes:
-                            {/* Campo de búsqueda */}
-                            <input
-                              type="text"
-                              placeholder="Buscar asistente..."
-                              className="search-input"
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-
-                            {/* Contenedor de checkboxes */}
-                            <div className="checkbox-container">
-                              {asistentesList
-                                .filter(asistente =>
-                                  asistente.toLowerCase().includes(searchTerm.toLowerCase())
-                                ) // Filtra por búsqueda
-                                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
-                                .map((asistente, index) => (
-                                  <label key={index} className="checkbox-label">
-                                    <input
-                                      type="checkbox"
-                                      value={asistente}
-                                      checked={asistentes.includes(asistente)}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setAsistentes([...asistentes, asistente]);
-                                        } else {
-                                          setAsistentes(asistentes.filter(a => a !== asistente));
-                                        }
-                                      }}
-                                    />
-                                    {asistente}
-                                  </label>
-                                ))}
-                            </div>
-                          </label>
-
                           <label>
                             Fecha última edición:
                             <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
+
+                        <label>
+                          Asistentes:
+                          {/* Campo de búsqueda */}
+                          <input
+                            type="text"
+                            placeholder="Buscar asistente..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+
+                          {/* Contenedor de checkboxes */}
+                          <div className="checkbox-container">
+                            {asistentesList
+                              .filter(asistente =>
+                                asistente.toLowerCase().includes(searchTerm.toLowerCase())
+                              ) // Filtra por búsqueda
+                              .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
+                              .map((asistente, index) => (
+                                <label key={index} className="checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    value={asistente}
+                                    checked={asistentes.includes(asistente)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setAsistentes([...asistentes, asistente]);
+                                      } else {
+                                        setAsistentes(asistentes.filter(a => a !== asistente));
+                                      }
+                                    }}
+                                  />
+                                  {asistente}
+                                </label>
+                              ))}
+                          </div>
+                        </label>
 
                           <label>
                             Descripción:
