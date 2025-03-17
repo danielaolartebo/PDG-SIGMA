@@ -179,12 +179,11 @@ function CreateActivity() {
   
       const createdCategory = await response.json();
   
-      console.log("Categoría creada:", createdCategory); // Verifica qué datos devuelve el backend
-  
-      // Accede al nombre de la categoría
+      console.log("Categoría creada:", createdCategory); 
+
       const categoryName = createdCategory.name || "Sin nombre";
   
-      setCategorias((prev) => [...prev, createdCategory]); // Guarda el objeto completo
+      setCategorias((prev) => [...prev, createdCategory]); 
   
       alert(`Categoría creada: ${categoryName}`);
   
@@ -244,7 +243,7 @@ function CreateActivity() {
                 >
                   <option value="">Seleccione una categoría</option>
                   {categorias.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
+                    <option key={cat.id} value={cat.name}>
                       {cat.name}
                     </option>
                   ))}
