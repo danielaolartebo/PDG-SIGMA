@@ -54,4 +54,25 @@
     background: grey;
     font-weight: bold;
   }
+
+  .filter-container{
+    width: 100%;
+    justify-content: center;
+  }
+
+  .select-semester-filter {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%; 
+    max-width: 970px; 
+  }
+  
+  /* Fuerza que las opciones tengan más espacio */
+  .select-semester-filter option {
+    white-space: nowrap; 
+    overflow: hidden;
+    padding: 10px;
+  }
   
