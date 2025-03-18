@@ -102,6 +102,7 @@ function Task() {
 
    // Estados para los filtros
   const [semesterFilter, setSemesterFilter] = useState('');
+  const [programFilter, setProgramFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [assignedToFilter, setAssignedToFilter] = useState('');
@@ -111,6 +112,7 @@ function Task() {
 
   // Generar opciones únicas para cada filtro
   const semesters = [...new Set(activities.map(activity => activity.semester))];
+  const programs = [...new Set(activities.map(activity => activity.program))];
   const courses = [...new Set(activities.map(activity => activity.course))];
   const requestedDueDate = [...new Set(activities.map(activity => activity.finish))];///
   const categories = [...new Set(activities.map(activity => activity.category))];
@@ -120,6 +122,7 @@ function Task() {
   // Filtrar actividades según los filtros seleccionados
   const filteredActivities = activities.filter(activity => (
     (semesterFilter === '' || activity.semester === semesterFilter) &&
+    (programFilter === '' || activity.program === programFilter) &&
     (courseFilter === '' || activity.course === courseFilter) &&
     (categoryFilter === '' || activity.category === categoryFilter) &&
     (assignedToFilter === '' || activity.responsableName === assignedToFilter) &&
@@ -306,6 +309,13 @@ const handleExpand = (activityId, monitoringId) => {
             <option value="">Semestre</option>
             {semesters.map((semestre, index) => (
               <option key={index} value={semestre}>{semestre}</option>
+            ))}
+          </select>
+
+          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}>
+            <option value="">Programa</option>
+            {programs.map((program, index) => (
+              <option key={index} value={program}>{program}</option>
             ))}
           </select>
 
