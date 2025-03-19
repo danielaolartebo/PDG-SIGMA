@@ -157,16 +157,37 @@ const handleExpand = (activityId, monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
-  const getAsistantList  = async (activityId) => {
-    fetch(`http://localhost:5433/attendance/activity/${activityId}`)
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("Datos recibidos:", data);
-            setAsistentesList(data);
-          })
-          .catch((error) => console.error("Error al cargar asistentes:", error));
-  };
-  getAsistantList();
+  // const getAsistantList  = async (activityId) => {
+  //   fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+  //         .then((res) => res.json())
+  //         .then((data) => {
+  //           console.log("Datos recibidos:", data);
+  //           setAsistentesList(data);
+  //         })
+  //         .catch((error) => console.error("Error al cargar asistentes:", error));
+  // };
+  // getAsistantList();
+  fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("Datos recibidos:", data); // Verifica qué devuelve la API
+    if (Array.isArray(data)) {
+      setAsistentesList([
+        'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
+        'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
+        'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
+        'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
+        'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
+        'Samuel Cortés', 'Paula Mejía'  
+      ]);
+      // setAsistentesList(data);
+    } else {
+      console.error("El API no devolvió un array:", data);
+      setAsistentesList([]); // Evita errores en el renderizado
+      
+    }
+  })
+  .catch((error) => console.error("Error al cargar asistentes:", error));
 };
 
 
@@ -280,8 +301,10 @@ const handleExpand = (activityId, monitoringId) => {
 
     const handleCreateActivity = () => {
         navigate('/CreateActivity'); 
-    };
+  };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [asistentes, setAsistentes] = useState([]);
 
   return (
     <div className="task-container">
@@ -381,7 +404,7 @@ const handleExpand = (activityId, monitoringId) => {
                   } else {
                     estadoClase = "pending"; // Color gris
                   }
-                } else if (activity.state === "COMPLETADO") {
+                } else if (activity.state === "COMPLETADO" || activity.state ==="COMPLETADOT") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
                   const fechaRealEntregaParsed = parseDate(activity.delivey);
 
@@ -515,6 +538,43 @@ const handleExpand = (activityId, monitoringId) => {
                             })
                           }</div> */}
                           
+                          <label>
+                            Asistentes:
+                            {/* Campo de búsqueda */}
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            {/* Contenedor de checkboxes */}
+                            <div className="checkbox-container">
+                              {asistentesList
+                                .filter(asistente =>
+                                  asistente.toLowerCase().includes(searchTerm.toLowerCase())
+                                ) // Filtra por búsqueda
+                                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente}
+                                      checked={asistentes.includes(asistente)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setAsistentes([...asistentes, asistente]);
+                                        } else {
+                                          setAsistentes(asistentes.filter(a => a !== asistente));
+                                        }
+                                      }}
+                                    />
+                                    {asistente}
+                                  </label>
+                                ))}
+                            </div>
+                          </label>
 
                           <label>
                             Fecha última edición:

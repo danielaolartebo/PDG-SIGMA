@@ -316,7 +316,7 @@ function CreateActivity() {
           />
 
           {/* Contenedor de checkboxes */}
-          <div className="checkbox-container">
+          {/* <div className="checkbox-container">
             {estudiantesList
               .map(asistente => {
                 const studentData = allStudents.find(s => s.code === asistente.studentId);
@@ -347,7 +347,7 @@ function CreateActivity() {
                   {asistente.name+" - "+asistente.code}
                 </label>
               ))}
-          </div>
+          </div> */}
 
 
           {/* Descripción */}
