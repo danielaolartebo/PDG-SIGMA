@@ -1,5 +1,5 @@
 import "./Profile.css";
-import React from "react";
+import React, { useState } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
 
@@ -7,7 +7,7 @@ function Profile() {
   console.log("Profile se está renderizando");
 
   const user = {
-    foto: profilePic, 
+    foto: profilePic,
     nombre: "Claudia Cecilia Castiblanco Perez",
     facultad: "Ingeniería, diseño y ciencias aplicadas",
     programa: "Ingeniería de Sistemas",
@@ -17,6 +17,7 @@ function Profile() {
   const cursosAsignados = [
     {
       id: 1,
+      semestre: "2025-1",
       nombre: "Ingeniería de Software IV",
       monitor: "Sebastian Paz Palacios",
       fechaInicio: "02/01/2025",
@@ -24,12 +25,41 @@ function Profile() {
     },
     {
       id: 2,
+      semestre: "2025-1",
       nombre: "Sistemas Intensivos en Datos",
       monitor: "Daniela Olarte Borja",
       fechaInicio: "02/01/2025",
       fechaFin: "30/06/2025",
     },
+    {
+      id: 3,
+      semestre: "2024-2",
+      nombre: "Bases de Datos Avanzadas",
+      monitor: "Juan Perez",
+      fechaInicio: "02/07/2024",
+      fechaFin: "30/12/2024",
+    },
+    {
+      id: 4,
+      semestre: "2024-1",
+      nombre: "Bases de Datos I",
+      monitor: "Sebastian Montoya",
+      fechaInicio: "02/02/2024",
+      fechaFin: "30/06/2024",
+    },
   ];
+
+  const [semestreSeleccionado, setSemestreSeleccionado] = useState("Seleccionar semestre");
+
+  const semestresDisponibles = [
+    "Seleccionar semestre",
+    ...new Set(cursosAsignados.map((curso) => curso.semestre)),
+  ];
+
+  const cursosFiltrados =
+    semestreSeleccionado === "Seleccionar semestre"
+      ? cursosAsignados
+      : cursosAsignados.filter((curso) => curso.semestre === semestreSeleccionado);
 
   return (
     <div className="profile-container">
@@ -48,9 +78,24 @@ function Profile() {
         {/* Contenedor de cursos asignados */}
         <div className="courses-container">
           <h3>Cursos Asignados</h3>
+          
+          {/* Filtro de semestre */}
+          <div className="filter-container">
+            <select className="select-semester-filter"
+              id="semestre"
+              value={semestreSeleccionado}
+              onChange={(e) => setSemestreSeleccionado(e.target.value)}
+            >
+              {semestresDisponibles.map((semestre) => (
+                <option key={semestre} value={semestre}>{semestre}</option>
+              ))}
+            </select>
+          </div>
+
           <table className="courses-table">
             <thead>
               <tr>
+                <th>Semestre</th>
                 <th>Curso</th>
                 <th>Monitor Asignado</th>
                 <th>Fecha Inicio</th>
@@ -58,8 +103,9 @@ function Profile() {
               </tr>
             </thead>
             <tbody>
-              {cursosAsignados.map((curso) => (
+              {cursosFiltrados.map((curso) => (
                 <tr key={curso.id}>
+                  <td>{curso.semestre}</td>
                   <td>{curso.nombre}</td>
                   <td>{curso.monitor}</td>
                   <td>{curso.fechaInicio}</td>

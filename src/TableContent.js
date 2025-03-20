@@ -291,9 +291,11 @@ function TableContent() {
                 <table className="table" id="table">
                     <thead>
                         <tr>
-                            {column.map((c, i) => (
+                        {column
+                            .filter(c => c !== "professor")
+                            .map((c, i) => (
                                 <th className="table-head" key={i}>
-                                    {columnNames[c] || c}
+                                {columnNames[c] || c}
                                 </th>
                             ))}
                             <th className="table-head"> Estado </th>

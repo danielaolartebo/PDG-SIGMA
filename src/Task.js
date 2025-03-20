@@ -17,8 +17,10 @@ function Task() {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 6; // Número de filas por página
 
-  const [asistentesList, setAsistentesList] = useState([]);
   const [allStudents, setAllStudents] = useState([]);
+  const [estudiantesList, setEstudiantesList] = useState([]);
+  const [asistentesList, setAsistentesList] = useState([]);
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
 
   // Función para alternar filas expandibles
   const toggleRow = (id, monitoringId) => {
@@ -110,6 +112,7 @@ function Task() {
 
    // Estados para los filtros
   const [semesterFilter, setSemesterFilter] = useState('');
+  const [programFilter, setProgramFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [assignedToFilter, setAssignedToFilter] = useState('');
@@ -119,6 +122,7 @@ function Task() {
 
   // Generar opciones únicas para cada filtro
   const semesters = [...new Set(activities.map(activity => activity.semester))];
+  const programs = [...new Set(activities.map(activity => activity.program))];
   const courses = [...new Set(activities.map(activity => activity.course))];
   const requestedDueDate = [...new Set(activities.map(activity => activity.finish))];///
   const categories = [...new Set(activities.map(activity => activity.category))];
@@ -128,6 +132,7 @@ function Task() {
   // Filtrar actividades según los filtros seleccionados
   const filteredActivities = activities.filter(activity => (
     (semesterFilter === '' || activity.semester === semesterFilter) &&
+    (programFilter === '' || activity.program === programFilter) &&
     (courseFilter === '' || activity.course === courseFilter) &&
     (categoryFilter === '' || activity.category === categoryFilter) &&
     (assignedToFilter === '' || activity.responsableName === assignedToFilter) &&
@@ -148,8 +153,19 @@ function Task() {
       })
       .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
   }
-  
 };
+
+const getStudentsByCourse  = async (cursoId) => {
+  fetch(`http://localhost:5433/student/course/${cursoId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Datos recibidos:", data);
+          setEstudiantesList(data);
+        })
+        .catch((error) => console.error("Error al cargar estudiantes:", error));
+};
+
+
 
 const handleExpand = (activityId, monitoringId) => {
   setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
@@ -157,6 +173,8 @@ const handleExpand = (activityId, monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
+  getStudentsByCourse(monitoringId)
+
   // const getAsistantList  = async (activityId) => {
   //   fetch(`http://localhost:5433/attendance/activity/${activityId}`)
   //         .then((res) => res.json())
@@ -172,18 +190,18 @@ const handleExpand = (activityId, monitoringId) => {
   .then((data) => {
     console.log("Datos recibidos:", data); // Verifica qué devuelve la API
     if (Array.isArray(data)) {
-      setAsistentesList([
-        'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
-        'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
-        'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
-        'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
-        'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
-        'Samuel Cortés', 'Paula Mejía'  
-      ]);
-      // setAsistentesList(data);
+      // setAsistentesList([
+      //   'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
+      //   'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
+      //   'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
+      //   'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
+      //   'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
+      //   'Samuel Cortés', 'Paula Mejía'  
+      // ]);
+      setAsistentesList(data);
     } else {
       console.error("El API no devolvió un array:", data);
-      setAsistentesList([]); // Evita errores en el renderizado
+      setAsistentesList([]); 
       
     }
   })
@@ -339,6 +357,13 @@ const handleExpand = (activityId, monitoringId) => {
             ))}
           </select>
 
+          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}>
+            <option value="">Programa</option>
+            {programs.map((program, index) => (
+              <option key={index} value={program}>{program}</option>
+            ))}
+          </select>
+
           <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)}>
             <option value="">Curso</option>
             {courses.map((curso, index) => (
@@ -404,7 +429,7 @@ const handleExpand = (activityId, monitoringId) => {
                   } else {
                     estadoClase = "pending"; // Color gris
                   }
-                } else if (activity.state === "COMPLETADO" || activity.state ==="COMPLETADOT") {
+                } else if (activity.state === "COMPLETADO") {
                   // Para completado, se compara la fecha real de entrega con la solicitada
                   const fechaRealEntregaParsed = parseDate(activity.delivey);
 
@@ -517,27 +542,11 @@ const handleExpand = (activityId, monitoringId) => {
                             </select>
                           </label>
 
-                          {/* <label>
-                            Asignado a:
-                            <select value={editedActivities[activity.id]?.responsableName || activity.responsableName} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
-                              {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
-                            </select>
-                          </label> */}
+                          <label>
+                            Fecha última edición:
+                            <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
+                          </label>
 
-                          {/* Segunda fila */}
-                          <label>Asistentes:</label>
-                          {/* <div>{
-                            asistentesList.map(asistente => {
-                              const studentData = allStudents.find(s => s.code === asistente.studentId);
-                              // return {
-                              //   ...asistente, 
-                              //   name: studentData ? studentData.name : "Nombre no encontrado",
-                              //   code: studentData ? studentData.code : "code no encontrado",
-                              // };
-                              {studentData.name+" - "+studentData.code}
-                            })
-                          }</div> */}
-                          
                           <label>
                             Asistentes:
                             {/* Campo de búsqueda */}
@@ -551,35 +560,40 @@ const handleExpand = (activityId, monitoringId) => {
 
                             {/* Contenedor de checkboxes */}
                             <div className="checkbox-container">
-                              {asistentesList
+                              {estudiantesList
+                                .map(asistente => {
+                                  const studentData = allStudents.find(s => s.code === asistente.studentId);
+                                  return {
+                                    ...asistente,
+                                    name: studentData ? studentData.name : "Nombre no encontrado",
+                                    code: studentData ? studentData.code : "Código no encontrado",
+                                  };
+                                })
                                 .filter(asistente =>
-                                  asistente.toLowerCase().includes(searchTerm.toLowerCase())
-                                ) // Filtra por búsqueda
-                                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
+                                  (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  
+                                  asistente.code.toLowerCase().includes(searchTerm.toLowerCase())) // Filtrar por búsqueda
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name)) // Ordenar alfabéticamente
                                 .map((asistente, index) => (
                                   <label key={index} className="checkbox-label">
                                     <input
                                       type="checkbox"
-                                      value={asistente}
-                                      checked={asistentes.includes(asistente)}
+                                      value={asistente.studentId}
+                                      checked={asistentes.includes(asistente.studentId)}
                                       onChange={(e) => {
                                         if (e.target.checked) {
-                                          setAsistentes([...asistentes, asistente]);
+                                          setAsistentes([...asistentes, asistente.studentId]); // Agregar asistente
                                         } else {
-                                          setAsistentes(asistentes.filter(a => a !== asistente));
+                                          setAsistentes(asistentes.filter(a => a !== asistente.studentId)); // Eliminar asistente
                                         }
                                       }}
                                     />
-                                    {asistente}
+                                    {asistente.name + " - " + asistente.code}
                                   </label>
                                 ))}
                             </div>
                           </label>
 
-                          <label>
-                            Fecha última edición:
-                            <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
-                          </label>
 
                           <label>
                             Descripción:
