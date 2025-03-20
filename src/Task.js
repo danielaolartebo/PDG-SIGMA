@@ -19,8 +19,9 @@ function Task() {
 
   const [allStudents, setAllStudents] = useState([]);
   const [estudiantesList, setEstudiantesList] = useState([]);
-  const [asistentesList, setAsistentesList] = useState([]);
-  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState(new Set()); 
+  const [asistenciasRegistradas, setAsistenciasRegistradas] = useState(new Set()); // Estado con asistencias en la DB
+  
 
   // Función para alternar filas expandibles
   const toggleRow = (id, monitoringId) => {
@@ -175,39 +176,30 @@ const handleExpand = (activityId, monitoringId) => {
   }
   getStudentsByCourse(monitoringId)
 
-  // const getAsistantList  = async (activityId) => {
-  //   fetch(`http://localhost:5433/attendance/activity/${activityId}`)
-  //         .then((res) => res.json())
-  //         .then((data) => {
-  //           console.log("Datos recibidos:", data);
-  //           setAsistentesList(data);
-  //         })
-  //         .catch((error) => console.error("Error al cargar asistentes:", error));
-  // };
-  // getAsistantList();
+  // Cargar asistencia existente
   fetch(`http://localhost:5433/attendance/activity/${activityId}`)
-  .then((res) => res.json())
-  .then((data) => {
-    console.log("Datos recibidos:", data); // Verifica qué devuelve la API
-    if (Array.isArray(data)) {
-      // setAsistentesList([
-      //   'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
-      //   'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
-      //   'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
-      //   'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
-      //   'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
-      //   'Samuel Cortés', 'Paula Mejía'  
-      // ]);
-      setAsistentesList(data);
-    } else {
-      console.error("El API no devolvió un array:", data);
-      setAsistentesList([]); 
-      
-    }
-  })
-  .catch((error) => console.error("Error al cargar asistentes:", error));
+      .then((res) => res.json())
+      .then((data) => {
+        const asistenciasSet = new Set(data.map((a) => a.student.code));
+        setAsistenciasRegistradas(asistenciasSet);
+        setAsistentesSeleccionados(new Set(asistenciasSet)); // Inicializar con los datos de la DB
+      })
+      .catch((err) => console.error("Error cargando asistencias:", err));
+
+  
 };
 
+const toggleAsistencia = (studentId) => {
+  setAsistentesSeleccionados((prev) => {
+    const newSet = new Set(prev);
+    if (newSet.has(studentId)) {
+      newSet.delete(studentId);
+    } else {
+      newSet.add(studentId);
+    }
+    return newSet;
+  });
+};
 
  const handleSave = async (activityId, updatedActivityData) => {
   console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
@@ -237,6 +229,63 @@ const handleExpand = (activityId, monitoringId) => {
     console.error("Error guardando la actividad:", error);
     alert("Error al guardar los cambios");
   }
+
+  
+  // const saveAttendance = () => {
+  //   console.log("Guardando asistencia para los siguientes estudiantes:", asistentesSeleccionados);
+  
+  //   Promise.all(
+  //     asistentesSeleccionados.map((studentId) => {
+  //       const requestBody = {
+  //         activity: { id: activityId },
+  //         student: { code: studentId }
+  //       };
+  
+  //       return fetch("http://localhost:5433/attendance/create", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(requestBody),
+  //       });
+  //     })
+  //   )
+  //     .then(() => console.log("Asistencia guardada exitosamente"))
+  //     .catch((error) => console.error("Error al guardar asistencia:", error));
+  // };
+  // saveAttendance();
+  const saveAttendance = async () => {
+    const nuevosAsistentes = [...asistentesSeleccionados].filter(
+      (id) => !asistenciasRegistradas.has(id)
+    );
+    const asistentesEliminados = [...asistenciasRegistradas].filter(
+      (id) => !asistentesSeleccionados.has(id)
+    );
+
+    // Enviar solo nuevos asistentes
+    await Promise.all(
+      nuevosAsistentes.map((studentId) =>
+        fetch("http://localhost:5433/attendance/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activity: { id: activityId }, student: { code: studentId } }),
+        })
+      )
+    );
+
+    // Eliminar solo los que se desmarcaron
+    await Promise.all(
+      asistentesEliminados.map((studentId) =>
+        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`, {
+          method: "DELETE",
+        })
+      )
+    );
+
+    // Actualizar el estado con los nuevos valores confirmados en la DB
+    setAsistenciasRegistradas(new Set(asistentesSeleccionados));
+  };
+  saveAttendance();
+  
+
 };
   
   const handleCancel = (activityId) => {
@@ -244,11 +293,6 @@ const handleExpand = (activityId, monitoringId) => {
     // Lógica para restaurar los valores originales (si aplica)
   };
   
-  // const handleDelete = (activityId) => {
-  //   console.log(`Eliminando actividad con ID: ${activityId}`);
-  //   // Lógica para eliminar la actividad
-  // };
-
   const handleDelete = async (activityId) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
       return;
@@ -322,7 +366,6 @@ const handleExpand = (activityId, monitoringId) => {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [asistentes, setAsistentes] = useState([]);
 
   return (
     <div className="task-container">
@@ -547,9 +590,8 @@ const handleExpand = (activityId, monitoringId) => {
                             <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
 
-                          <label>
-                            Asistentes:
-                            {/* Campo de búsqueda */}
+                          {/* <label>
+                            <span>Asistentes:</span>
                             <input
                               type="text"
                               placeholder="Buscar asistente..."
@@ -558,41 +600,86 @@ const handleExpand = (activityId, monitoringId) => {
                               onChange={(e) => setSearchTerm(e.target.value)}
                             />
 
-                            {/* Contenedor de checkboxes */}
                             <div className="checkbox-container">
                               {estudiantesList
-                                .map(asistente => {
-                                  const studentData = allStudents.find(s => s.code === asistente.studentId);
+                                .map((asistente) => {
+                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
                                   return {
                                     ...asistente,
-                                    name: studentData ? studentData.name : "Nombre no encontrado",
-                                    code: studentData ? studentData.code : "Código no encontrado",
+                                    name: studentData ? studentData.name : "?",
+                                    code: studentData ? studentData.code : "?",
                                   };
                                 })
-                                .filter(asistente =>
-                                  (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  
-                                  asistente.code.toLowerCase().includes(searchTerm.toLowerCase())) // Filtrar por búsqueda
+                                .filter(
+                                  (asistente) =>
+                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
                                 )
-                                .sort((a, b) => a.name.localeCompare(b.name)) // Ordenar alfabéticamente
+                                .sort((a, b) => a.name.localeCompare(b.name))
                                 .map((asistente, index) => (
                                   <label key={index} className="checkbox-label">
                                     <input
                                       type="checkbox"
-                                      value={asistente.studentId}
-                                      checked={asistentes.includes(asistente.studentId)}
+                                      value={asistente.code}
+                                      checked={asistentesSeleccionados.includes(asistente.code)}
                                       onChange={(e) => {
+                                        const selected = [...asistentesSeleccionados];
                                         if (e.target.checked) {
-                                          setAsistentes([...asistentes, asistente.studentId]); // Agregar asistente
+                                          selected.push(asistente.code);
                                         } else {
-                                          setAsistentes(asistentes.filter(a => a !== asistente.studentId)); // Eliminar asistente
+                                          const index = selected.indexOf(asistente.code);
+                                          if (index > -1) selected.splice(index, 1);
                                         }
+                                        setAsistentesSeleccionados(selected);
                                       }}
                                     />
                                     {asistente.name + " - " + asistente.code}
                                   </label>
                                 ))}
                             </div>
+                          </label> */}
+
+                          <label>
+                            <span>Asistentes:</span>
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            <div className="checkbox-container">
+                              {estudiantesList
+                                .map((asistente) => {
+                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
+                                  return {
+                                    ...asistente,
+                                    name: studentData ? studentData.name : "?",
+                                    code: studentData ? studentData.code : "?",
+                                  };
+                                })
+                                .filter(
+                                  (asistente) =>
+                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente.studentId}
+                                      checked={asistentesSeleccionados.has(asistente.studentId)}
+                                      onChange={() => toggleAsistencia(asistente.studentId)}
+                                    />
+
+                                    {asistente.name + " - " + asistente.code}
+                                  </label>
+                                ))}
+                            </div>
                           </label>
+                          
 
 
                           <label>
