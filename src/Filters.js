@@ -12,13 +12,13 @@ function Dropdown() {
     const [selectedProgram, setSelectedProgram] = useState(""); // Selected Program
     const [selectedSubject, setSelectedSubject] = useState(""); // Selected Subject
     const [selectedState, setSelectedState] = useState(""); // Selected State
-    // const { selectedValue, setSelectedValue, selectedCondition, setSelectedCondition, selectedRequest, setSelectedRequest } = useContext(MyContext)
 
     // Obtener el contexto y verificar que esté definido
     const context = useContext(MyContext);
     const setSelectedValue = context?.setSelectedValue;
     const setSelectedCondition = context?.setSelectedCondition;
     const setSelectedRequest = context?.setSelectedRequest;
+    
 
     // Fetch Faculty options
     useEffect(() => {

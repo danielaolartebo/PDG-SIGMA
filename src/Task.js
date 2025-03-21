@@ -82,6 +82,12 @@ function Task() {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], finish: value } }));
   };
 
+const storedRole = localStorage.getItem("userRole"); // Obtiene el rol
+const userRole = storedRole ? storedRole.trim() : ""; // Evita valores nulos o indefinidos
+
+localStorage.setItem("userRole", "student");
+console.log("Rol recuperado del localStorage:", userRole);
+
   const [records, setRecords] = useState([]);
   const recordsPerPage = 2;
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -312,12 +318,14 @@ const handleExpand = (activityId, monitoringId) => {
             ))}
           </select>
 
+          {userRole === "professor" && (
           <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}>
             <option value="">Programa</option>
             {programs.map((program, index) => (
               <option key={index} value={program}>{program}</option>
             ))}
           </select>
+        )}
 
           <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)}>
             <option value="">Curso</option>
@@ -596,5 +604,7 @@ const handleExpand = (activityId, monitoringId) => {
 }
 
 export default Task;
+
+
 
 
