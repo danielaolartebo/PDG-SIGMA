@@ -40,7 +40,6 @@ function Login() {
           localStorage.setItem('userId',userId)
           
           const res =  await response.json()
-          console.log(localStorage.getItem('userId'))
 
           if(res.role === 'professor'){
             localStorage.setItem('role',res.role)

@@ -1,65 +1,64 @@
 import "./Profile.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
 
 function Profile() {
   console.log("Profile se está renderizando");
 
-  const user = {
-    foto: profilePic,
-    nombre: "Claudia Cecilia Castiblanco Perez",
-    facultad: "Ingeniería, diseño y ciencias aplicadas",
-    programa: "Ingeniería de Sistemas",
-    rol: "Profesor",
-  };
+  const [user, setUser] = useState(null); 
+  const [cursosAsignados, setCursosAsignados] = useState([]);
 
-  const cursosAsignados = [
-    {
-      id: 1,
-      semestre: "2025-1",
-      nombre: "Ingeniería de Software IV",
-      monitor: "Sebastian Paz Palacios",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
-    },
-    {
-      id: 2,
-      semestre: "2025-1",
-      nombre: "Sistemas Intensivos en Datos",
-      monitor: "Daniela Olarte Borja",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
-    },
-    {
-      id: 3,
-      semestre: "2024-2",
-      nombre: "Bases de Datos Avanzadas",
-      monitor: "Juan Perez",
-      fechaInicio: "02/07/2024",
-      fechaFin: "30/12/2024",
-    },
-    {
-      id: 4,
-      semestre: "2024-1",
-      nombre: "Bases de Datos I",
-      monitor: "Sebastian Montoya",
-      fechaInicio: "02/02/2024",
-      fechaFin: "30/06/2024",
-    },
-  ];
+useEffect(() => {
+        const id = localStorage.getItem('userId')
+        const role = localStorage.getItem('role')
+        fetch(`http://localhost:5433/professor/profile/${id}`)
+            .then(res => {
+                if (!res.ok) {
+                  const responseData = res.json();
+                  console.log(responseData)
+                  throw new Error(`HTTP error! Status: ${responseData}`);
+                    
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    setUser(data)
+                } else {
+                    console.error("No data.");
+                }
+            })
+            .catch(error => console.error('Error fetching faculty data:', error));
+        
+           fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.json}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    setCursosAsignados(data); 
+                } else {
+                    console.error("Data format is incorrect or 'monitoria' is empty.");
+                }
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }, []);
 
   const [semestreSeleccionado, setSemestreSeleccionado] = useState("Seleccionar semestre");
 
   const semestresDisponibles = [
     "Seleccionar semestre",
-    ...new Set(cursosAsignados.map((curso) => curso.semestre)),
+    ...new Set(cursosAsignados? cursosAsignados.map((curso) => curso.semester): []),
   ];
 
   const cursosFiltrados =
     semestreSeleccionado === "Seleccionar semestre"
       ? cursosAsignados
-      : cursosAsignados.filter((curso) => curso.semestre === semestreSeleccionado);
+      : cursosAsignados.filter((curso) => curso.semester === semestreSeleccionado);
 
   return (
     <div className="profile-container">
@@ -68,11 +67,17 @@ function Profile() {
       {/* Contenedor de perfil */}
       <div className="profile-content">
         <div className="profile-card">
-          <img src={user.foto} alt="Foto de perfil" className="profile-pic" />
-          <h2>{user.nombre}</h2>
-          <p><strong>Facultad:</strong> {user.facultad}</p>
-          <p><strong>Programa:</strong> {user.programa}</p>
-          <p><strong>Rol:</strong> {user.rol}</p>
+          <img src={profilePic} alt="Foto de perfil" className="profile-pic" />
+         {user ? (
+            <>
+              <h2>{user.name}</h2>
+              <p><strong>Facultad:</strong> {user.school}</p>
+              <p><strong>Programa:</strong> {user.program}</p>
+              <p><strong>Rol:</strong> {user.role}</p>
+            </>
+          ) : (
+            <p>Cargando perfil...</p>
+          )}
         </div>
 
         {/* Contenedor de cursos asignados */}
@@ -105,11 +110,11 @@ function Profile() {
             <tbody>
               {cursosFiltrados.map((curso) => (
                 <tr key={curso.id}>
-                  <td>{curso.semestre}</td>
-                  <td>{curso.nombre}</td>
+                  <td>{curso.semester}</td>
+                  <td>{curso.courseName}</td>
                   <td>{curso.monitor}</td>
-                  <td>{curso.fechaInicio}</td>
-                  <td>{curso.fechaFin}</td>
+                  <td>{curso.start ? new Date(curso.start).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                  <td>{curso.finish ? new Date(curso.finish).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
                 </tr>
               ))}
             </tbody>
