@@ -25,7 +25,7 @@ function VerticalNavbar() {
 
       {/* Menú */}
       <div className="menu-items">
-        {/* Todos los usuarios tienen acceso a estas opciones */}
+        {/* Todos los usuarios tienen acceso a estas opciones: student, monitor, professor y jfedpto */}
         <NavLink to="/Task" className={({ isActive }) => (isActive ? "active" : "")}>Actividades</NavLink>
         <NavLink to="/ApplyMonitor" className={({ isActive }) => (isActive ? "active" : "")}>Postulaciones</NavLink>
 
