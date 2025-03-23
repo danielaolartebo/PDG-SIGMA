@@ -12,24 +12,47 @@ function Profile() {
 useEffect(() => {
         const id = localStorage.getItem('userId')
         const role = localStorage.getItem('role')
-        fetch(`http://localhost:5433/professor/profile/${id}`)
-            .then(res => {
-                if (!res.ok) {
-                  const responseData = res.json();
-                  console.log(responseData)
-                  throw new Error(`HTTP error! Status: ${responseData}`);
-                    
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data) {
-                    setUser(data)
-                } else {
-                    console.error("No data.");
-                }
-            })
-            .catch(error => console.error('Error fetching faculty data:', error));
+        if(role === 'professor'){
+          fetch(`http://localhost:5433/professor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                console.log(responseData)
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        else{
+          fetch(`http://localhost:5433/monitor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                console.log(responseData)
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        
         
            fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
             .then(res => {
@@ -112,7 +135,7 @@ useEffect(() => {
                 <tr key={curso.id}>
                   <td>{curso.semester}</td>
                   <td>{curso.courseName}</td>
-                  <td>{curso.monitor}</td>
+                  <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>
                   <td>{curso.start ? new Date(curso.start).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
                   <td>{curso.finish ? new Date(curso.finish).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
                 </tr>
