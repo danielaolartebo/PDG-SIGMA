@@ -20,32 +20,24 @@ function Profile() {
       semestre: "2025-1",
       nombre: "Ingeniería de Software IV",
       monitor: "Sebastian Paz Palacios",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
     },
     {
       id: 2,
       semestre: "2025-1",
       nombre: "Sistemas Intensivos en Datos",
       monitor: "Daniela Olarte Borja",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
     },
     {
       id: 3,
       semestre: "2024-2",
       nombre: "Bases de Datos Avanzadas",
       monitor: "Juan Perez",
-      fechaInicio: "02/07/2024",
-      fechaFin: "30/12/2024",
     },
     {
       id: 4,
       semestre: "2024-1",
       nombre: "Bases de Datos I",
       monitor: "Sebastian Montoya",
-      fechaInicio: "02/02/2024",
-      fechaFin: "30/06/2024",
     },
   ];
 
@@ -98,8 +90,6 @@ function Profile() {
                 <th>Semestre</th>
                 <th>Curso</th>
                 <th>Monitor Asignado</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
               </tr>
             </thead>
             <tbody>
@@ -108,8 +98,6 @@ function Profile() {
                   <td>{curso.semestre}</td>
                   <td>{curso.nombre}</td>
                   <td>{curso.monitor}</td>
-                  <td>{curso.fechaInicio}</td>
-                  <td>{curso.fechaFin}</td>
                 </tr>
               ))}
             </tbody>
