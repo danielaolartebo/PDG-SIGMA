@@ -8,8 +8,9 @@
     flex-grow: 1; /* Hace que la tabla ocupe todo el espacio disponible */
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: top;
     align-items: center;
+    margin-top: 3em;
     margin-left: 8em;
     margin-right: 12em;
     width: 100%;
@@ -24,8 +25,7 @@
 .title-apply-monitor{
     font-family: var(--main-font-family);
     font-size: 1.5em;
-    padding-top: 1.5em;
-    
+    padding-top: 4.5em;
     margin-left: 7em;
 
 }

@@ -1,17 +1,24 @@
 import "./Profile.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
 
 function Profile() {
   console.log("Profile se está renderizando");
 
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole || "");
+  }, []);
+
   const user = {
     foto: profilePic,
     nombre: "Claudia Cecilia Castiblanco Perez",
     facultad: "Ingeniería, diseño y ciencias aplicadas",
     programa: "Ingeniería de Sistemas",
-    rol: "Profesor",
+    rol: role,
   };
 
   const cursosAsignados = [
@@ -20,24 +27,28 @@ function Profile() {
       semestre: "2025-1",
       nombre: "Ingeniería de Software IV",
       monitor: "Sebastian Paz Palacios",
+      professor: "Claudia Castiblanco",
     },
     {
       id: 2,
       semestre: "2025-1",
       nombre: "Sistemas Intensivos en Datos",
       monitor: "Daniela Olarte Borja",
+      professor: "Domiciano Rincon",
     },
     {
       id: 3,
       semestre: "2024-2",
       nombre: "Bases de Datos Avanzadas",
       monitor: "Juan Perez",
+      professor: "Angela Villota",
     },
     {
       id: 4,
       semestre: "2024-1",
       nombre: "Bases de Datos I",
       monitor: "Sebastian Montoya",
+      professor: "Angela Villota",
     },
   ];
 
@@ -89,7 +100,14 @@ function Profile() {
               <tr>
                 <th>Semestre</th>
                 <th>Curso</th>
-                <th>Monitor Asignado</th>
+                {role === "professor" && <th>Monitor Asignado</th>}
+                {role === "monitor" && <th>Profesor Asignado</th>}
+                {role === "jfedpto" && (
+                  <>
+                    <th>Profesor Asignado</th>
+                    <th>Monitor Asignado</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -97,7 +115,14 @@ function Profile() {
                 <tr key={curso.id}>
                   <td>{curso.semestre}</td>
                   <td>{curso.nombre}</td>
-                  <td>{curso.monitor}</td>
+                  {role === "professor" && <td>{curso.monitor}</td>}
+                  {role === "monitor" && <td>{curso.professor}</td>}
+                  {role === "jfedpto" && (
+                    <>
+                      <td>{curso.professor}</td>
+                      <td>{curso.monitor}</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
