@@ -318,7 +318,7 @@ const handleExpand = (activityId, monitoringId) => {
             ))}
           </select>
 
-          {userRole === "professor" && (
+          {userRole === "jfedpto" && (
           <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}>
             <option value="">Programa</option>
             {programs.map((program, index) => (

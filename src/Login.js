@@ -40,14 +40,19 @@ function Login() {
           localStorage.setItem('userId',userId)
           
           const res =  await response.json()
+          console.log(res.role)
 
           if(res.role === 'professor'){
             localStorage.setItem('role',res.role)
             navigate('/Task');// Redirige a la pagina del profesor
           }
+          else if(res.role === 'monitor') {
+            localStorage.setItem('role',res.role)
+            navigate('/Task')// Redirige a la pagina de monitor
+          }
           else{
             localStorage.setItem('role',res.role)
-            navigate('/Task')// Redirige a la pagina inicial con usuario iniciado sesion
+            navigate('/')// Redirige a la pagina inicial con usuario iniciado sesion
           }
         }else{
           console.log("Can't find it")

@@ -5,7 +5,6 @@ import profilePic from "./img/profile-pic.png";
 
 function Profile() {
   console.log("Profile se está renderizando");
-
   const [user, setUser] = useState(null); 
   const [cursosAsignados, setCursosAsignados] = useState([]);
 
@@ -57,7 +56,8 @@ useEffect(() => {
            fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
             .then(res => {
                 if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.json}`);
+                    console.log(res.json());
+                    throw new Error(`HTTP error! Status: ${res.json()}`);
                 }
                 return res.json();
             })
@@ -70,6 +70,13 @@ useEffect(() => {
             })
             .catch(error => console.error('Error fetching data:', error));
     }, []);
+
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole || "");
+  }, []);
 
   const [semestreSeleccionado, setSemestreSeleccionado] = useState("Seleccionar semestre");
 
@@ -96,7 +103,7 @@ useEffect(() => {
               <h2>{user.name}</h2>
               <p><strong>Facultad:</strong> {user.school}</p>
               <p><strong>Programa:</strong> {user.program}</p>
-              <p><strong>Rol:</strong> {user.role}</p>
+              <p><strong>Rol:</strong> {user.rol}</p>
             </>
           ) : (
             <p>Cargando perfil...</p>
@@ -125,9 +132,14 @@ useEffect(() => {
               <tr>
                 <th>Semestre</th>
                 <th>Curso</th>
-                <th>Monitor Asignado</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
+                {role === "professor" && <th>Monitor Asignado</th>}
+                {role === "monitor" && <th>Profesor Asignado</th>}
+                {role === "jfedpto" && (
+                  <>
+                    <th>Profesor Asignado</th>
+                    <th>Monitor Asignado</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -135,9 +147,15 @@ useEffect(() => {
                 <tr key={curso.id}>
                   <td>{curso.semester}</td>
                   <td>{curso.courseName}</td>
-                  <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>
-                  <td>{curso.start ? new Date(curso.start).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
-                  <td>{curso.finish ? new Date(curso.finish).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric"}) : "N/A"}</td>
+                  {role === "professor" && <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>}
+                  {/* En este caso monitor va tener el nombre del profesor */}
+                  {role === "monitor" && <td>{curso.monitor? curso.monitor:"N/A"}</td>}
+                  {role === "jfedpto" && (
+                    <>
+                      <td>{curso.professor? curso.profesor:"N/A"}</td>
+                      <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

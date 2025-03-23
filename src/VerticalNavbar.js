@@ -4,11 +4,12 @@ import logo from "../src/img/logo2.png";
 import "./VerticalNavbar.css";
 
 function VerticalNavbar() {
-  const [role, setRole] = useState(""); 
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    setRole(storedRole || ""); 
+    setRole(storedRole || "");
+    console.log(role);
   }, []);
 
   const handleClose = () => {
@@ -25,19 +26,25 @@ function VerticalNavbar() {
 
       {/* Menú */}
       <div className="menu-items">
+        {/* Todos los usuarios tienen acceso a estas opciones: student, monitor, professor y jfedpto */}
         <NavLink to="/Task" className={({ isActive }) => (isActive ? "active" : "")}>Actividades</NavLink>
-        <NavLink to="/Profile" className={({ isActive }) => (isActive ? "active" : "")}>Mi perfil</NavLink>
+        <NavLink to="/ApplyMonitor" className={({ isActive }) => (isActive ? "active" : "")}>Postulaciones</NavLink>
 
-        {/* Mostrar solo si el rol es 'professor' */}
+        {/* Acceso para Monitor, Profesor y Jefe de Departamento */}
+        {(role === "monitor" || role === "professor" || role === "jfedpto") && (
+          <>
+            <NavLink to="/Profile" className={({ isActive }) => (isActive ? "active" : "")}>Mi perfil</NavLink>
+            <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
+          </>
+        )}
+
+        {/* Acceso solo para Profesor */}
         {role === "professor" && (
           <>
             <NavLink to="/CreateMonitoria" className={({ isActive }) => (isActive ? "active" : "")}>Crear monitoria</NavLink>
             <NavLink to="/Applicants" className={({ isActive }) => (isActive ? "active" : "")}>Mis postulantes</NavLink>
           </>
         )}
-
-        <NavLink to="/ApplyMonitor" className={({ isActive }) => (isActive ? "active" : "")}>Postulaciones</NavLink>
-        <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
 
         {/* Botón de cerrar sesión */}
         <div className="logout-container">
@@ -55,6 +62,7 @@ function VerticalNavbar() {
 }
 
 export default VerticalNavbar;
+
 
 
 
