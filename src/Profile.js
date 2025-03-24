@@ -1,65 +1,94 @@
 import "./Profile.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
 
 function Profile() {
   console.log("Profile se está renderizando");
+  const [user, setUser] = useState(null); 
+  const [cursosAsignados, setCursosAsignados] = useState([]);
 
-  const user = {
-    foto: profilePic,
-    nombre: "Claudia Cecilia Castiblanco Perez",
-    facultad: "Ingeniería, diseño y ciencias aplicadas",
-    programa: "Ingeniería de Sistemas",
-    rol: "Profesor",
-  };
+useEffect(() => {
+        const id = localStorage.getItem('userId')
+        const role = localStorage.getItem('role')
+        if(role === 'professor'){
+          fetch(`http://localhost:5433/professor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                console.log(responseData)
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        else{
+          fetch(`http://localhost:5433/monitor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                console.log(responseData)
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        
+        
+           fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
+            .then(res => {
+                if (!res.ok) {
+                    console.log(res.json());
+                    throw new Error(`HTTP error! Status: ${res.json()}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    setCursosAsignados(data); 
+                } else {
+                    console.error("Data format is incorrect or 'monitoria' is empty.");
+                }
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }, []);
 
-  const cursosAsignados = [
-    {
-      id: 1,
-      semestre: "2025-1",
-      nombre: "Ingeniería de Software IV",
-      monitor: "Sebastian Paz Palacios",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
-    },
-    {
-      id: 2,
-      semestre: "2025-1",
-      nombre: "Sistemas Intensivos en Datos",
-      monitor: "Daniela Olarte Borja",
-      fechaInicio: "02/01/2025",
-      fechaFin: "30/06/2025",
-    },
-    {
-      id: 3,
-      semestre: "2024-2",
-      nombre: "Bases de Datos Avanzadas",
-      monitor: "Juan Perez",
-      fechaInicio: "02/07/2024",
-      fechaFin: "30/12/2024",
-    },
-    {
-      id: 4,
-      semestre: "2024-1",
-      nombre: "Bases de Datos I",
-      monitor: "Sebastian Montoya",
-      fechaInicio: "02/02/2024",
-      fechaFin: "30/06/2024",
-    },
-  ];
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole || "");
+  }, []);
 
   const [semestreSeleccionado, setSemestreSeleccionado] = useState("Seleccionar semestre");
 
   const semestresDisponibles = [
     "Seleccionar semestre",
-    ...new Set(cursosAsignados.map((curso) => curso.semestre)),
+    ...new Set(cursosAsignados? cursosAsignados.map((curso) => curso.semester): []),
   ];
 
   const cursosFiltrados =
     semestreSeleccionado === "Seleccionar semestre"
       ? cursosAsignados
-      : cursosAsignados.filter((curso) => curso.semestre === semestreSeleccionado);
+      : cursosAsignados.filter((curso) => curso.semester === semestreSeleccionado);
 
   return (
     <div className="profile-container">
@@ -68,11 +97,17 @@ function Profile() {
       {/* Contenedor de perfil */}
       <div className="profile-content">
         <div className="profile-card">
-          <img src={user.foto} alt="Foto de perfil" className="profile-pic" />
-          <h2>{user.nombre}</h2>
-          <p><strong>Facultad:</strong> {user.facultad}</p>
-          <p><strong>Programa:</strong> {user.programa}</p>
-          <p><strong>Rol:</strong> {user.rol}</p>
+          <img src={profilePic} alt="Foto de perfil" className="profile-pic" />
+         {user ? (
+            <>
+              <h2>{user.name}</h2>
+              <p><strong>Facultad:</strong> {user.school}</p>
+              <p><strong>Programa:</strong> {user.program}</p>
+              <p><strong>Rol:</strong> {user.rol}</p>
+            </>
+          ) : (
+            <p>Cargando perfil...</p>
+          )}
         </div>
 
         {/* Contenedor de cursos asignados */}
@@ -97,19 +132,30 @@ function Profile() {
               <tr>
                 <th>Semestre</th>
                 <th>Curso</th>
-                <th>Monitor Asignado</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
+                {role === "professor" && <th>Monitor Asignado</th>}
+                {role === "monitor" && <th>Profesor Asignado</th>}
+                {role === "jfedpto" && (
+                  <>
+                    <th>Profesor Asignado</th>
+                    <th>Monitor Asignado</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
               {cursosFiltrados.map((curso) => (
                 <tr key={curso.id}>
-                  <td>{curso.semestre}</td>
-                  <td>{curso.nombre}</td>
-                  <td>{curso.monitor}</td>
-                  <td>{curso.fechaInicio}</td>
-                  <td>{curso.fechaFin}</td>
+                  <td>{curso.semester}</td>
+                  <td>{curso.courseName}</td>
+                  {role === "professor" && <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>}
+                  {/* En este caso monitor va tener el nombre del profesor */}
+                  {role === "monitor" && <td>{curso.monitor? curso.monitor:"N/A"}</td>}
+                  {role === "jfedpto" && (
+                    <>
+                      <td>{curso.professor? curso.profesor:"N/A"}</td>
+                      <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

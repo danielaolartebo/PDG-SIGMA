@@ -28,6 +28,8 @@ function CreateMonitoria() {
     const [isOpen, setIsOpen] = useState(false)
     const [message, setMessage] = useState("")
     const [change, setChange] = useState(false)
+    const [file, setFile] = useState(null); //File
+
 
     // Fetch Faculty options
     useEffect(() => {
@@ -175,7 +177,46 @@ function CreateMonitoria() {
         setSelectedFinishDate(event.target.value);
     };
 
+
+    const handleUpload = async () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".xlsx, .xls";
     
+        input.onchange = async (event) => {
+          const file = event.target.files[0];
+    
+          if (!file) {
+            alert("No se seleccionó ningún archivo.");
+            return;
+          }
+    
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const idProfessor = localStorage.getItem('userId')
+    
+          try {
+            const response = await fetch(`http://localhost:5433/monitoring/createAll/${idProfessor}`, {
+              method: "POST",
+              body: formData,
+            });
+            
+            const message = await response.text();
+
+            if (response.ok) {
+              alert(message);
+            } else {
+              alert(message);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Error al conectar con el servidor");
+          }
+        };
+    
+        input.click(); // Simula el clic para abrir el explorador de archivos
+    };
 
 
     const handleCreate = async() => {
@@ -265,7 +306,7 @@ function CreateMonitoria() {
     return (
         <div className="cm-task-container">
             {/* Load file button starts */}
-            <button className="top-right-button">Cargar datos</button>
+            <button className="top-right-button" onClick={handleUpload}>Cargar datos</button>
             {/* Load file button ends */}
 
             {/* Ventana emergente */}
