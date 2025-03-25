@@ -16,7 +16,6 @@ useEffect(() => {
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
-                console.log(responseData)
                 throw new Error(`HTTP error! Status: ${responseData}`);
                   
               }
@@ -31,7 +30,7 @@ useEffect(() => {
           })
           .catch(error => console.error('Error fetching faculty data:', error));
         }
-        else{
+        else if(role === 'monitor'){
           fetch(`http://localhost:5433/monitor/profile/${id}`)
           .then(res => {
               if (!res.ok) {
@@ -51,12 +50,30 @@ useEffect(() => {
           })
           .catch(error => console.error('Error fetching faculty data:', error));
         }
+        else{
+          fetch(`http://localhost:5433/department-head/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
         
         
            fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
             .then(res => {
                 if (!res.ok) {
-                    console.log(res.json());
                     throw new Error(`HTTP error! Status: ${res.json()}`);
                 }
                 return res.json();
@@ -144,15 +161,15 @@ useEffect(() => {
             </thead>
             <tbody>
               {cursosFiltrados.map((curso) => (
-                <tr key={curso.id}>
-                  <td>{curso.semester}</td>
-                  <td>{curso.courseName}</td>
+                <tr key={curso.id? curso.id:"N/A"}>
+                  <td>{curso.semester? curso.semester:"N/A"}</td>
+                  <td>{curso.courseName? curso.courseName:"N/A"}</td>
                   {role === "professor" && <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>}
                   {/* En este caso monitor va tener el nombre del profesor */}
                   {role === "monitor" && <td>{curso.monitor? curso.monitor:"N/A"}</td>}
                   {role === "jfedpto" && (
                     <>
-                      <td>{curso.professor? curso.profesor:"N/A"}</td>
+                      <td>{curso.professorName? curso.professorName:"N/A"}</td>
                       <td>{curso.monitor? curso.monitor: "No hay monitores"}</td>
                     </>
                   )}

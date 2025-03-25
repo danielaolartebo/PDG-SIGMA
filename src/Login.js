@@ -52,7 +52,7 @@ function Login() {
           }
           else{
             localStorage.setItem('role',res.role)
-            navigate('/')// Redirige a la pagina inicial con usuario iniciado sesion
+            navigate('/Task')// Redirige a la pagina inicial con usuario iniciado sesion
           }
         }else{
           console.log("Can't find it")
