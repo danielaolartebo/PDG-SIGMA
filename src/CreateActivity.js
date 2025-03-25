@@ -9,29 +9,28 @@ function CreateActivity() {
   const [categoria, setCategoria] = useState('');
   const [fechaFinalizacion, setFechaFinalizacion] = useState('');
   const [asignarA, setAsignarA] = useState('');
-  const [asistentes, setAsistentes] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [semestre, setSemestre] = useState('2025-1');
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); 
 
-
-  {/*  const [asistentesList, setAsistentesList] = useState([
-    'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
-    'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
-    'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
-    'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
-    'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
-    'Samuel Cortés', 'Paula Mejía'  
-  ]); */}
+  const [allStudents, setAllStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [estudiantesList, setEstudiantesList] = useState([]);
+  const [asistentesList, setAsistentesList] = useState([]);
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
   
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
       .then(res => res.json())
       .then(data => setCursos(data))
       .catch(error => console.error('Error al obtener los cursos:', error));
+    fetch('http://localhost:5433/student/getA')
+      .then(res => res.json())
+      .then(data => setAllStudents(data))
+      .catch(error => console.error('Error al obtener los all students:', error));
+    
   }, []);
 
   const getMonitors = async (cursoId) => {
@@ -40,6 +39,36 @@ function CreateActivity() {
       .then(data => setMonitoresProfesores(data))
       .catch(error => console.error('Error al obtener los monitores:', error));
   };
+
+  const fetchCategorias = async (cursoId) => {
+    try {
+      const response = await fetch(`http://localhost:5433/category/course/${cursoId}`);
+      if (!response.ok) {
+        throw new Error("Error al obtener las categorías");
+      }
+      const data = await response.json();
+      setCategorias(data);
+    } catch (error) {
+      console.error("Error al obtener las categorías:", error);
+    }
+  };
+
+  const getStudentsByCourse  = async (cursoId) => {
+    fetch(`http://localhost:5433/student/course/${cursoId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Datos recibidos:", data);
+            setEstudiantesList(data);
+          })
+          .catch((error) => console.error("Error al cargar estudiantes:", error));
+  };
+
+  // const getAssistantsByCourse = async (actId) => {
+  //   fetch(`http://localhost:5433/attendance/activity/${actId}`)
+  //     .then(res => res.json())
+  //     .then(data => setAsistentesList(data))
+  //     .catch(error => console.error("Error al cargar asistentes:", error));
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,10 +81,10 @@ function CreateActivity() {
     const nuevaActividad = {
         name: nombre,
         creation: new Date().toISOString(),
-        finish: new Date(fechaFinalizacion+"T00:00:00"),
+        finish: new Date(fechaFinalizacion + "T00:00:00"),
         roleCreator: localStorage.getItem('role').charAt(0).toUpperCase(),
         roleResponsable: 'M',
-        category: categoria,
+        category: categoria?.name ?? categoria,
         description: descripcion,
         monitoringId: curso,
         monitorId: asignarA,
@@ -66,6 +95,7 @@ function CreateActivity() {
     };
 
     try {
+        // 
         const response = await fetch('http://localhost:5433/activity/create', {
             method: 'POST',
             headers: {
@@ -78,36 +108,96 @@ function CreateActivity() {
             throw new Error(`Error al crear la actividad: ${response.statusText}`);
         }
 
-          const data = await response.json();
-          console.log('Actividad creada:', data);
-          alert('¡Actividad creada exitosamente!');
-          
-          setNombre('');
-          setCurso('');
-          setCategoria('');
-          setFechaFinalizacion('');
-          setAsignarA('');
-          setDescripcion('');
-          setSemestre('2025-1');
+        const data = await response.json();
+        console.log('Actividad creada:', data);
+        const actividadId = data.id; //
 
-      } 
-        catch (error) {
-            console.error('Error:', error);
-            alert('Hubo un problema al crear la actividad.');
-        }
-  };
+        // 
+        await Promise.all(asistentesList.map(async (studentId) => {
+          const attendanceResponse = await fetch('http://localhost:5433/attendance/create', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  activity: { id: actividadId }, 
+                  student: { code: studentId }
+              })
+          });
+      
+          if (!attendanceResponse.ok) {
+              console.error(`Error al guardar asistencia para el estudiante ${studentId}`);
+          }
+      }));
+      
+
+        alert('¡Actividad y asistencia guardadas exitosamente!');
+
+        // 
+        setNombre('');
+        setCurso('');
+        setCategoria('');
+        setFechaFinalizacion('');
+        setAsignarA('');
+        setDescripcion('');
+        setSemestre('2025-1');
+        setAsistentesList([]); 
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un problema al crear la actividad y/o asistencia.');
+    }
+};
+
 
   // Estados para gestionar la creación de una nueva categoría
   const [showNewCategoryField, setShowNewCategoryField] = useState(false);
   const [newCategory, setNewCategory] = useState('');
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() !== '') {
-      setCategorias(prev => [...prev, newCategory.trim()]);
-      setNewCategory('');
+  const handleAddCategory = async () => {
+    if (!newCategory.trim() || !curso) {
+      alert("Debe ingresar una categoría y seleccionar un curso");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:5433/category/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          name: newCategory.trim(), 
+          course: { id: Number(curso) } 
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear la categoría");
+      }
+  
+      const createdCategory = await response.json();
+  
+      console.log("Categoría creada:", createdCategory); 
+
+      const categoryName = createdCategory.name || "Sin nombre";
+  
+      setCategorias((prev) => [...prev, createdCategory]); 
+  
+      alert(`Categoría creada: ${categoryName}`);
+  
+      setNewCategory("");
       setShowNewCategoryField(false);
+    } catch (error) {
+      console.error("Error al crear la categoría:", error);
+      alert("No se pudo crear la categoría");
     }
   };
+  
+  
+  
+  
 
   const handleRemoveCategory = () => {
     setNewCategory('');
@@ -130,7 +220,7 @@ function CreateActivity() {
             </div>
             <div className="form-group">
               <label>Curso*</label>
-              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); }} required>
+              <select value={curso} className="activity-select" onChange={(e) => { setCurso(e.target.value); getMonitors(e.target.value); getStudentsByCourse(e.target.value); fetchCategorias(e.target.value)}} required > {/*getAsistant*/}
                 <option value="">Seleccione un curso</option>
                 {cursos.map(c => <option key={c.id} value={c.id}>{c.course.name}</option>)}
               </select>
@@ -152,9 +242,9 @@ function CreateActivity() {
                   required
                 >
                   <option value="">Seleccione una categoría</option>
-                  {categorias.map((cat, index) => (
-                    <option key={index} value={cat}>
-                      {cat}
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -201,6 +291,7 @@ function CreateActivity() {
             </div>
           </div>
 
+
           {/* Asignar */}
           <div className="form-row">
             <div className="form-group">
@@ -214,54 +305,57 @@ function CreateActivity() {
           </div>
 
           {/* Asistentes */}
+          <label>Asistentes</label>
+          {/* Campo de búsqueda */}
+          <input
+            type="text"
+            placeholder="Buscar asistente..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-          {/* <div className="form-group">
-            <label>Asistentes</label> */}
-            
-            {/* Campo de búsqueda */}
-            {/* <input
-              type="text"
-              placeholder="Buscar asistente..."
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />  */}
-
-            {/* Contenedor de checkboxes */}
-            {/* <div className="checkbox-container">
-              {asistentesList
-                .filter(asistente =>
-                  asistente.toLowerCase().includes(searchTerm.toLowerCase()) // Filtra por búsqueda
-                )
-                .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
-                .map((asistente, index) => (
-                  <label key={index} className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      value={asistente}
-                      checked={asistentes.includes(asistente)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setAsistentes([...asistentes, asistente]); // Agregar asistente
-                        } else {
-                          setAsistentes(asistentes.filter(a => a !== asistente)); // Eliminar asistente
-                        }
-                      }}
-                    />
-                    {asistente}
-                  </label>
-                ))}
-            </div>
-          </div>  */}
+          {/* Contenedor de checkboxes */}
+          {/* <div className="checkbox-container">
+            {estudiantesList
+              .map(asistente => {
+                const studentData = allStudents.find(s => s.code === asistente.studentId);
+                return {
+                  ...asistente, 
+                  name: studentData ? studentData.name : "Nombre no encontrado",
+                  code: studentData ? studentData.code : "code no encontrado",
+                };
+              })
+              .filter(asistente =>
+                (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  asistente.code.toLowerCase().includes(searchTerm.toLowerCase()))// Filtra por búsqueda
+              )
+              .sort((a, b) => a.name.localeCompare(b.name)) // Orden alfabético
+              .map((asistente, index) => (
+                <label key={index} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    value={asistente.studentId}
+                    checked={asistentesList.includes(asistente.studentId)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setAsistentesList([...asistentesList, asistente.studentId]); // Agregar asistente
+                      } else {
+                        setAsistentesList(asistentesList.filter(a => a !== asistente.studentId)); // Eliminar asistente
+                      }
+                    }}
+                  />
+                  {asistente.name+" - "+asistente.code}
+                </label>
+              ))}
+          </div> */}
 
 
           {/* Descripción */}
-          
           <div className="form-group">
             <label>Descripción</label>
             <textarea rows="4" className="activity-textarea" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}></textarea>
           </div>
-
+        
           <button type="submit" className="confirm-button">Confirmar</button>
         </form>
       </div>

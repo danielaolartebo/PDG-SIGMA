@@ -17,6 +17,12 @@ function Task() {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 6; // Número de filas por página
 
+  const [allStudents, setAllStudents] = useState([]);
+  const [estudiantesList, setEstudiantesList] = useState([]);
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState(new Set()); 
+  const [asistenciasRegistradas, setAsistenciasRegistradas] = useState(new Set()); // Estado con asistencias en la DB
+  
+
   // Función para alternar filas expandibles
   const toggleRow = (id, monitoringId) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -42,6 +48,11 @@ function Task() {
         }
     };
     fetchActivities();
+    fetch('http://localhost:5433/student/getA')
+      .then(res => res.json())
+      .then(data => setAllStudents(data))
+      .catch(error => console.error('Error al obtener los all students:', error));
+    
   }, []);
 
   const [editedActivities, setEditedActivities] = useState({});
@@ -149,8 +160,19 @@ console.log("Rol recuperado del localStorage:", userRole);
       })
       .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
   }
-  
 };
+
+const getStudentsByCourse  = async (cursoId) => {
+  fetch(`http://localhost:5433/student/course/${cursoId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Datos recibidos:", data);
+          setEstudiantesList(data);
+        })
+        .catch((error) => console.error("Error al cargar estudiantes:", error));
+};
+
+
 
 const handleExpand = (activityId, monitoringId) => {
   setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
@@ -158,8 +180,32 @@ const handleExpand = (activityId, monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
+  getStudentsByCourse(monitoringId)
+
+  // Cargar asistencia existente
+  fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const asistenciasSet = new Set(data.map((a) => a.student.code));
+        setAsistenciasRegistradas(asistenciasSet);
+        setAsistentesSeleccionados(new Set(asistenciasSet)); // Inicializar con los datos de la DB
+      })
+      .catch((err) => console.error("Error cargando asistencias:", err));
+
+  
 };
 
+const toggleAsistencia = (studentId) => {
+  setAsistentesSeleccionados((prev) => {
+    const newSet = new Set(prev);
+    if (newSet.has(studentId)) {
+      newSet.delete(studentId);
+    } else {
+      newSet.add(studentId);
+    }
+    return newSet;
+  });
+};
 
  const handleSave = async (activityId, updatedActivityData) => {
   console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
@@ -189,6 +235,63 @@ const handleExpand = (activityId, monitoringId) => {
     console.error("Error guardando la actividad:", error);
     alert("Error al guardar los cambios");
   }
+
+  
+  // const saveAttendance = () => {
+  //   console.log("Guardando asistencia para los siguientes estudiantes:", asistentesSeleccionados);
+  
+  //   Promise.all(
+  //     asistentesSeleccionados.map((studentId) => {
+  //       const requestBody = {
+  //         activity: { id: activityId },
+  //         student: { code: studentId }
+  //       };
+  
+  //       return fetch("http://localhost:5433/attendance/create", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(requestBody),
+  //       });
+  //     })
+  //   )
+  //     .then(() => console.log("Asistencia guardada exitosamente"))
+  //     .catch((error) => console.error("Error al guardar asistencia:", error));
+  // };
+  // saveAttendance();
+  const saveAttendance = async () => {
+    const nuevosAsistentes = [...asistentesSeleccionados].filter(
+      (id) => !asistenciasRegistradas.has(id)
+    );
+    const asistentesEliminados = [...asistenciasRegistradas].filter(
+      (id) => !asistentesSeleccionados.has(id)
+    );
+
+    // Enviar solo nuevos asistentes
+    await Promise.all(
+      nuevosAsistentes.map((studentId) =>
+        fetch("http://localhost:5433/attendance/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activity: { id: activityId }, student: { code: studentId } }),
+        })
+      )
+    );
+
+    // Eliminar solo los que se desmarcaron
+    await Promise.all(
+      asistentesEliminados.map((studentId) =>
+        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`, {
+          method: "DELETE",
+        })
+      )
+    );
+
+    // Actualizar el estado con los nuevos valores confirmados en la DB
+    setAsistenciasRegistradas(new Set(asistentesSeleccionados));
+  };
+  saveAttendance();
+  
+
 };
   
   const handleCancel = (activityId) => {
@@ -196,11 +299,6 @@ const handleExpand = (activityId, monitoringId) => {
     // Lógica para restaurar los valores originales (si aplica)
   };
   
-  // const handleDelete = (activityId) => {
-  //   console.log(`Eliminando actividad con ID: ${activityId}`);
-  //   // Lógica para eliminar la actividad
-  // };
-
   const handleDelete = async (activityId) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
       return;
@@ -273,17 +371,7 @@ const handleExpand = (activityId, monitoringId) => {
         navigate('/CreateActivity'); 
   };
 
-  const [asistentesList, setAsistentesList] = useState([
-    'Daniela Olarte', 'Sebastian Paz', 'Juanita Perez', 'Jose Castillo', 'Marcela Alvarado',  
-    'Daniel Diaz', 'Juan Jose Mantilla', 'Camilo Campaz', 'Laura Fernández', 'Andrés Gómez',  
-    'Sofía Ramírez', 'Felipe Herrera', 'Valentina Ríos', 'Carlos Muñoz', 'Gabriela Torres',  
-    'Miguel Suárez', 'Natalia Castro', 'Luis Alberto Molina', 'Fernanda Espinoza',  
-    'Jorge Patiño', 'Alejandra Vargas', 'Diego León', 'Mariana Rodríguez',  
-    'Samuel Cortés', 'Paula Mejía'  
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [asistentes, setAsistentes] = useState([]);
 
   return (
     <div className="task-container">
@@ -510,43 +598,97 @@ const handleExpand = (activityId, monitoringId) => {
                             <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
 
-                        <label>
-                          Asistentes:
-                          {/* Campo de búsqueda */}
-                          <input
-                            type="text"
-                            placeholder="Buscar asistente..."
-                            className="search-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
+                          {/* <label>
+                            <span>Asistentes:</span>
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
 
-                          {/* Contenedor de checkboxes */}
-                          <div className="checkbox-container">
-                            {asistentesList
-                              .filter(asistente =>
-                                asistente.toLowerCase().includes(searchTerm.toLowerCase())
-                              ) // Filtra por búsqueda
-                              .sort((a, b) => a.localeCompare(b)) // Ordena alfabéticamente
-                              .map((asistente, index) => (
-                                <label key={index} className="checkbox-label">
-                                  <input
-                                    type="checkbox"
-                                    value={asistente}
-                                    checked={asistentes.includes(asistente)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setAsistentes([...asistentes, asistente]);
-                                      } else {
-                                        setAsistentes(asistentes.filter(a => a !== asistente));
-                                      }
-                                    }}
-                                  />
-                                  {asistente}
-                                </label>
-                              ))}
-                          </div>
-                        </label>
+                            <div className="checkbox-container">
+                              {estudiantesList
+                                .map((asistente) => {
+                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
+                                  return {
+                                    ...asistente,
+                                    name: studentData ? studentData.name : "?",
+                                    code: studentData ? studentData.code : "?",
+                                  };
+                                })
+                                .filter(
+                                  (asistente) =>
+                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente.code}
+                                      checked={asistentesSeleccionados.includes(asistente.code)}
+                                      onChange={(e) => {
+                                        const selected = [...asistentesSeleccionados];
+                                        if (e.target.checked) {
+                                          selected.push(asistente.code);
+                                        } else {
+                                          const index = selected.indexOf(asistente.code);
+                                          if (index > -1) selected.splice(index, 1);
+                                        }
+                                        setAsistentesSeleccionados(selected);
+                                      }}
+                                    />
+                                    {asistente.name + " - " + asistente.code}
+                                  </label>
+                                ))}
+                            </div>
+                          </label> */}
+
+                          <label>
+                            <span>Asistentes:</span>
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            <div className="checkbox-container">
+                              {estudiantesList
+                                .map((asistente) => {
+                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
+                                  return {
+                                    ...asistente,
+                                    name: studentData ? studentData.name : "?",
+                                    code: studentData ? studentData.code : "?",
+                                  };
+                                })
+                                .filter(
+                                  (asistente) =>
+                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente.studentId}
+                                      checked={asistentesSeleccionados.has(asistente.studentId)}
+                                      onChange={() => toggleAsistencia(asistente.studentId)}
+                                    />
+
+                                    {asistente.name + " - " + asistente.code}
+                                  </label>
+                                ))}
+                            </div>
+                          </label>
+                          
+
 
                           <label>
                             Descripción:
