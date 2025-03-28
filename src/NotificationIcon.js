@@ -21,7 +21,7 @@ const NotificationIcon = () => {
 
         const activities = await response.json();
         const today = new Date();
-        const daysThreshold = 1; // 2 días para la fecha límite
+        const daysThreshold = 1; // 1 día para la fecha límite
 
         const upcomingAlerts = activities
         .filter(activity => activity.finish && activity.state === "PENDIENTE")
@@ -30,7 +30,7 @@ const NotificationIcon = () => {
             const diffInDays = Math.ceil((finishDate - today) / (1000 * 60 * 60 * 24));
 
             return diffInDays > 0 && diffInDays <= daysThreshold
-              ? { id: activity.id, message: `La actividad "${activity.name}" vence en ${diffInDays} días`, date: finishDate.toLocaleDateString() }
+              ? { id: activity.id, message: `La actividad "${activity.name}" vence en ${diffInDays} día`, date: finishDate.toLocaleDateString() }
               : null;
           })
           .filter(Boolean);
