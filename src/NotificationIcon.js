@@ -24,7 +24,7 @@ const NotificationIcon = () => {
         const daysThreshold = 1; // 2 días para la fecha límite
 
         const upcomingAlerts = activities
-          .filter(activity => activity.finish)
+        .filter(activity => activity.finish && activity.state === "PENDIENTE")
           .map(activity => {
             const finishDate = new Date(activity.finish);
             const diffInDays = Math.ceil((finishDate - today) / (1000 * 60 * 60 * 24));

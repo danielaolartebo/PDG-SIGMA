@@ -20,7 +20,9 @@ function CreateActivity() {
   const [estudiantesList, setEstudiantesList] = useState([]);
   const [asistentesList, setAsistentesList] = useState([]);
   const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
-  
+  const role = localStorage.getItem('role');
+  const user = localStorage.getItem('userId');
+  const [rolResponsable, setRolResponsable] = useState("");
   useEffect(() => {
     fetch('http://localhost:5433/monitoring/getA')
       .then(res => res.json())
@@ -77,13 +79,13 @@ function CreateActivity() {
         alert('Por favor, complete todos los campos obligatorios.');
         return;
     }
-
+    
     const nuevaActividad = {
         name: nombre,
         creation: new Date().toISOString(),
         finish: new Date(fechaFinalizacion + "T00:00:00"),
         roleCreator: localStorage.getItem('role').charAt(0).toUpperCase(),
-        roleResponsable: 'M',
+        roleResponsable: rolResponsable,
         category: categoria?.name ?? categoria,
         description: descripcion,
         monitoringId: curso,
@@ -93,6 +95,8 @@ function CreateActivity() {
         semester: semestre,
         edited: new Date().toISOString()
     };
+
+    console.log(nuevaActividad)
 
     try {
         // 
@@ -105,7 +109,7 @@ function CreateActivity() {
         });
 
         if (!response.ok) {
-            throw new Error(`Error al crear la actividad: ${response.statusText}`);
+            throw new Error(`Error al crear la actividad: ${response.text()}`);
         }
 
         const data = await response.json();
@@ -144,8 +148,8 @@ function CreateActivity() {
         setAsistentesList([]); 
 
     } catch (error) {
-        console.error('Error:', error);
-        alert('Hubo un problema al crear la actividad y/o asistencia.');
+        console.error(error);
+        alert(error);
     }
 };
 
@@ -194,8 +198,23 @@ function CreateActivity() {
       alert("No se pudo crear la categoría");
     }
   };
+
+  useEffect(() => {
+    if (!asignarA) return;
   
+    const asignado = monitoresProfesores.find((monitor) => monitor.userId === asignarA);
+    
+    if (asignado) {
+      setRolResponsable(asignado.rol);
+    } else {
+      setRolResponsable(null);
+    }
+  }, [asignarA]);
   
+  const monitoresProfesoresFiltrados =
+    role === 'professor'
+      ? monitoresProfesores
+      : monitoresProfesores.filter((monitor) => monitor.rol === "P" || monitor.userId === user);
   
   
 
@@ -298,7 +317,7 @@ function CreateActivity() {
               <label>Asignar a*</label>
               <select value={asignarA} className="asign-to-select" onChange={(e) => setAsignarA(e.target.value)} required>
                 <option value="">Seleccione al responsable</option>
-                {monitoresProfesores.map(mp => <option key={mp.code} value={mp.code}>{mp.name} {mp.lastName} {mp.code}</option>)}
+                {monitoresProfesoresFiltrados.map(mp => <option key={mp.userId} value={mp.userId}>{mp.name}</option>)}
               </select>
             </div>
             

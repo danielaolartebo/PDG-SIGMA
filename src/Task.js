@@ -21,12 +21,13 @@ function Task() {
   const [estudiantesList, setEstudiantesList] = useState([]);
   const [asistentesSeleccionados, setAsistentesSeleccionados] = useState(new Set()); 
   const [asistenciasRegistradas, setAsistenciasRegistradas] = useState(new Set()); // Estado con asistencias en la DB
-  
+  const rolActual = localStorage.getItem('role');
+  const userActual = localStorage.getItem('userId') 
 
   // Función para alternar filas expandibles
-  const toggleRow = (id, monitoringId) => {
+  const toggleRow = (id, monitoringId, courseId) => {
     setExpandedRow(expandedRow === id ? null : id);
-    handleExpand(id, monitoringId);
+    handleExpand(id, monitoringId,courseId);
   };
 
   // Función para manejar el cambio de página
@@ -43,6 +44,7 @@ function Task() {
         const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`); 
         const jsonData = await data.json();
         setActivities(jsonData);
+        console.log(jsonData);
       }catch (error){
         console.error('Error fetching data:', error);
         }
@@ -69,15 +71,17 @@ function Task() {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], course: value } }));
   };
 
-  const handleAsignadoAChange = (id, value, valueId) => {
-    setEditedActivities((prev) => ({
-      ...prev,
-      [id]: { 
-        ...prev[id], 
-        responsableName: value, 
-        monitorId: valueId 
-      }
-    }));
+  const handleAsignadoAChange = (id, value, valueId, responsable) => {
+      setEditedActivities((prev) => ({
+        ...prev,
+        [id]: { 
+          ...prev[id], 
+          responsableName: value, 
+          monitorId: valueId, 
+          roleResponsable:responsable,
+          roleCreator:rolActual.charAt(0).toUpperCase()
+        }
+      }));
   };
   
 
@@ -156,7 +160,13 @@ console.log("Rol recuperado del localStorage:", userRole);
     fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`)
       .then(response => response.json())
       .then(data => {
-        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: data }));
+        let filtered = data
+        if(rolActual === "monitor"){
+          filtered = data.filter((monitor) => monitor.rol === "P" || monitor.userId === userActual)
+          
+        }
+        console.log(filtered)
+        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: filtered }));
       })
       .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
   }
@@ -174,13 +184,13 @@ const getStudentsByCourse  = async (cursoId) => {
 
 
 
-const handleExpand = (activityId, monitoringId) => {
+const handleExpand = (activityId, monitoringId,courseId) => {
   setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
 
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
-  getStudentsByCourse(monitoringId)
+  getStudentsByCourse(courseId)
 
   // Cargar asistencia existente
   fetch(`http://localhost:5433/attendance/activity/${activityId}`)
@@ -516,7 +526,7 @@ const toggleAsistencia = (studentId) => {
                     <td>
                       <span
                         className="table-actions"
-                        onClick={() => toggleRow(activity.id, activity.monitoring.id)}
+                        onClick={() => toggleRow(activity.id, activity.monitoring.id, activity.monitoring.course.id)}
                       >
                         {expandedRow === activity.id ? "-" : "+"}
                       </span>
@@ -531,14 +541,22 @@ const toggleAsistencia = (studentId) => {
                             Actividad:
                             <input type="text" value={editedActivities[activity.id]?.name || activity.name} 
                             onChange={(e) => handleNameChange(activity.id, e.target.value)} 
-                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}/>
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M")}/>
                           </label>
 
                           <label>
                             Curso:
                             <select value={editedActivities[activity.id]?.course || activity.course} 
                             onChange={(e) => handleCursoChange(activity.id, e.target.value)}
-                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}>
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M")}>
                             {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
                             </select>
                           </label>
@@ -551,7 +569,11 @@ const toggleAsistencia = (studentId) => {
                               value={activity.finish ? new Date(activity.finish).toISOString().split('T')[0] : ""}
 
                               onChange={(e) => handleFechaSolicitadaEntrega(activity.id, e.target.value)}
-                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                                (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                  activity.roleCreator === "P") || 
+                                (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                                activity.roleCreator === "M")}
                             />
                           </label>
 
@@ -560,7 +582,11 @@ const toggleAsistencia = (studentId) => {
                             Categoría:
                             <select value={editedActivities[activity.id]?.category || activity.category} 
                             onChange={(e) => handleCategoryChange(activity.id, e.target.value)}
-                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}>
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M")}>
                             {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
                             </select>
                           </label>
@@ -571,11 +597,16 @@ const toggleAsistencia = (studentId) => {
                               value={editedActivities[activity.id]?.responsableName || activity.responsableName} 
                               onChange={(e) => {
                                 const selectedMonitor = monitorsByMonitoring[activity.monitoring.id]?.find(monitor =>
-                                  `${monitor.name} ${monitor.lastName}` === e.target.value
+                                  monitor.name === e.target.value
                                 );
-                                handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.code);
+                                  handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.userId,selectedMonitor?.rol);
+                                
                               }}
-                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                                (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                  activity.roleCreator === "P") || 
+                                (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                                activity.roleCreator === "M")}
                             >
                               {/* Responsable actual */}
                               <option value={activity.responsableName}>
@@ -584,11 +615,9 @@ const toggleAsistencia = (studentId) => {
 
                               {/* Otros monitores de la misma monitoring */}
                               {monitorsByMonitoring[activity.monitoring.id]?.map((monitor) => (
-                                (monitor.name + " " + monitor.lastName) !== activity.responsableName && (
-                                  <option key={monitor.code} value={`${monitor.name} ${monitor.lastName}`}>
-                                    {monitor.name} {monitor.lastName} ({monitor.code})
-                                  </option>
-                                )
+                                <option key={monitor.userId} value={monitor.name}>
+                                  {monitor.name}
+                                </option>
                               ))}
                             </select>
                           </label>
@@ -646,7 +675,6 @@ const toggleAsistencia = (studentId) => {
                                 ))}
                             </div>
                           </label> */}
-
                           <label>
                             <span>Asistentes:</span>
                             <input
@@ -680,6 +708,9 @@ const toggleAsistencia = (studentId) => {
                                       value={asistente.studentId}
                                       checked={asistentesSeleccionados.has(asistente.studentId)}
                                       onChange={() => toggleAsistencia(asistente.studentId)}
+                                      disabled={
+                                        activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"
+                                      }
                                     />
 
                                     {asistente.name + " - " + asistente.code}
@@ -694,7 +725,11 @@ const toggleAsistencia = (studentId) => {
                             Descripción:
                             <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} 
                             onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} 
-                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"}/>
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                            (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                              activity.roleCreator === "P") || 
+                            (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                            activity.roleCreator === "M")}/>
                           </label>
 
                           {/* Botones */}
