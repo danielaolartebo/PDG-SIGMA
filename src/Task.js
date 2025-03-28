@@ -518,7 +518,7 @@ const toggleAsistencia = (studentId) => {
                     <td>
                     <span
                     className={`table-actions ${estadoClase}`}
-                    onClick={activity.state === "PENDIENTE" ? () => toggleStatus(activity.id) : null}
+                    onClick={activity.state === "PENDIENTE" && !(rolActual === "jfedpto") ? () => toggleStatus(activity.id) : null}
                   >
                     {activity.state === "COMPLETADOT" ? "COMPLETADO": activity.state}
                   </span>
@@ -545,7 +545,7 @@ const toggleAsistencia = (studentId) => {
                               (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                                 activity.roleCreator === "P") || 
                               (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                              activity.roleCreator === "M")}/>
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}/>
                           </label>
 
                           <label>
@@ -556,7 +556,7 @@ const toggleAsistencia = (studentId) => {
                               (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                                 activity.roleCreator === "P") || 
                               (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                              activity.roleCreator === "M")}>
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}>
                             {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
                             </select>
                           </label>
@@ -573,7 +573,7 @@ const toggleAsistencia = (studentId) => {
                                 (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                                   activity.roleCreator === "P") || 
                                 (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                                activity.roleCreator === "M")}
+                                activity.roleCreator === "M") || rolActual === "jfedpto"}
                             />
                           </label>
 
@@ -586,7 +586,7 @@ const toggleAsistencia = (studentId) => {
                               (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                                 activity.roleCreator === "P") || 
                               (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                              activity.roleCreator === "M")}>
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}>
                             {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
                             </select>
                           </label>
@@ -606,7 +606,7 @@ const toggleAsistencia = (studentId) => {
                                 (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                                   activity.roleCreator === "P") || 
                                 (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                                activity.roleCreator === "M")}
+                                activity.roleCreator === "M") || rolActual === "jfedpto"}
                             >
                               {/* Responsable actual */}
                               <option value={activity.responsableName}>
@@ -627,54 +627,6 @@ const toggleAsistencia = (studentId) => {
                             <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
 
-                          {/* <label>
-                            <span>Asistentes:</span>
-                            <input
-                              type="text"
-                              placeholder="Buscar asistente..."
-                              className="search-input"
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-
-                            <div className="checkbox-container">
-                              {estudiantesList
-                                .map((asistente) => {
-                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
-                                  return {
-                                    ...asistente,
-                                    name: studentData ? studentData.name : "?",
-                                    code: studentData ? studentData.code : "?",
-                                  };
-                                })
-                                .filter(
-                                  (asistente) =>
-                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
-                                )
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map((asistente, index) => (
-                                  <label key={index} className="checkbox-label">
-                                    <input
-                                      type="checkbox"
-                                      value={asistente.code}
-                                      checked={asistentesSeleccionados.includes(asistente.code)}
-                                      onChange={(e) => {
-                                        const selected = [...asistentesSeleccionados];
-                                        if (e.target.checked) {
-                                          selected.push(asistente.code);
-                                        } else {
-                                          const index = selected.indexOf(asistente.code);
-                                          if (index > -1) selected.splice(index, 1);
-                                        }
-                                        setAsistentesSeleccionados(selected);
-                                      }}
-                                    />
-                                    {asistente.name + " - " + asistente.code}
-                                  </label>
-                                ))}
-                            </div>
-                          </label> */}
                           <label>
                             <span>Asistentes:</span>
                             <input
@@ -709,7 +661,8 @@ const toggleAsistencia = (studentId) => {
                                       checked={asistentesSeleccionados.has(asistente.studentId)}
                                       onChange={() => toggleAsistencia(asistente.studentId)}
                                       disabled={
-                                        activity.state === "COMPLETADO" || activity.state === "COMPLETADOT"
+                                        activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" ||
+                                        rolActual === "jfedpto"
                                       }
                                     />
 
@@ -729,7 +682,7 @@ const toggleAsistencia = (studentId) => {
                             (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
                               activity.roleCreator === "P") || 
                             (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
-                            activity.roleCreator === "M")}/>
+                            activity.roleCreator === "M") || rolActual === "jfedpto"}/>
                           </label>
 
                           {/* Botones */}
