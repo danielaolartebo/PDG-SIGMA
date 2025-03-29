@@ -1,0 +1,75 @@
+.update-button-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .update-button {
+    width: 100px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+  }
+  
+  .update-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .update-options {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+    padding: 15px;
+  }
+  
+  .checkbox-container,
+  .radio-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .checkbox-container input {
+    cursor: pointer;
+  }
+  
+  .checkbox-container input:disabled {
+    cursor: not-allowed;
+  }
+  
+  .radio-container label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+  
+  .submit-button {
+    width: 100%;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745;
+  }
+  
+  .submit-button:hover {
+    background-color: #218838;
+  }
+  

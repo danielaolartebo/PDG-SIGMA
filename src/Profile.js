@@ -2,6 +2,8 @@ import "./Profile.css";
 import React, { useEffect, useState } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
+import UpdateButton from "./UpdateButton"; 
+
 
 function Profile() {
   console.log("Profile se está renderizando");
@@ -89,10 +91,13 @@ useEffect(() => {
     }, []);
 
   const [role, setRole] = useState("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
+    const storedId = localStorage.getItem("userId");
     setRole(storedRole || "");
+    setUserId(storedId || "");
   }, []);
 
   const [semestreSeleccionado, setSemestreSeleccionado] = useState("Seleccionar semestre");
@@ -110,6 +115,9 @@ useEffect(() => {
   return (
     <div className="profile-container">
       <VerticalNavbar />
+      {(role === "professor" || role === "jfedpto") && (
+        <UpdateButton role={role} userId={userId} />
+      )}
 
       {/* Contenedor de perfil */}
       <div className="profile-content">
