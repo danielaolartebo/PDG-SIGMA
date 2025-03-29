@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './CreateMonitoria.css'; 
-import './Task.css';
+// import './Task.css';
 import { Link } from 'react-router-dom';
 import VerticalNavbar from './VerticalNavbar';
 import Popup from "./PopUp";
@@ -486,5 +486,3 @@ function CreateMonitoria() {
 }
 
 export default CreateMonitoria;
-
-
