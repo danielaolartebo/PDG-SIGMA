@@ -4,7 +4,6 @@ import "./UpdateButton.css"; // Importa los estilos
 const UpdateButton = ({ role, userId }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [updateType, setUpdateType] = useState("sameSemester");
-  const [removeMonitors, setRemoveMonitors] = useState(false);
 
   const handleUpdateTypeChange = (type) => {
     if (type === "newSemester") {
@@ -18,7 +17,6 @@ const UpdateButton = ({ role, userId }) => {
     }
 
     setUpdateType(type);
-    setRemoveMonitors(type === "newSemester"); // Se marca y deshabilita automáticamente en "newSemester"
   };
 
   const handleSubmit = (event) => {
@@ -28,9 +26,9 @@ const UpdateButton = ({ role, userId }) => {
       updateType,
       professorId: role === "professor" ? userId : null,
       departmentHeadId: role === "jfedpto" ? userId : null,
-      removeMonitors: updateType === "newSemester" || removeMonitors // Siempre eliminar monitores en "newSemester"
+      removeMonitors: updateType === "newSemester", // Eliminar monitores solo si es "newSemester"
     };
-    
+
     console.log("Datos enviados:", requestData);
 
     fetch("http://localhost:5433/api/sync/update", {
@@ -43,7 +41,7 @@ const UpdateButton = ({ role, userId }) => {
       .then((response) => response.text())
       .then((data) => {
         alert(`Actualización completada: ${data}`);
-        setShowOptions(false); // Ocultar el menú después de actualizar
+        setShowOptions(false); 
       })
       .catch((error) => {
         console.error("Error en la actualización:", error);
@@ -59,18 +57,6 @@ const UpdateButton = ({ role, userId }) => {
 
       {showOptions && (
         <form className="update-options" onSubmit={handleSubmit}>
-          {/* Checkbox para eliminar monitores */}
-          <div className="checkbox-container">
-            <input
-              type="checkbox"
-              checked={updateType === "newSemester" || removeMonitors}
-              disabled={updateType === "newSemester"}
-              onChange={() => setRemoveMonitors(!removeMonitors)}
-            />
-            <label>¿Eliminar monitores?</label>
-          </div>
-
-          {/* Radio buttons para tipo de actualización */}
           <div className="radio-container">
             <label>
               <input
@@ -82,18 +68,19 @@ const UpdateButton = ({ role, userId }) => {
               Actualizar en el mismo semestre
             </label>
 
-            <label>
-              <input
-                type="radio"
-                value="newSemester"
-                checked={updateType === "newSemester"}
-                onChange={() => handleUpdateTypeChange("newSemester")}
-              />
-              Reiniciar para nuevo semestre
-            </label>
+            {role === "jfedpto" && (
+              <label>
+                <input
+                  type="radio"
+                  value="newSemester"
+                  checked={updateType === "newSemester"}
+                  onChange={() => handleUpdateTypeChange("newSemester")}
+                />
+                Reiniciar para nuevo semestre
+              </label>
+            )}
           </div>
 
-          {/* Botón de enviar */}
           <button type="submit" className="submit-button">
             Confirmar actualización
           </button>
