@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { MyContext } from './MyContext';
+import { useContext } from 'react';
 
 function Dropdown() {
     const [faculties, setFaculties] = useState([]); // State for Faculty options
@@ -11,9 +13,16 @@ function Dropdown() {
     const [selectedSubject, setSelectedSubject] = useState(""); // Selected Subject
     const [selectedState, setSelectedState] = useState(""); // Selected State
 
+    // Obtener el contexto y verificar que esté definido
+    const context = useContext(MyContext);
+    const setSelectedValue = context?.setSelectedValue;
+    const setSelectedCondition = context?.setSelectedCondition;
+    const setSelectedRequest = context?.setSelectedRequest;
+    
+
     // Fetch Faculty options
     useEffect(() => {
-        fetch('http://localhost:3000/Faculty.json')
+        fetch('http://localhost:5433/school/getSchools')
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -21,8 +30,8 @@ function Dropdown() {
                 return res.json();
             })
             .then(data => {
-                if (data.faculty) {
-                    setFaculties(data.faculty);
+                if (data) {
+                    setFaculties(data);
                 } else {
                     console.error("Faculty data format is incorrect.");
                 }
@@ -32,7 +41,16 @@ function Dropdown() {
 
     // Fetch Program options
     useEffect(() => {
-        fetch('http://localhost:3000/Program.json')
+        const prog = {
+            name:selectedFaculty
+        }
+        fetch('http://localhost:5433/program/getProgramsSchool',{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(prog),
+        })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -40,18 +58,28 @@ function Dropdown() {
                 return res.json();
             })
             .then(data => {
-                if (data.program) {
-                    setPrograms(data.program);
+                if (data) {
+                    setPrograms(data);
+                    setSubject([])
                 } else {
                     console.error("Program data format is incorrect.");
                 }
             })
             .catch(error => console.error('Error fetching program data:', error));
-    }, []);
+    }, [selectedFaculty]);
 
     // Fetch Subject options
     useEffect(() => {
-        fetch('http://localhost:3000/Subject.json')
+        const prog = {
+            name:selectedProgram
+        }
+        fetch('http://localhost:5433/course/getCoursesProgram',{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(prog),
+        })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -59,14 +87,14 @@ function Dropdown() {
                 return res.json();
             })
             .then(data => {
-                if (data.subject) {
-                    setSubject(data.subject);
+                if (data) {
+                    setSubject(data);
                 } else {
                     console.error("Program data format is incorrect.");
                 }
             })
             .catch(error => console.error('Error fetching program data:', error));
-    }, []);
+    }, [selectedProgram]);
 
     // Fetch State options
     useEffect(() => {
@@ -91,21 +119,31 @@ function Dropdown() {
     // Handle change for Faculty dropdown
     const handleFacultyChange = (event) => {
         setSelectedFaculty(event.target.value);
+        setSelectedValue(event.target.value);
+        setSelectedCondition(selectedState);
+        setSelectedRequest('faculty')
     };
 
     // Handle change for Program dropdown
     const handleProgramChange = (event) => {
         setSelectedProgram(event.target.value);
+        setSelectedValue(event.target.value);
+        setSelectedCondition(selectedState);
+        setSelectedRequest('program')
     };
 
      // Handle change for Subject dropdown
      const handleSubjectChange = (event) => {
         setSelectedSubject(event.target.value);
+        setSelectedValue(event.target.value);
+        setSelectedCondition(selectedState);
+        setSelectedRequest('course')
     };
 
     // Handle change for State dropdown
      const handleStateChange = (event) => {
         setSelectedState(event.target.value);
+        setSelectedCondition(event.target.value);
     };
 
 
@@ -120,7 +158,7 @@ function Dropdown() {
                 >
                     <option value=""> Facultad </option>
                     {faculties.map(faculty => (
-                        <option key={faculty.id} value={faculty.id}>
+                        <option key={faculty.name} value={faculty.name}>
                             {faculty.name}
                         </option>
                     ))}
@@ -134,7 +172,7 @@ function Dropdown() {
                 >
                     <option value=""> Programa </option>
                     {programs.map(program => (
-                        <option key={program.id} value={program.id}>
+                        <option key={program.name} value={program.name}>
                             {program.name}
                         </option>
                     ))}
@@ -148,7 +186,7 @@ function Dropdown() {
                 >
                     <option value=""> Curso </option>
                     {subject.map(subject => (
-                        <option key={subject.id} value={subject.id}>
+                        <option key={subject.name} value={subject.name}>
                             {subject.name}
                         </option>
                     ))}
@@ -162,7 +200,7 @@ function Dropdown() {
                 >
                     <option value=""> Estado </option>
                     {state.map(state => (
-                        <option key={state.id} value={state.id}>
+                        <option key={state.name} value={state.name}>
                             {state.name}
                         </option>
                     ))}

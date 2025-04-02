@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect } from "react";
 import "./Alert.css"; // Archivo de estilos separado
 
 const Alert = ({ show, onClose }) => {

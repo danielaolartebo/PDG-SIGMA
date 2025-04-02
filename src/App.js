@@ -11,6 +11,8 @@ import CreateMonitoria from './CreateMonitoria';
 import Applicants from './Applicants';
 import { MyProvider } from './MyContext';
 import CreateActivity from './CreateActivity';
+import Profile from './Profile';
+import Reports from './Reports';
 import { useEffect } from "react";
 
 function App() {
@@ -68,6 +70,11 @@ function App() {
          {/* Route for ApplyMonitor */}
          <Route path="/ApplyMonitor" element={<ApplyMonitor />} />
 
+         {/* Route for Profile */}
+         <Route path="/Profile" element={<Profile />} />
+
+         {/* Route for Reports */}
+         <Route path="/Reports" element={<Reports />} />
       </Routes>
     </div>
   );

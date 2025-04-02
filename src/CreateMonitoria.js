@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './CreateMonitoria.css'; 
-import './Task.css';
+// import './Task.css';
 import { Link } from 'react-router-dom';
 import VerticalNavbar from './VerticalNavbar';
 import Popup from "./PopUp";
@@ -28,6 +28,8 @@ function CreateMonitoria() {
     const [isOpen, setIsOpen] = useState(false)
     const [message, setMessage] = useState("")
     const [change, setChange] = useState(false)
+    const [file, setFile] = useState(null); //File
+
 
     // Fetch Faculty options
     useEffect(() => {
@@ -175,7 +177,46 @@ function CreateMonitoria() {
         setSelectedFinishDate(event.target.value);
     };
 
+
+    const handleUpload = async () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".xlsx, .xls";
     
+        input.onchange = async (event) => {
+          const file = event.target.files[0];
+    
+          if (!file) {
+            alert("No se seleccionó ningún archivo.");
+            return;
+          }
+    
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const idProfessor = localStorage.getItem('userId')
+    
+          try {
+            const response = await fetch(`http://localhost:5433/monitoring/createAll/${idProfessor}`, {
+              method: "POST",
+              body: formData,
+            });
+            
+            const message = await response.text();
+
+            if (response.ok) {
+              alert(message);
+            } else {
+              alert(message);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Error al conectar con el servidor");
+          }
+        };
+    
+        input.click(); // Simula el clic para abrir el explorador de archivos
+    };
 
 
     const handleCreate = async() => {
@@ -265,7 +306,7 @@ function CreateMonitoria() {
     return (
         <div className="cm-task-container">
             {/* Load file button starts */}
-            <button className="top-right-button">Cargar datos</button>
+            <button className="top-right-button" onClick={handleUpload}>Cargar datos</button>
             {/* Load file button ends */}
 
             {/* Ventana emergente */}
@@ -287,7 +328,7 @@ function CreateMonitoria() {
                 <form className="cm-grid-container">
 
                     {/* Facultad */}
-                    <label>Facultad</label>
+                    <label>Nombre de facultad</label>
                     <select className="cm-faculty"
                             id="faculty-dropdown" 
                             value={selectedFaculty} 
@@ -301,7 +342,7 @@ function CreateMonitoria() {
                     </select>
 
                     {/* Programa */}
-                    <label>Programa</label>
+                    <label>Nombre de programa</label>
                     <select className="cm-program"
                             id="program-dropdown" 
                             value={selectedProgram} 
@@ -315,7 +356,7 @@ function CreateMonitoria() {
                     </select>
 
                     {/* Materia/Curso */}
-                    <label>Curso</label>
+                    <label>Curso académico</label>
                     <select className="cm-program"
                             id="subject-dropdown" 
                             value={selectedSubject} 
@@ -445,5 +486,3 @@ function CreateMonitoria() {
 }
 
 export default CreateMonitoria;
-
-

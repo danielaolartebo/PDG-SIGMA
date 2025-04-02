@@ -180,7 +180,7 @@
 
 .table-head-act {
   background-color: var(--grey-color);
-  color: white;
+  color: black;
   font-weight: bold;
 }
 
@@ -337,49 +337,57 @@
 .edit-form {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4 columnas en la primera fila */
-  gap: 15px; /* Espacio entre elementos */
-  max-width: 1000px; /* Ajusta el ancho según necesites */
-  margin: auto;
+  gap: 10px; /* Espacio entre elementos */
+  max-width: 100%; /* Ajusta el ancho según necesites */
+  margin-right: 4%;
+  margin-left: 4%;
 }
 
 /* Asegurar que los elementos ocupen bien el espacio */
 .edit-form label {
   display: flex;
   flex-direction: column;
-  font-weight: bold;
-  font-size: 15px;
-  font-family: var(--main-font-family);
+  width: 100%; /* Que ocupen todo el espacio del grid */
 }
+
 
 /* Campos de entrada, selects y textarea */
 .edit-form input,
-.edit-form select,
-.edit-form textarea {
-  width: 100%;
+.edit-form select {
+  width: 100%; /* Ocupa el 100% del contenedor */
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 15px;
   font-family: var(--main-font-family);
+  box-sizing: border-box; /* Evita que padding afecte el tamaño total */
 }
+
 
 /* Asegurar que el textarea sea más grande */
 .edit-form textarea {
   resize: vertical;
+  width: 100%;
   height: 20px;
-  min-height: 20px;
-  max-height: 100px;
+  min-height: 50px;
+  max-height: 150px;
   font-size: 15px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box; /* Evita que padding afecte el tamaño total */
   font-family: var(--main-font-family);
 }
 
 /* Ajuste para que ciertos elementos ocupen más columnas */
 .edit-form label:nth-child(1), /* Asistentes */
-.edit-form label:nth-child(2) /* Fecha Última Edición */
-.edit-form label:nth-child(3) /* Fecha Última Edición */{ 
+.edit-form label:nth-child(2) /* Fecha Última Edición */{ 
+  font-family: var(--main-font-family);
+  font-size: 15px;
   grid-column: span 2; /* Que ocupen 2 columnas */
 }
 
+.edit-form label:nth-child(7),
 .edit-form label:nth-child(8) { /* Descripción */
   font-family: var(--main-font-family);
   font-size: 15px;
@@ -459,3 +467,47 @@
     padding: 2px 4px;   /* Completado pero entregado tarde: texto verde con fondo amarillo */
     border-radius: 4px;
   }
+
+  /* Asistentes */
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    white-space: nowrap; 
+  }
+  
+  .checkbox-container .checkbox-label {
+    width: calc(100% / 5 - 10px); /* Hasta 6 elementos por fila */
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .checkbox-container {
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 1px;
+    row-gap: 0;
+    width: 100%;
+    padding-bottom: 10px;
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  
+  
+  
+  
+  

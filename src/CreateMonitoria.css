@@ -40,30 +40,13 @@
 
 .cm-grid-container {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; 
-  gap: 15px;
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px;
   max-width: 70em;
-  margin: 0 auto;
+  margin-left: 8.5em;
+  margin-right: 8.5em;
   padding: 1em;
   padding-bottom: 3em;
-}
-
-@media (max-width: 1200px) {
-  .cm-grid-container {
-      grid-template-columns: 1fr 1fr 1fr 1fr; 
-  }
-}
-
-@media (max-width: 768px) {
-  .cm-grid-container {
-      grid-template-columns: 1fr; 
-  }
-}
-
-@media (max-width: 480px) {
-  .cm-grid-container {
-      grid-template-columns: 1fr;
-  }
 }
 
 .cm-grid-container label {
@@ -71,12 +54,11 @@
   margin-bottom: 5px;
   align-content: center;
   text-align: right; 
-  width: 12em;
 }
 
 .cm-grid-container input[type="text"],
 .cm-grid-container select {
-  width: 100%;
+  width: auto;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;

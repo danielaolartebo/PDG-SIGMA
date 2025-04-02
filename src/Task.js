@@ -1,8 +1,10 @@
 import './Task.css';
 import VerticalNavbar from './VerticalNavbar';
 import './Login.css';
+import AlertIcon from './NotificationIcon';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NotificationIcon from './NotificationIcon';
 
 function Task() {
   // Estado para almacenar las actividades
@@ -15,10 +17,17 @@ function Task() {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 6; // Número de filas por página
 
+  const [allStudents, setAllStudents] = useState([]);
+  const [estudiantesList, setEstudiantesList] = useState([]);
+  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState(new Set()); 
+  const [asistenciasRegistradas, setAsistenciasRegistradas] = useState(new Set()); // Estado con asistencias en la DB
+  const rolActual = localStorage.getItem('role');
+  const userActual = localStorage.getItem('userId') 
+
   // Función para alternar filas expandibles
-  const toggleRow = (id, monitoringId) => {
+  const toggleRow = (id, monitoringId, courseId) => {
     setExpandedRow(expandedRow === id ? null : id);
-    handleExpand(id, monitoringId);
+    handleExpand(id, monitoringId,courseId);
   };
 
   // Función para manejar el cambio de página
@@ -35,11 +44,17 @@ function Task() {
         const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`); 
         const jsonData = await data.json();
         setActivities(jsonData);
+        console.log(jsonData);
       }catch (error){
         console.error('Error fetching data:', error);
         }
     };
     fetchActivities();
+    fetch('http://localhost:5433/student/getA')
+      .then(res => res.json())
+      .then(data => setAllStudents(data))
+      .catch(error => console.error('Error al obtener los all students:', error));
+    
   }, []);
 
   const [editedActivities, setEditedActivities] = useState({});
@@ -56,15 +71,17 @@ function Task() {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], course: value } }));
   };
 
-  const handleAsignadoAChange = (id, value, valueId) => {
-    setEditedActivities((prev) => ({
-      ...prev,
-      [id]: { 
-        ...prev[id], 
-        responsableName: value, 
-        monitorId: valueId 
-      }
-    }));
+  const handleAsignadoAChange = (id, value, valueId, responsable) => {
+      setEditedActivities((prev) => ({
+        ...prev,
+        [id]: { 
+          ...prev[id], 
+          responsableName: value, 
+          monitorId: valueId, 
+          roleResponsable:responsable,
+          roleCreator:rolActual.charAt(0).toUpperCase()
+        }
+      }));
   };
   
 
@@ -79,6 +96,12 @@ function Task() {
   const handleFechaSolicitadaEntrega = (id, value) => {
     setEditedActivities((prev) => ({ ...prev, [id]: { ...prev[id], finish: value } }));
   };
+
+const storedRole = localStorage.getItem("userRole"); // Obtiene el rol
+const userRole = storedRole ? storedRole.trim() : ""; // Evita valores nulos o indefinidos
+
+localStorage.setItem("userRole", "student");
+console.log("Rol recuperado del localStorage:", userRole);
 
   const [records, setRecords] = useState([]);
   const recordsPerPage = 2;
@@ -100,6 +123,7 @@ function Task() {
 
    // Estados para los filtros
   const [semesterFilter, setSemesterFilter] = useState('');
+  const [programFilter, setProgramFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [assignedToFilter, setAssignedToFilter] = useState('');
@@ -109,6 +133,7 @@ function Task() {
 
   // Generar opciones únicas para cada filtro
   const semesters = [...new Set(activities.map(activity => activity.semester))];
+  const programs = [...new Set(activities.map(activity => activity.program))];
   const courses = [...new Set(activities.map(activity => activity.course))];
   const requestedDueDate = [...new Set(activities.map(activity => activity.finish))];///
   const categories = [...new Set(activities.map(activity => activity.category))];
@@ -118,6 +143,7 @@ function Task() {
   // Filtrar actividades según los filtros seleccionados
   const filteredActivities = activities.filter(activity => (
     (semesterFilter === '' || activity.semester === semesterFilter) &&
+    (programFilter === '' || activity.program === programFilter) &&
     (courseFilter === '' || activity.course === courseFilter) &&
     (categoryFilter === '' || activity.category === categoryFilter) &&
     (assignedToFilter === '' || activity.responsableName === assignedToFilter) &&
@@ -134,21 +160,62 @@ function Task() {
     fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`)
       .then(response => response.json())
       .then(data => {
-        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: data }));
+        let filtered = data
+        if(rolActual === "monitor"){
+          filtered = data.filter((monitor) => monitor.rol === "P" || monitor.userId === userActual)
+          
+        }
+        console.log(filtered)
+        setMonitorsByMonitoring(prev => ({ ...prev, [monitoringId]: filtered }));
       })
       .catch(error => console.error(`Error fetching monitors for monitoring ${monitoringId}:`, error));
   }
-  
 };
 
-const handleExpand = (activityId, monitoringId) => {
+const getStudentsByCourse  = async (cursoId) => {
+  fetch(`http://localhost:5433/student/course/${cursoId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Datos recibidos:", data);
+          setEstudiantesList(data);
+        })
+        .catch((error) => console.error("Error al cargar estudiantes:", error));
+};
+
+
+
+const handleExpand = (activityId, monitoringId,courseId) => {
   setExpandedActivities(prev => ({ ...prev, [activityId]: !prev[activityId] }));
 
   if (!monitorsByMonitoring[monitoringId]) {
     fetchMonitors(monitoringId);
   }
+  getStudentsByCourse(courseId)
+
+  // Cargar asistencia existente
+  fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const asistenciasSet = new Set(data.map((a) => a.student.code));
+        setAsistenciasRegistradas(asistenciasSet);
+        setAsistentesSeleccionados(new Set(asistenciasSet)); // Inicializar con los datos de la DB
+      })
+      .catch((err) => console.error("Error cargando asistencias:", err));
+
+  
 };
 
+const toggleAsistencia = (studentId) => {
+  setAsistentesSeleccionados((prev) => {
+    const newSet = new Set(prev);
+    if (newSet.has(studentId)) {
+      newSet.delete(studentId);
+    } else {
+      newSet.add(studentId);
+    }
+    return newSet;
+  });
+};
 
  const handleSave = async (activityId, updatedActivityData) => {
   console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
@@ -178,6 +245,63 @@ const handleExpand = (activityId, monitoringId) => {
     console.error("Error guardando la actividad:", error);
     alert("Error al guardar los cambios");
   }
+
+  
+  // const saveAttendance = () => {
+  //   console.log("Guardando asistencia para los siguientes estudiantes:", asistentesSeleccionados);
+  
+  //   Promise.all(
+  //     asistentesSeleccionados.map((studentId) => {
+  //       const requestBody = {
+  //         activity: { id: activityId },
+  //         student: { code: studentId }
+  //       };
+  
+  //       return fetch("http://localhost:5433/attendance/create", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(requestBody),
+  //       });
+  //     })
+  //   )
+  //     .then(() => console.log("Asistencia guardada exitosamente"))
+  //     .catch((error) => console.error("Error al guardar asistencia:", error));
+  // };
+  // saveAttendance();
+  const saveAttendance = async () => {
+    const nuevosAsistentes = [...asistentesSeleccionados].filter(
+      (id) => !asistenciasRegistradas.has(id)
+    );
+    const asistentesEliminados = [...asistenciasRegistradas].filter(
+      (id) => !asistentesSeleccionados.has(id)
+    );
+
+    // Enviar solo nuevos asistentes
+    await Promise.all(
+      nuevosAsistentes.map((studentId) =>
+        fetch("http://localhost:5433/attendance/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activity: { id: activityId }, student: { code: studentId } }),
+        })
+      )
+    );
+
+    // Eliminar solo los que se desmarcaron
+    await Promise.all(
+      asistentesEliminados.map((studentId) =>
+        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`, {
+          method: "DELETE",
+        })
+      )
+    );
+
+    // Actualizar el estado con los nuevos valores confirmados en la DB
+    setAsistenciasRegistradas(new Set(asistentesSeleccionados));
+  };
+  saveAttendance();
+  
+
 };
   
   const handleCancel = (activityId) => {
@@ -185,11 +309,6 @@ const handleExpand = (activityId, monitoringId) => {
     // Lógica para restaurar los valores originales (si aplica)
   };
   
-  // const handleDelete = (activityId) => {
-  //   console.log(`Eliminando actividad con ID: ${activityId}`);
-  //   // Lógica para eliminar la actividad
-  // };
-
   const handleDelete = async (activityId) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
       return;
@@ -260,8 +379,9 @@ const handleExpand = (activityId, monitoringId) => {
 
     const handleCreateActivity = () => {
         navigate('/CreateActivity'); 
-    };
+  };
 
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="task-container">
@@ -269,9 +389,12 @@ const handleExpand = (activityId, monitoringId) => {
       <div className="content">
 
         {/* Title starts*/}
-        <div className="title-container" id="title-container">
-          <div className="title" id="title">
-            Historial de Actividades
+        <div className="header">
+          <div className="title-container" id="title-container">
+            <div className="title" id="title">
+              Historial de Actividades
+            </div>
+            <NotificationIcon />
           </div>
         </div>
         {/* Title ends*/}
@@ -292,6 +415,15 @@ const handleExpand = (activityId, monitoringId) => {
               <option key={index} value={semestre}>{semestre}</option>
             ))}
           </select>
+
+          {userRole === "jfedpto" && (
+          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}>
+            <option value="">Programa</option>
+            {programs.map((program, index) => (
+              <option key={index} value={program}>{program}</option>
+            ))}
+          </select>
+        )}
 
           <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)}>
             <option value="">Curso</option>
@@ -328,7 +460,7 @@ const handleExpand = (activityId, monitoringId) => {
           <table className="table">
             <thead className="table-head-act">
               <tr>
-                <th>Nombre</th>
+                <th>Actividad</th>
                 <th>Curso</th>
                 <th>Categoría</th>
                 <th>Fecha creación</th>
@@ -386,7 +518,7 @@ const handleExpand = (activityId, monitoringId) => {
                     <td>
                     <span
                     className={`table-actions ${estadoClase}`}
-                    onClick={activity.state === "PENDIENTE" ? () => toggleStatus(activity.id) : null}
+                    onClick={activity.state === "PENDIENTE" && !(rolActual === "jfedpto") ? () => toggleStatus(activity.id) : null}
                   >
                     {activity.state === "COMPLETADOT" ? "COMPLETADO": activity.state}
                   </span>
@@ -394,7 +526,7 @@ const handleExpand = (activityId, monitoringId) => {
                     <td>
                       <span
                         className="table-actions"
-                        onClick={() => toggleRow(activity.id, activity.monitoring.id)}
+                        onClick={() => toggleRow(activity.id, activity.monitoring.id, activity.monitoring.course.id)}
                       >
                         {expandedRow === activity.id ? "-" : "+"}
                       </span>
@@ -406,14 +538,26 @@ const handleExpand = (activityId, monitoringId) => {
                       <div className="edit-form">
                           {/* Primera fila */}
                           <label>
-                            Nombre:
-                            <input type="text" value={editedActivities[activity.id]?.name || activity.name} onChange={(e) => handleNameChange(activity.id, e.target.value)} />
+                            Actividad:
+                            <input type="text" value={editedActivities[activity.id]?.name || activity.name} 
+                            onChange={(e) => handleNameChange(activity.id, e.target.value)} 
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}/>
                           </label>
 
                           <label>
                             Curso:
-                            <select value={editedActivities[activity.id]?.course || activity.course} onChange={(e) => handleCursoChange(activity.id, e.target.value)}>
-                              {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
+                            <select value={editedActivities[activity.id]?.course || activity.course} 
+                            onChange={(e) => handleCursoChange(activity.id, e.target.value)}
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}>
+                            {courses.map((curso, index) => <option key={index} value={curso}>{curso}</option>)}
                             </select>
                           </label>
 
@@ -421,15 +565,29 @@ const handleExpand = (activityId, monitoringId) => {
                             Fecha solicitada entrega:
                             <input 
                               type="date"
-                              value={editedActivities[activity.id]?.finish || activity.finish}
+                              // value={activity.finish ? formatDate(new Date(activity.finish)) : ""}
+                              value={activity.finish ? new Date(activity.finish).toISOString().split('T')[0] : ""}
+
                               onChange={(e) => handleFechaSolicitadaEntrega(activity.id, e.target.value)}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                                (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                  activity.roleCreator === "P") || 
+                                (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                                activity.roleCreator === "M") || rolActual === "jfedpto"}
                             />
                           </label>
 
+
                           <label>
                             Categoría:
-                            <select value={editedActivities[activity.id]?.category || activity.category} onChange={(e) => handleCategoryChange(activity.id, e.target.value)}>
-                              {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
+                            <select value={editedActivities[activity.id]?.category || activity.category} 
+                            onChange={(e) => handleCategoryChange(activity.id, e.target.value)}
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                              (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                activity.roleCreator === "P") || 
+                              (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                              activity.roleCreator === "M") || rolActual === "jfedpto"}>
+                            {categories.map((categoria, index) => <option key={index} value={categoria}>{categoria}</option>)}
                             </select>
                           </label>
 
@@ -439,10 +597,16 @@ const handleExpand = (activityId, monitoringId) => {
                               value={editedActivities[activity.id]?.responsableName || activity.responsableName} 
                               onChange={(e) => {
                                 const selectedMonitor = monitorsByMonitoring[activity.monitoring.id]?.find(monitor =>
-                                  `${monitor.name} ${monitor.lastName}` === e.target.value
+                                  monitor.name === e.target.value
                                 );
-                                handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.code);
+                                  handleAsignadoAChange(activity.id, e.target.value, selectedMonitor?.userId,selectedMonitor?.rol);
+                                
                               }}
+                              disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                                (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                                  activity.roleCreator === "P") || 
+                                (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                                activity.roleCreator === "M") || rolActual === "jfedpto"}
                             >
                               {/* Responsable actual */}
                               <option value={activity.responsableName}>
@@ -451,26 +615,11 @@ const handleExpand = (activityId, monitoringId) => {
 
                               {/* Otros monitores de la misma monitoring */}
                               {monitorsByMonitoring[activity.monitoring.id]?.map((monitor) => (
-                                (monitor.name + " " + monitor.lastName) !== activity.responsableName && (
-                                  <option key={monitor.code} value={`${monitor.name} ${monitor.lastName}`}>
-                                    {monitor.name} {monitor.lastName} ({monitor.code})
-                                  </option>
-                                )
+                                <option key={monitor.userId} value={monitor.name}>
+                                  {monitor.name}
+                                </option>
                               ))}
                             </select>
-                          </label>
-
-                          {/* <label>
-                            Asignado a:
-                            <select value={editedActivities[activity.id]?.responsableName || activity.responsableName} onChange={(e) => handleAsignadoAChange(activity.id, e.target.value)}>
-                              {assignedTos.map((asignadoA, index) => <option key={index} value={asignadoA}>{asignadoA}</option>)}
-                            </select>
-                          </label> */}
-
-                          {/* Segunda fila */}
-                          <label>
-                            Asistentes:
-                            <select></select>
                           </label>
 
                           <label>
@@ -479,8 +628,61 @@ const handleExpand = (activityId, monitoringId) => {
                           </label>
 
                           <label>
+                            <span>Asistentes:</span>
+                            <input
+                              type="text"
+                              placeholder="Buscar asistente..."
+                              className="search-input"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            <div className="checkbox-container">
+                              {estudiantesList
+                                .map((asistente) => {
+                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
+                                  return {
+                                    ...asistente,
+                                    name: studentData ? studentData.name : "?",
+                                    code: studentData ? studentData.code : "?",
+                                  };
+                                })
+                                .filter(
+                                  (asistente) =>
+                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((asistente, index) => (
+                                  <label key={index} className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      value={asistente.studentId}
+                                      checked={asistentesSeleccionados.has(asistente.studentId)}
+                                      onChange={() => toggleAsistencia(asistente.studentId)}
+                                      disabled={
+                                        activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" ||
+                                        rolActual === "jfedpto"
+                                      }
+                                    />
+
+                                    {asistente.name + " - " + asistente.code}
+                                  </label>
+                                ))}
+                            </div>
+                          </label>
+                          
+
+
+                          <label>
                             Descripción:
-                            <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} />
+                            <textarea rows="4" value={editedActivities[activity.id]?.description || activity.description} 
+                            onChange={(e) => handleDescripcionChange(activity.id, e.target.value)} 
+                            disabled={activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" || 
+                            (activity.monitor?.idMonitor === userActual && activity.roleResponsable === "M" && 
+                              activity.roleCreator === "P") || 
+                            (activity.professor?.id === userActual && activity.roleResponsable === "P" && 
+                            activity.roleCreator === "M") || rolActual === "jfedpto"}/>
                           </label>
 
                           {/* Botones */}
@@ -532,5 +734,7 @@ const handleExpand = (activityId, monitoringId) => {
 }
 
 export default Task;
+
+
 
 
