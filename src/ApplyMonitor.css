@@ -1,0 +1,46 @@
+.apply-monitor-container {
+    width: 100vw;
+    height: 100vh;
+}
+
+
+.apply-monitor-cont {
+    flex-grow: 1; /* Hace que la tabla ocupe todo el espacio disponible */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 8em;
+    margin-right: 12em;
+    width: 100%;
+    height: 80%;
+}
+
+.table-content {
+    width: 100%;
+    height: 100%;
+}
+  
+.title-apply-monitor{
+    font-family: var(--main-font-family);
+    font-size: 2em;
+    padding-top: 1.5em;
+    
+    margin-left: 7em;
+
+}
+  
+  /* Ipad mini size */
+  @media (max-width: 768px) { 
+    .title-apply-monitor {
+      font-size: 1.4em;
+    }
+  }
+  
+  /* Iphone 14 pro max size */
+  @media (max-width: 430px) {
+    .title-apply-monitor {
+      font-size: 1.2em;
+    }
+  }
+
