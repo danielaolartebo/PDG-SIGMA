@@ -4,12 +4,25 @@ import logo from "../src/img/logo2.png";
 import "./VerticalNavbar.css";
 
 function VerticalNavbar() {
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("professor"); 
+  const [user, setUser] = useState(null);
+  const [initials, setInitials] = useState("");
+  const [showProfileOption, setShowProfileOption] = useState(true);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole || "");
-    console.log(role);
+    // Datos quemados
+    const fakeUser = {
+      id: "12345",
+      firstname: "Juan Esteban",
+      lastname: "Caldas",
+    };
+
+    setUser(fakeUser);
+
+    const fullName = `${fakeUser.firstname} ${fakeUser.lastname}`;
+    const nameParts = fullName.trim().split(" ");
+    const userInitials = nameParts.map(name => name[0]).join("").toUpperCase();
+    setInitials(userInitials);
   }, []);
 
   const handleClose = () => {
@@ -23,21 +36,32 @@ function VerticalNavbar() {
       <div className="logo-container">
         <img src={logo} alt="Logo" className="logo" />
       </div>
-
+  
       {/* Menú */}
       <div className="menu-items">
-        {/* Todos los usuarios tienen acceso a estas opciones: student, monitor, professor y jfedpto */}
+        {/* Mostrar avatar primero */}
+        {(role === "monitor" || role === "professor" || role === "jfedpto") && (
+          <NavLink
+            to="/Profile"
+            onClick={() => setShowProfileOption(false)}
+            className="user-avatar"
+            title={user ? `${user.firstname} ${user.lastname}` : ""}
+          >
+            {initials}
+          </NavLink>
+        )}
+  
+        {/* Todos los usuarios tienen acceso a esta opción */}
         <NavLink to="/ApplyMonitor" className={({ isActive }) => (isActive ? "active" : "")}>Postulaciones</NavLink>
-
+  
         {/* Acceso para Monitor, Profesor y Jefe de Departamento */}
         {(role === "monitor" || role === "professor" || role === "jfedpto") && (
           <>
             <NavLink to="/Task" className={({ isActive }) => (isActive ? "active" : "")}>Actividades</NavLink>
-            <NavLink to="/Profile" className={({ isActive }) => (isActive ? "active" : "")}>Mi perfil</NavLink>
             <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
           </>
         )}
-
+  
         {/* Acceso solo para Profesor */}
         {role === "professor" && (
           <>
@@ -45,7 +69,7 @@ function VerticalNavbar() {
             <NavLink to="/Applicants" className={({ isActive }) => (isActive ? "active" : "")}>Mis postulantes</NavLink>
           </>
         )}
-
+  
         {/* Botón de cerrar sesión */}
         <div className="logout-container">
           <NavLink 
@@ -58,10 +82,11 @@ function VerticalNavbar() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default VerticalNavbar;
+
 
 
 
