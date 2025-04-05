@@ -627,6 +627,7 @@ const toggleAsistencia = (studentId) => {
                             <input type="text" value={new Date(activity.edited).toLocaleDateString("es-ES")} readOnly />
                           </label>
 
+
                           <label>
                             <span>Asistentes:</span>
                             <input
@@ -637,42 +638,56 @@ const toggleAsistencia = (studentId) => {
                               onChange={(e) => setSearchTerm(e.target.value)}
                             />
 
-                            <div className="checkbox-container">
-                              {estudiantesList
-                                .map((asistente) => {
-                                  const studentData = allStudents.find((s) => s.code === asistente.studentId);
-                                  return {
-                                    ...asistente,
-                                    name: studentData ? studentData.name : "?",
-                                    code: studentData ? studentData.code : "?",
-                                  };
-                                })
-                                .filter(
-                                  (asistente) =>
-                                    asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
-                                )
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map((asistente, index) => (
-                                  <label key={index} className="checkbox-label">
-                                    <input
-                                      type="checkbox"
-                                      value={asistente.studentId}
-                                      checked={asistentesSeleccionados.has(asistente.studentId)}
-                                      onChange={() => toggleAsistencia(asistente.studentId)}
-                                      disabled={
-                                        activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" ||
-                                        rolActual === "jfedpto"
-                                      }
-                                    />
-
-                                    {asistente.name + " - " + asistente.code}
-                                  </label>
-                                ))}
+                            <div className="asistentes-table-container">
+                              <table className="asistentes-table">
+                                <thead>
+                                  <tr>
+                                    <th>Seleccionar</th>
+                                    <th>Nombre</th>
+                                    <th>Código</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {estudiantesList
+                                    .map((asistente) => {
+                                      const studentData = allStudents.find((s) => s.code === asistente.studentId);
+                                      return {
+                                        ...asistente,
+                                        name: studentData ? studentData.name : "?",
+                                        code: studentData ? studentData.code : "?",
+                                      };
+                                    })
+                                    .filter(
+                                      (asistente) =>
+                                        asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        asistente.code.toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map((asistente, index) => (
+                                      <tr key={index}>
+                                        <td>
+                                          <input
+                                            type="checkbox"
+                                            value={asistente.studentId}
+                                            checked={asistentesSeleccionados.has(asistente.studentId)}
+                                            onChange={() => toggleAsistencia(asistente.studentId)}
+                                            disabled={
+                                              activity.state === "COMPLETADO" || activity.state === "COMPLETADOT" ||
+                                              rolActual === "jfedpto"
+                                            }
+                                          />
+                                        </td>
+                                        <td>{asistente.name}</td>
+                                        <td>{asistente.code}</td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
                             </div>
-                          </label>
-                          
 
+                          </label>
+
+                        
 
                           <label>
                             Descripción:

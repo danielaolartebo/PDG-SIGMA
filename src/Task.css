@@ -469,6 +469,36 @@
   }
 
   /* Asistentes */
+
+  .asistentes-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    margin-top: 1rem;
+    border-radius: 5px;
+  }
+  
+  .asistentes-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .asistentes-table th,
+  .asistentes-table td {
+    text-align: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+  }
+  
+  .asistentes-table th {
+    text-align: center;
+    background-color: #f9f9f9;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  
   
   .checkbox-label {
     display: flex;

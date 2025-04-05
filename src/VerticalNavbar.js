@@ -13,8 +13,8 @@ function VerticalNavbar() {
     // Datos quemados
     const fakeUser = {
       id: "12345",
-      firstname: "Juan Esteban",
-      lastname: "Caldas",
+      firstname: "Sofia",
+      lastname: "Martinez",
     };
 
     setUser(fakeUser);
