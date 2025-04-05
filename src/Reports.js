@@ -1,5 +1,6 @@
 import './Reports.css';
 import React from 'react';
+import { useState } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -9,6 +10,7 @@ import {
 
 function Reports() {
   console.log("Reports se está renderizando");
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Datos de ejemplo
   const monitorPerformanceData = [
