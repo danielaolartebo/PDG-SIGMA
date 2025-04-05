@@ -1,4 +1,60 @@
 .reports-container {
-    width: 100vw;
-    height: 100vh;
-}
+    display: flex;
+    margin-left: 200px; 
+  }
+  
+  .reports-content {
+    flex: 1;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+    background-color: #f9f9f9;
+  }
+  
+  .chart-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reports-summary {
+    display: flex;
+    justify-content: space-around;
+    margin: 2rem 2rem 0 2rem;
+    gap: 1rem;
+  }
+  
+  .summary-card {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .summary-card h4 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .completadas {
+    background-color: #4caf50;
+  }
+  
+  .atrasadas {
+    background-color: #ff9800;
+  }
+  
+  .pendientes {
+    background-color: #f44336;
+  }
+  
+  
