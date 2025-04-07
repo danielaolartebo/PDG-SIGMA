@@ -58,7 +58,6 @@ function VerticalNavbar() {
         {(role === "monitor" || role === "professor" || role === "jfedpto") && (
           <>
             <NavLink to="/Task" className={({ isActive }) => (isActive ? "active" : "")}>Actividades</NavLink>
-            <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
           </>
         )}
   
@@ -67,6 +66,7 @@ function VerticalNavbar() {
           <>
             <NavLink to="/CreateMonitoria" className={({ isActive }) => (isActive ? "active" : "")}>Crear monitoria</NavLink>
             <NavLink to="/Applicants" className={({ isActive }) => (isActive ? "active" : "")}>Mis postulantes</NavLink>
+            <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
           </>
         )}
   
