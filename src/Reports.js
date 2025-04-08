@@ -41,9 +41,21 @@ function Reports() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
-    <div className="reports-container">
+    
+    <div className="main">
+       {/* Title begins */}
+       <div className="reports-top-bar">
+          <h2 className="reports-title">Reportes</h2>
+          <button className="download-button">Descargar</button>
+      </div>
+        {/* Title ends */}
+
+      <div className="reports-container">
       <VerticalNavbar />
+
+
       <div className="reports-content">
+
         {/* Gráfico de barras apiladas: Rendimiento de Monitores */}
         <div className="chart-card">
           <h3>Rendimiento de Monitores por Materia</h3>
@@ -112,6 +124,7 @@ function Reports() {
                 </div>
             </div>
         </div>
+      </div>
       </div>
     </div>
   );

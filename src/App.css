@@ -83,8 +83,10 @@
 }
 
 .title-app{
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
   font-family: var(--main-font-family);
-  font-size: 1.5em;
 }
 
 /* Ipad mini size */
