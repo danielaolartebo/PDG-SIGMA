@@ -23,10 +23,11 @@
 }
   
 .title-apply-monitor{
+  margin-top: 30px;
+    margin-left: 200px; 
     font-family: var(--main-font-family);
-    font-size: 1.5em;
-    padding-top: 4.5em;
-    margin-left: 7em;
+    font-size: 28px;
+    font-weight: bold;
 
 }
   
