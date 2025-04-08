@@ -4,7 +4,6 @@ import React from 'react';
 import Popup from './PopUp';
 import { useMemo } from 'react';
 import PopupCheck from './PopUpCheck';
-import Alert from './Alert';
 import { MyContext } from './MyContext';
 import { useContext } from 'react';
 
@@ -17,7 +16,6 @@ function TableContent() {
     const [message, setMessage] = useState("")
     const [idMonitoring, setIdMonitoring] = useState("")
     const [state, setState] = useState("")
-    const [alertVisible, setAlertVisible] = useState(false);
     const recordsPerPage = 6;
     
     const context = useContext(MyContext);
@@ -38,9 +36,6 @@ function TableContent() {
     };
 
     useEffect(() => {
-        if(localStorage.getItem('role') === 'student'){
-            // setAlertVisible(!alertVisible)
-        }
         fetch('http://localhost:5433/monitoring/getA')
             .then(res => {
                 if (!res.ok) {
@@ -212,10 +207,6 @@ function TableContent() {
         }
     };
 
-    const closeAlert = () => {
-        setAlertVisible(!alertVisible);
-    };
-
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
     const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -283,10 +274,7 @@ function TableContent() {
                 onClose={() => handleCloseCheck()}
                 onApply={() => handleApplyClick()}
             />
-             <Alert
-                show={alertVisible}
-                onClose={closeAlert}
-             />
+            
             <div className='table-main-container'>
                 <table className="table" id="table">
                     <thead>
