@@ -39,7 +39,7 @@ function TableContent() {
 
     useEffect(() => {
         if(localStorage.getItem('role') === 'student'){
-            setAlertVisible(!alertVisible)
+            // setAlertVisible(!alertVisible)
         }
         fetch('http://localhost:5433/monitoring/getA')
             .then(res => {
