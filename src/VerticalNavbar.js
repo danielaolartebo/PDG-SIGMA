@@ -10,20 +10,92 @@ function VerticalNavbar() {
   const [showProfileOption, setShowProfileOption] = useState(true);
 
   useEffect(() => {
-    // Datos quemados
-    const fakeUser = {
-      id: "12345",
-      firstname: "Sofia",
-      lastname: "Martinez",
-    };
-
-    setUser(fakeUser);
-
-    const fullName = `${fakeUser.firstname} ${fakeUser.lastname}`;
-    const nameParts = fullName.trim().split(" ");
-    const userInitials = nameParts.map(name => name[0]).join("").toUpperCase();
-    setInitials(userInitials);
+    let id = localStorage.getItem('userId')
+    let roleS = localStorage.getItem('role')
+    while(id === null && role === null){
+      id = localStorage.getItem('userId');
+      role = localStorage.getItem('role');
+      setRole(role);
+    }
+    let nameToUse = "";
+        if(roleS === 'professor'){
+          fetch(`http://localhost:5433/professor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                getInitials(data.name);
+                  setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        else if(roleS === 'monitor'){
+          fetch(`http://localhost:5433/monitor/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                console.log(responseData)
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                getInitials(data.name);
+                setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        else{
+          fetch(`http://localhost:5433/department-head/profile/${id}`)
+          .then(res => {
+              if (!res.ok) {
+                const responseData = res.json();
+                throw new Error(`HTTP error! Status: ${responseData}`);
+                  
+              }
+              return res.json();
+          })
+          .then(data => {
+              if (data) {
+                getInitials(data.name);
+                setUser(data)
+              } else {
+                  console.error("No data.");
+              }
+          })
+          .catch(error => console.error('Error fetching faculty data:', error));
+        }
+        
+    
   }, []);
+
+  function getInitials(name) {
+    const nameParts = name.trim().split(" ");
+          
+          if (nameParts.length > 2) {
+            const firstInitial = nameParts[0]?.charAt(0)?.toUpperCase() || '';
+            const secondInitial = nameParts[2]?.charAt(0)?.toUpperCase() || '';
+            setInitials(firstInitial + secondInitial);
+          } else {
+            const firstInitial = nameParts[0]?.charAt(0)?.toUpperCase() || '';
+            const secondInitial = nameParts[1]?.charAt(0)?.toUpperCase() || '';
+            setInitials(firstInitial + secondInitial);
+          }
+  }
 
   const handleClose = () => {
     localStorage.setItem("role", "");
