@@ -18,6 +18,7 @@
   font-family: var(--main-font-family);
 }
 
+<<<<<<< HEAD
 .download-button {
   position: absolute;
   bottom: 0px;  
@@ -35,6 +36,8 @@
   background-color: var(--hover-color); 
 }
 
+=======
+>>>>>>> Front
 
 .reports-container {
     display: flex;
@@ -43,7 +46,11 @@
   
   .reports-content {
     flex: 1;
+<<<<<<< HEAD
     padding: 2rem;
+=======
+    padding-bottom: 2em;
+>>>>>>> Front
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
     gap: 2rem;
@@ -84,6 +91,7 @@
   }
   
   .completadas {
+<<<<<<< HEAD
     background-color: #4caf50;
   }
   
@@ -95,4 +103,79 @@
     background-color: #f44336;
   }
   
+=======
+    align-content: center;
+    height: 14.8em;
+    width: 8em;
+    background-color: rgb(0, 196, 159);
+  }
+  
+  .tardias {
+    align-content: center;
+    height: 14.8em;
+    width: 8em;
+    background-color: rgb(255, 187, 40);
+  }
+  
+  .pendientes {
+    align-content: center;
+    height: 14.8em;
+    width: 8em;
+    background-color: rgb(255, 82, 82);
+  }
+  
+  .chart-download-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+  }
+  
+  .chart-download-button {
+    background-color: var(--main-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .chart-download-button:hover {
+    background-color: var(--hover-color);
+  }
+  
+  .filters-container {
+    margin-left: 250px; 
+    margin-right: 50px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    flex: 1 1 200px;
+  }
+  
+  .filter-group label {
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+  
+  .filter-group select,
+  .filter-group input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+>>>>>>> Front
   
