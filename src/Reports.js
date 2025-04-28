@@ -1,5 +1,5 @@
 import './Reports.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -13,7 +13,7 @@ function Reports() {
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
   const [asistenciaDataOriginal, setAsistenciaDataOriginal] = useState([]);
   // const [categoryUsageDataOriginal, setCategoryUsageDataOriginal] = useState([]);
-  const [categoryTotalsData, setCategoryTotalsData] = useState([]);
+  const [categoryReportData, setCategoryReportData] = useState([]);
   const [professorData, setProfessorData] = useState([]);
   const [courseSelectedM, setCourseSelectedM] = useState("");
   const [courseSelectedP, setCourseSelectedP] = useState("");
@@ -85,18 +85,13 @@ function Reports() {
              throw new Error(errorData.error || `Error ${categoriesResponse.status}`);
         }
         const categoriesJson = await categoriesResponse.json();
+        console.log("Respuesta API Categorías:", categoriesJson); 
 
-        if (categoriesJson && Array.isArray(categoriesJson.totales_por_categoria)) {
-          setCategoryTotalsData(categoriesJson.totales_por_categoria);
-          // setCategoryUsageDataOriginal(categoriesJson);
-        } else {
-          console.error("Respuesta inesperada o 'totales_por_categoria' no es un array:", categoriesJson);
-          setCategoryTotalsData([]); 
-        }
+        setCategoryReportData(categoriesJson);
 
       } catch (error) {
         console.error('Error fetching categories data:', error);
-        setCategoryTotalsData([]); 
+        setCategoryReportData(null); 
       }
     };
     fetchCategories();
@@ -170,6 +165,81 @@ function Reports() {
     
   };
 
+  const applyAttendanceFilters = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("applyAttendanceFilters recibió datos que no son un array:", data);
+      return [];
+    }
+    return data.filter(d => {
+      if (!d) return false;
+
+      const semesterMatch = !semester || d.semestre === semester;
+
+      const courseMatch = !course ||
+        (Array.isArray(d.asistencia_por_curso) && 
+         d.asistencia_por_curso.some(item => item.curso === course));
+
+      return semesterMatch && courseMatch;
+    });
+  };
+
+  const filteredAttendanceData = applyAttendanceFilters(asistenciaDataOriginal);
+
+  const chartReadyAttendanceData = filteredAttendanceData.map(d => {
+    let displayValue;
+    if (course) {
+      const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
+      displayValue = courseEntry ? courseEntry.cantidad : 0;
+    } else {
+      displayValue = d.total_mes;
+    }
+
+    return {
+      mes: d.mes,
+      semestre: d.semestre, 
+      valorMostrado: displayValue
+    };
+  });
+
+  const lineName = course ? `Asistentes - ${course}` : "Total Asistentes";
+
+  const pieChartData = useMemo(() => {
+    if (!categoryReportData) {
+      console.log("Calculando pieChartData: No hay categoryReportData");
+      return [];
+    }
+
+    if (course) {
+      console.log(`Calculando pieChartData: Filtro de curso '${course}' activo.`);
+      const courseDetail = categoryReportData.detalle_por_curso?.find(
+        (detail) => detail.curso === course
+      );
+
+      if (courseDetail && Array.isArray(courseDetail.categorias)) {
+        console.log("Calculando pieChartData: Curso encontrado, mapeando categorías:", courseDetail.categorias);
+        
+        return courseDetail.categorias.map(cat => ({
+          categoria: cat.categoria,
+          cantidad_total: cat.cantidad 
+        }));
+      } else {
+        console.log("Calculando pieChartData: Curso no encontrado o sin categorías.");
+        return [];
+      }
+    } else {
+      console.log("Calculando pieChartData: Sin filtro de curso, usando totales.");
+      if (Array.isArray(categoryReportData.totales_por_categoria)) {
+         console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
+          return categoryReportData.totales_por_categoria; 
+      } else {
+          console.log("Calculando pieChartData: totales_por_categoria no es un array.");
+          return []; 
+      }
+    }
+  }, [categoryReportData, course]); 
+
+  const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Uso de Categorías (Totales)";
+
   const exportToCSV = (data, filename) => {
     if (!data || data.length === 0) return;
 
@@ -195,8 +265,9 @@ function Reports() {
   };
 
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
-  const categoryUsageData = applyFilters(categoryTotalsData);
-  const asistenciaData = applyFilters(asistenciaDataOriginal);
+  // const categoryUsageData = applyFilters(categoryTotalsData);
+  // const asistenciaData = applyAttendanceFilters(asistenciaDataOriginal);
+  const asistenciaData = chartReadyAttendanceData;
 
   return (
     <div className="main">
@@ -222,6 +293,8 @@ function Reports() {
             <select onChange={(e) => setCourse(e.target.value)}>
               <option value="">Curso</option>
               <option value="POO">POO</option>
+              <option value="Ingeniería de Software I">Ingeniería de Software I</option>
+              <option value="Mundos Posibles 2">Mundos Posibles 2</option>
               <option value="Estructuras de Datos">Estructuras de Datos</option>
             </select>
           </div>
@@ -263,12 +336,12 @@ function Reports() {
             </div>
           </div>
 
-          {/* Gráfico de pastel */}
+          {/* Gráfico de pastel*/}
           <div className="chart-card">
-            <h3>Uso de Categorías (Totales)</h3>
+            <h3>{categoryChartTitle}</h3>
             <PieChart width={400} height={300}>
               <Pie
-                data={categoryTotalsData}
+                data={pieChartData}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
@@ -276,36 +349,38 @@ function Reports() {
                 nameKey="categoria"
                 label={({ categoria }) => categoria}
               >
-                {categoryTotalsData.map((entry, index) => ( 
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}-${entry.categoria}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => `${value} actividades`} />
             </PieChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(categoryTotalsData, 'Uso_Categorias_Totales')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
             </div>
           </div>
 
-          {/* Gráfico de línea */}
+          {/* Asistencias */}
           <div className="chart-card">
-            <h3>Asistencia a monitorías (Total Mensual)</h3>
+            <h3> {`Asistencia a monitorías ${course ? `(${course})` : '(Total Mensual)'}`}</h3>
             <LineChart width={500} height={300} data={asistenciaData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
               <YAxis allowDecimals={false} />
-              <Tooltip formatter={(value) => `${value} asistentes`} />
+              <Tooltip formatter={(value, name, props) => [`${value} asistentes`, lineName]} />
               <Legend />
               <Line
                 type="monotone"
-                dataKey="total_mes"
+                dataKey="valorMostrado"
                 stroke="#8884d8"
-                name="Total Asistentes"
-                activeDot={{ r: 8 }} 
+                name={lineName}
+                activeDot={{ r: 8 }}
               />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, 'Asistencia_Monitorias_Mensual')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar Vista Actual</button>
+              {/* datos filtrados originales*/}
+              {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
           </div>
 
