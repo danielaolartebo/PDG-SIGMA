@@ -14,12 +14,13 @@ function CreateActivity() {
   const [cursos, setCursos] = useState([]);
   const [categorias, setCategorias] = useState(['Académico', 'Extracurricular']);
   const [monitoresProfesores, setMonitoresProfesores] = useState([]);
+  const [requiresAttendance, setRequiresAttendance] = useState(true);
 
   const [allStudents, setAllStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [estudiantesList, setEstudiantesList] = useState([]);
   const [asistentesList, setAsistentesList] = useState([]);
-  const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
+  // const [asistentesSeleccionados, setAsistentesSeleccionados] = useState([]); 
   const role = localStorage.getItem('role');
   const user = localStorage.getItem('userId');
   const [rolResponsable, setRolResponsable] = useState("");
@@ -99,43 +100,52 @@ function CreateActivity() {
     console.log(nuevaActividad)
 
     try {
-        // 
-        const response = await fetch('http://localhost:5433/activity/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(nuevaActividad)
-        });
+      const response = await fetch('http://localhost:5433/activity/create', {
+          method: 'POST', 
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(nuevaActividad)
+      });
 
-        if (!response.ok) {
-            throw new Error(`Error al crear la actividad: ${response.text()}`);
-        }
+      if (!response.ok) {
+           const errorText = await response.text();
+           throw new Error(`Error al crear la actividad: ${response.status} ${errorText}`);
+      }
 
-        const data = await response.json();
-        console.log('Actividad creada:', data);
-        const actividadId = data.id; //
+      const data = await response.json();
+      console.log('Actividad creada:', data);
+      const actividadId = data.id;
 
-        // 
-        await Promise.all(asistentesList.map(async (studentId) => {
-          const attendanceResponse = await fetch('http://localhost:5433/attendance/create', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                  activity: { id: actividadId }, 
-                  student: { code: studentId }
-              })
-          });
-      
-          if (!attendanceResponse.ok) {
-              console.error(`Error al guardar asistencia para el estudiante ${studentId}`);
-          }
-      }));
-      
+      if (requiresAttendance && asistentesList.length > 0) {
+          console.log(`Registrando asistencia para ${asistentesList.length} estudiantes...`);
+          await Promise.all(asistentesList.map(async (studentId) => { 
+              const attendancePayload = {
+                  activity: { id: actividadId },
+                  student: { code: studentId } 
+              };
+              console.log("Enviando payload de asistencia:", attendancePayload); // Log para depurar
 
-        alert('¡Actividad y asistencia guardadas exitosamente!');
+              const attendanceResponse = await fetch('http://localhost:5433/attendance/create', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(attendancePayload)
+              });
+
+              if (!attendanceResponse.ok) {
+                  const errorText = await attendanceResponse.text();
+                  console.error(`Error al guardar asistencia para el estudiante ${studentId}: ${attendanceResponse.status} ${errorText}`);
+              } else {
+                   console.log(`Asistencia guardada para ${studentId}`);
+              }
+          }));
+          console.log("Proceso de registro de asistencia completado.");
+          alert('¡Actividad creada y asistencia registrada exitosamente!');
+      } else {
+          alert('¡Actividad creada exitosamente!');
+          // if (!requiresAttendance) console.log("No se registró asistencia porque la opción estaba desmarcada.");
+          // if (asistentesList.length === 0 && requiresAttendance) console.log("No se registró asistencia porque no se seleccionaron estudiantes.");
+      }
 
         // 
         setNombre('');
@@ -323,50 +333,67 @@ function CreateActivity() {
             
           </div>
 
-          {/* Asistentes */}
-          <label>Asistentes</label>
-          {/* Campo de búsqueda */}
+          <div className="form-group form-group-checkbox"> 
+            <label htmlFor="requiresAttendanceCheckbox" className="checkbox-label">
+              <input
+                type="checkbox"
+                id="requiresAttendanceCheckbox"
+                checked={requiresAttendance}
+                onChange={(e) => setRequiresAttendance(e.target.checked)}
+              />
+              ¿Esta actividad requiere registrar asistencia?
+            </label>
+          </div>
+
+                    {/* Asistentes */}
+                    <label>Asistentes</label>
           <input
             type="text"
             placeholder="Buscar asistente..."
-            className="search-input"
+            className="search-input" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={!requiresAttendance} 
           />
 
           {/* Contenedor de checkboxes */}
-          {/* <div className="checkbox-container">
+          <div className={`checkbox-container2 ${!requiresAttendance ? 'disabled-section' : ''}`}>
+            
             {estudiantesList
               .map(asistente => {
                 const studentData = allStudents.find(s => s.code === asistente.studentId);
                 return {
-                  ...asistente, 
+                  studentId: asistente.studentId, 
                   name: studentData ? studentData.name : "Nombre no encontrado",
-                  code: studentData ? studentData.code : "code no encontrado",
+                  code: studentData ? studentData.code : "Código no encontrado",
                 };
               })
               .filter(asistente =>
-                (asistente.name.toLowerCase().includes(searchTerm.toLowerCase()) ||  asistente.code.toLowerCase().includes(searchTerm.toLowerCase()))// Filtra por búsqueda
+                 (asistente.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  asistente.code?.toLowerCase().includes(searchTerm.toLowerCase()))
               )
-              .sort((a, b) => a.name.localeCompare(b.name)) // Orden alfabético
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map((asistente, index) => (
-                <label key={index} className="checkbox-label">
+                <label key={asistente.studentId || index} className="checkbox-label"> 
                   <input
                     type="checkbox"
                     value={asistente.studentId}
                     checked={asistentesList.includes(asistente.studentId)}
                     onChange={(e) => {
+                      if (!requiresAttendance) return; 
                       if (e.target.checked) {
-                        setAsistentesList([...asistentesList, asistente.studentId]); // Agregar asistente
+                        setAsistentesList([...asistentesList, asistente.studentId]);
                       } else {
-                        setAsistentesList(asistentesList.filter(a => a !== asistente.studentId)); // Eliminar asistente
+                        setAsistentesList(asistentesList.filter(a => a !== asistente.studentId));
                       }
                     }}
+                    disabled={!requiresAttendance} 
                   />
-                  {asistente.name+" - "+asistente.code}
+                  {asistente.name + " - " + asistente.code}
                 </label>
               ))}
-          </div> */}
+              {!requiresAttendance && <p className="disabled-message">El registro de asistencia está desactivado.</p>}
+          </div>
 
 
           {/* Descripción */}
