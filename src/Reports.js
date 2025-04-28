@@ -8,100 +8,107 @@ import {
 } from 'recharts';
 
 function Reports() {
-  /*console.log("Reports se está renderizando");
+  console.log("Reports se está renderizando");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
-  const [professorData, setProfessorData] = useState([]);
+  const [professorData, setProfessorData] = useState('');
   const [courseSelectedM, setCourseSelectedM] = useState("");
   const [courseSelectedP, setCourseSelectedP] = useState("");
   const [filteredMonitorPerformanceData, setFilteredMonitorPerformanceData] = useState([]);
   const [filteredProfessorData, setFilteredProfessorData] = useState([]);
+  const [role, setRole] = useState('')
+
+const [semester, setSemester] = useState('');
+  const [program, setProgram] = useState('');
+  const [course, setCourse] = useState('');
+  const [professor, setProfessor] = useState('');
+  const [monitor, setMonitor] = useState('');
 
   //Porcentaje afectividad por materia de monitores
   const[completedPercent, setCompletedPercent] = useState("")
   const[pendingPercent, setPendingPercent] = useState("")
-  const[latePercent, setLatePercent] = useState("")*/
+  const[latePercent, setLatePercent] = useState("")
+  const[porcentages, setPorcentages] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
 
-  /*useEffect(() => {
+  useEffect(() => {
     const user = localStorage.getItem('userId');
-
+    const role = localStorage.getItem('role')
+    setRole(role);
     const fetchActivities = async () => {
       try {
-        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}`);
+        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}/${role}`);
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
 
         if (monitorJson.length > 0) {
           const firstCourse = monitorJson[0].course;
-          setCourseSelectedM(firstCourse);
           const filtered = monitorJson.filter(a => a.course === firstCourse);
           setFilteredMonitorPerformanceData(filtered);
         }
       } catch (error) {
         console.error('Error fetching monitor data:', error);
       }
-
-      try {
-        const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`);
-        const professorJson = await professorResponse.json();
-        setProfessorData(professorJson);
-
-        if (professorJson.length > 0) {
-          const firstCourseP = professorJson[0].course;
-          setCourseSelectedP(firstCourseP);
-          const filtered = professorJson.filter(a => a.course === firstCourseP);
-          setFilteredProfessorData(filtered);
-        }
-      } catch (error) {
-        console.error('Error fetching professor data:', error);
+      if(role === 'professor'){
+        try {
+            const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`);
+            const professorJson = await professorResponse.json();
+            setProfessorData(professorJson);
+    
+            if (professorJson.length > 0) {
+              const filtered = professorJson.filter(a => a.course === course);
+              setFilteredProfessorData(filtered);
+            }
+          } catch (error) {
+            console.error('Error fetching professor data:', error);
+          }
       }
+      
     };
 
     fetchActivities();
-  }, []);*/
+  }, []);
 
-  /*useEffect(() => {
-    
-    let completed = 0;
-    let pending = 0;
-    let late = 0;
-    let total = 0;
-    const values = filteredMonitorPerformanceData;
-
-    values.forEach(a=>{
-      completed = completed + a.completed;
-      pending = pending + a.pending;
-      late = late + a.late;
-    })
-
-    total = completed+pending+late;
-    setCompletedPercent(((completed/total)*100).toString()+"%");
-    setPendingPercent(((pending/total)*100).toString()+"%");
-    setLatePercent(((late/total)*100).toString()+"%");
-
-    
-  }, [filteredMonitorPerformanceData]);*/
-
-  const [semester, setSemester] = useState('');
-  const [program, setProgram] = useState('');
-  const [course, setCourse] = useState('');
-  const [professor, setProfessor] = useState('');
-  const [monitor, setMonitor] = useState('');
+  
 
   // Datos de ejemplo con atributos para filtros
-  const monitorPerformanceDataOriginal = [
-    { name: 'Monitor A', Completadas: 12, Tardias: 3, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-    { name: 'Monitor B', Completadas: 9, Tardias: 4, Pendientes: 5, semestre: '2024-2', programa: 'Ingenieria Industrial', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-    { name: 'Monitor C', Completadas: 15, Tardias: 1, Pendientes: 0, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-    { name: 'Monitor D', Completadas: 10, Tardias: 2, Pendientes: 1, semestre: '2025-1', programa: 'Ingenieria Industrial', curso: 'Redes', profesor: 'Carlos' },
-    { name: 'Monitor E', Completadas: 7, Tardias: 3, Pendientes: 4, semestre: '2024-2', programa: 'Ingenieria de Sistemas', curso: 'Arreglos', profesor: 'Claudia' },
-    { name: 'Monitor F', Completadas: 13, Tardias: 0, Pendientes: 2, semestre: '2025-1', programa: 'Ingenieria de Sistemas', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-    { name: 'Monitor G', Completadas: 8, Tardias: 1, Pendientes: 3, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Bioinformática', profesor: 'Mariana' },
-    { name: 'Monitor H', Completadas: 11, Tardias: 0, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria Electrónica', curso: 'Circuitos Digitales', profesor: 'José' },
-    { name: 'Monitor I', Completadas: 6, Tardias: 5, Pendientes: 5, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Señales Biomédicas', profesor: 'Mariana' },
-    { name: 'Monitor J', Completadas: 14, Tardias: 2, Pendientes: 1, semestre: '2024-2', programa: 'Ingenieria Electrónica', curso: 'Microcontroladores', profesor: 'José' },
-  ];
+  /*const monitorPerformanceDataOriginal = [
+    { name: 'Monitor A', completed: 12, late: 3, pending: 2, semester: '2024-1', program: 'Ingenieria de Sistemas', course: 'POO', professor: 'Claudia Castiblanco'}
+  ];*/
   
+  
+
+  const getValues = (data) =>{
+    
+    const list = [];
+    monitorPerformanceDataOriginal.forEach((a) =>{
+
+        if(data === "semester"){
+            if(!list.includes(a.semester)){
+                list.push(a.semester);
+            }
+        }else if(data === "courses"){
+            if(!list.includes(a.course)){
+                list.push(a.course);
+            }
+        }else if(data === "professors"){
+
+            if(!list.includes(a.professor)){
+                list.push(a.professor);
+
+            }
+        }else if(data === "programs"){
+            if(!list.includes(a.program)){
+                list.push(a.program);
+            }
+        }else {
+            if(!list.includes(a.name)){
+                list.push(a.name);
+            }
+        }
+       
+    });
+    return list;
+  }
 
   const categoryUsageDataOriginal = [
     { name: 'POO', value: 20, semestre: '2024-1' },
@@ -127,10 +134,10 @@ function Reports() {
   //  Función que aplica los filtros actuales
   const applyFilters = (data) => {
     return data.filter(d =>
-      (!semester || d.semestre === semester) &&
-      (!program || d.programa === program) &&
-      (!course || d.curso === course) &&
-      (!professor || d.profesor === professor) &&
+      (!semester || d.semester === semester) &&
+      (!program || d.program === program) &&
+      (!course || d.course === course) &&
+      (!professor || d.professor === professor) &&
       (!monitor || d.name === monitor)
     );
   };
@@ -162,6 +169,40 @@ function Reports() {
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
   const categoryUsageData = applyFilters(categoryUsageDataOriginal);
   const asistenciaData = applyFilters(asistenciaDataOriginal);
+  
+  const semestersToShow = getValues("semester");
+  const coursesToShow = getValues("courses");
+  const professorsToShow = getValues("professors");
+  const programsToShow = getValues("programs");
+  const monitorsToShow = getValues("monitors");
+
+  useEffect(() => {
+    if (monitorPerformanceData.length > 0) {
+      let completed = 0;
+      let late = 0;
+      let pending = 0;
+      
+      monitorPerformanceData.forEach(item => {
+        completed += item.completed || 0;
+        late += item.late || 0;
+        pending += item.pending || 0;
+      });
+  
+      const total = completed + late + pending;
+      
+      if (total > 0) {
+
+        setPorcentages([{
+          completed: `${((completed / total) * 100)}%`,
+          late: `${((late / total) * 100)}%`,
+          pending: `${((pending / total) * 100)}%`
+        }]);
+        setCompletedPercent(((completed/total)*100).toString()+"%");
+        setPendingPercent(((pending/total)*100).toString()+"%");
+        setLatePercent(((late/total)*100).toString()+"%");
+      }
+    }
+  }, [monitorPerformanceData]);
 
   return (
     <div className="main">
@@ -169,39 +210,53 @@ function Reports() {
         <h2 className="reports-title">Reportes</h2>
         <div className="filters-container">
           <div className="filter-group">
-            <select onChange={(e) => setSemester(e.target.value)}>
-              <option value="">Semestre</option>
-              <option value="2024-1">2024-1</option>
-              <option value="2024-2">2024-2</option>
-            </select>
+          <select onChange={(e) => setSemester(e.target.value)}>
+                <option value="">Semestre</option>
+                {semestersToShow.map((semester, index) => (
+                    <option key={index} value={semester}>
+                    {semester}
+                    </option>
+                ))}
+          </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setProgram(e.target.value)}>
               <option value="">Programa</option>
-              <option value="Ingenieria de Sistemas">Ingenieria de Sistemas</option>
-              <option value="Ingenieria Industrial">Ingenieria Industrial</option>
+                {programsToShow.map((program, index) => (
+                    <option key={index} value={program}>
+                    {program}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setCourse(e.target.value)}>
-              <option value="">Curso</option>
-              <option value="POO">POO</option>
-              <option value="Estructuras de Datos">Estructuras de Datos</option>
+            <option value="">Curso</option>
+                {coursesToShow.map((course, index) => (
+                    <option key={index} value={course}>
+                    {course}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setProfessor(e.target.value)}>
-              <option value="">Profesor</option>
-              <option value="Claudia">Claudia</option>
-              <option value="Carlos">Carlos</option>
+            <option value="">Profesor</option>
+                {professorsToShow.map((professor, index) => (
+                    <option key={index} value={professor}>
+                    {professor}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setMonitor(e.target.value)}>
               <option value="">Monitor</option>
-              <option value="Monitor A">Monitor A</option>
-              <option value="Monitor B">Monitor B</option>
-              <option value="Monitor C">Monitor C</option>
+              {monitorsToShow.map((monitor, index) => (
+                    <option key={index} value={monitor}>
+                    {monitor}
+                    </option>
+                ))}
             </select>
           </div>
         </div>
@@ -214,13 +269,32 @@ function Reports() {
             <h3>Rendimiento de monitores</h3>
             <BarChart width={500} height={300} data={monitorPerformanceData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
+              <XAxis dataKey="nameAndCourse" />
               <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Completadas" stackId="a" fill="rgb(0, 196, 159)" />
-              <Bar dataKey="Tardias" stackId="a" fill="rgb(255, 187, 40)" />
-              <Bar dataKey="Pendientes" stackId="a" fill="rgb(255, 82, 82)" />
+              <Tooltip 
+                formatter={(value, name) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return [value, map[name] || name];
+                }} 
+              />
+              <Legend 
+                formatter={(value) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return map[value] || value;
+                }} 
+              />
+
+              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
+              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
             </BarChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
@@ -271,15 +345,21 @@ function Reports() {
           <div className="chart-card">
             <h3>Tareas completadas, tardías y pendientes</h3>
             <div className="reports-summary">
-              {resumenTareasData.map((item, idx) => (
-                <div key={idx} className={`summary-card ${item.estado.toLowerCase()}`}>
-                  <h4>{item.estado}</h4>
-                  <p>{item.porcentaje}</p>
-                </div>
-              ))}
+              <div className="summary-card completadas">
+                <h4>Completadas</h4>
+                <p>{completedPercent}</p>
+              </div>
+              <div className="summary-card tardias">
+                <h4>Tardías</h4>
+                <p>{latePercent}</p>
+              </div>
+              <div className="summary-card pendientes">
+                <h4>Pendientes</h4>
+                <p>{pendingPercent}</p>
+              </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(resumenTareasData, 'Resumen_Tareas')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas')}>Descargar</button>
             </div>
           </div>
         </div>

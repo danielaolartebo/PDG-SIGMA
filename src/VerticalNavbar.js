@@ -4,7 +4,6 @@ import logo from "../src/img/logo2.png";
 import "./VerticalNavbar.css";
 
 function VerticalNavbar() {
-<<<<<<< HEAD
   const [role, setRole] = useState("professor"); 
   const [user, setUser] = useState(null);
   const [initials, setInitials] = useState("");
@@ -80,46 +79,6 @@ function VerticalNavbar() {
           })
           .catch(error => console.error('Error fetching faculty data:', error));
         }
-        
-    
-=======
-  const [role, setRole] = useState("");
-  const [user, setUser] = useState("");
-  const [initials, setInitials] = useState("");
-
-  useEffect(() => {
-    const id = localStorage.getItem("userId");
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-
-    let endpoint = "";
-
-    if (storedRole === "professor") {
-      endpoint = `http://localhost:5433/professor/profile/${id}`;
-    } else if (storedRole === "monitor") {
-      endpoint = `http://localhost:5433/monitor/profile/${id}`;
-    } else {
-      endpoint = `http://localhost:5433/department-head/profile/${id}`;
-    }
-
-    fetch(endpoint)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data) {
-          setUser(data);
-          const fullName = `${data.firstname} ${data.lastname}`;
-          const nameParts = fullName.trim().split(" ");
-          const userInitials = nameParts.map((name) => name[0]).join("").toUpperCase();
-          setInitials(userInitials);
-        }
-      })
-      .catch((error) => console.error("Error fetching user data:", error));
->>>>>>> Front
   }, []);
 
   function getInitials(name) {
@@ -150,44 +109,16 @@ function VerticalNavbar() {
   
       {/* Menú */}
       <div className="menu-items">
-<<<<<<< HEAD
-        {/* Mostrar avatar primero */}
-        {(role === "monitor" || role === "professor" || role === "jfedpto") && (
-          <NavLink
-            to="/Profile"
-            onClick={() => setShowProfileOption(false)}
-=======
         {/* Avatar del usuario */}
         {(role === "monitor" || role === "professor" || role === "jfedpto") && (
           <NavLink
             to="/Profile"
->>>>>>> Front
             className="user-avatar"
             title={user ? `${user.firstname} ${user.lastname}` : ""}
           >
             {initials}
           </NavLink>
         )}
-<<<<<<< HEAD
-  
-        {/* Todos los usuarios tienen acceso a esta opción */}
-        <NavLink to="/ApplyMonitor" className={({ isActive }) => (isActive ? "active" : "")}>Postulaciones</NavLink>
-  
-        {/* Acceso para Monitor, Profesor y Jefe de Departamento */}
-        {(role === "monitor" || role === "professor" || role === "jfedpto") && (
-          <>
-            <NavLink to="/Task" className={({ isActive }) => (isActive ? "active" : "")}>Actividades</NavLink>
-          </>
-        )}
-  
-        {/* Acceso solo para Profesor */}
-        {role === "professor" && (
-          <>
-            <NavLink to="/CreateMonitoria" className={({ isActive }) => (isActive ? "active" : "")}>Crear monitoria</NavLink>
-            <NavLink to="/Applicants" className={({ isActive }) => (isActive ? "active" : "")}>Mis postulantes</NavLink>
-            <NavLink to="/Reports" className={({ isActive }) => (isActive ? "active" : "")}>Reportes</NavLink>
-=======
-
         {/* Acceso general */}
         <NavLink
           to="/ApplyMonitor"
@@ -229,7 +160,6 @@ function VerticalNavbar() {
             >
               Reportes
             </NavLink>
->>>>>>> Front
           </>
         )}
   
@@ -251,18 +181,3 @@ function VerticalNavbar() {
 }
 
 export default VerticalNavbar;
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> Front
