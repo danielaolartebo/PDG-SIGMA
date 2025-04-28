@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 
 function Reports() {
-  console.log("Reports se está renderizando");
+  // console.log("Reports se está renderizando");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
   const [asistenciaDataOriginal, setAsistenciaDataOriginal] = useState([]);
@@ -19,6 +19,7 @@ function Reports() {
   const [courseSelectedP, setCourseSelectedP] = useState("");
   const [filteredMonitorPerformanceData, setFilteredMonitorPerformanceData] = useState([]);
   const [filteredProfessorData, setFilteredProfessorData] = useState([]);
+  const [optionCourses, setOptionCourses] = useState([]);
 
   //Porcentaje efectividad por materia de monitores
   const[completedPercent, setCompletedPercent] = useState("")
@@ -28,12 +29,25 @@ function Reports() {
   useEffect(() => {
     const user = localStorage.getItem('userId');
 
+    const fetchOptionCourses = async () => {
+      try {
+        const coursesResponse = await fetch(`http://localhost:5433/course/getCoursesByProfessor/${user}`);
+        const coursesJson = await coursesResponse.json();
+        setOptionCourses(coursesJson);
+
+        // console.log('---------Courses option data:',optionCourses);
+      } catch (error) {
+        console.error('Error fetching courses option data:', error);
+      }
+    };
+    fetchOptionCourses();
+
     const fetchActivities = async () => {
       try {
         const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}`);
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
-
+        
         if (monitorJson.length > 0) {
           const firstCourse = monitorJson[0].course;
           setCourseSelectedM(firstCourse);
@@ -125,25 +139,15 @@ function Reports() {
   const [professor, setProfessor] = useState('');
   const [monitor, setMonitor] = useState('');
 
-  // Datos de ejemplo con atributos para filtros
   // const monitorPerformanceDataOriginal = [
   //   { name: 'Monitor A', Completadas: 12, Tardias: 3, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-  //   { name: 'Monitor B', Completadas: 9, Tardias: 4, Pendientes: 5, semestre: '2024-2', programa: 'Ingenieria Industrial', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-  //   { name: 'Monitor C', Completadas: 15, Tardias: 1, Pendientes: 0, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-  //   { name: 'Monitor D', Completadas: 10, Tardias: 2, Pendientes: 1, semestre: '2025-1', programa: 'Ingenieria Industrial', curso: 'Redes', profesor: 'Carlos' },
-  //   { name: 'Monitor E', Completadas: 7, Tardias: 3, Pendientes: 4, semestre: '2024-2', programa: 'Ingenieria de Sistemas', curso: 'Arreglos', profesor: 'Claudia' },
-  //   { name: 'Monitor F', Completadas: 13, Tardias: 0, Pendientes: 2, semestre: '2025-1', programa: 'Ingenieria de Sistemas', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-  //   { name: 'Monitor G', Completadas: 8, Tardias: 1, Pendientes: 3, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Bioinformática', profesor: 'Mariana' },
-  //   { name: 'Monitor H', Completadas: 11, Tardias: 0, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria Electrónica', curso: 'Circuitos Digitales', profesor: 'José' },
-  //   { name: 'Monitor I', Completadas: 6, Tardias: 5, Pendientes: 5, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Señales Biomédicas', profesor: 'Mariana' },
-  //   { name: 'Monitor J', Completadas: 14, Tardias: 2, Pendientes: 1, semestre: '2024-2', programa: 'Ingenieria Electrónica', curso: 'Microcontroladores', profesor: 'José' },
   // ];
 
 
   const resumenTareasData = [
-    { estado: 'Completadas', porcentaje: '68%' },
-    { estado: 'Tardias', porcentaje: '20%' },
-    { estado: 'Pendientes', porcentaje: '12%' },
+    { estado: 'Completadas', porcentaje: completedPercent },
+    { estado: 'Tardias', porcentaje: pendingPercent },
+    { estado: 'Pendientes', porcentaje: latePercent},
   ]
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -158,7 +162,7 @@ function Reports() {
       d &&
       (!semester || d.semestre === semester) &&
       (!program || d.programa === program) &&
-      (!course || d.curso === course) &&
+      (!course || d.course === course) &&
       (!professor || d.profesor === professor) &&
       (!monitor || d.name === monitor)
     );
@@ -205,34 +209,29 @@ function Reports() {
 
   const pieChartData = useMemo(() => {
     if (!categoryReportData) {
-      console.log("Calculando pieChartData: No hay categoryReportData");
       return [];
     }
 
     if (course) {
-      console.log(`Calculando pieChartData: Filtro de curso '${course}' activo.`);
       const courseDetail = categoryReportData.detalle_por_curso?.find(
         (detail) => detail.curso === course
       );
 
       if (courseDetail && Array.isArray(courseDetail.categorias)) {
-        console.log("Calculando pieChartData: Curso encontrado, mapeando categorías:", courseDetail.categorias);
         
         return courseDetail.categorias.map(cat => ({
           categoria: cat.categoria,
           cantidad_total: cat.cantidad 
         }));
       } else {
-        console.log("Calculando pieChartData: Curso no encontrado o sin categorías.");
         return [];
       }
     } else {
-      console.log("Calculando pieChartData: Sin filtro de curso, usando totales.");
       if (Array.isArray(categoryReportData.totales_por_categoria)) {
          console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
           return categoryReportData.totales_por_categoria; 
       } else {
-          console.log("Calculando pieChartData: totales_por_categoria no es un array.");
+          // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
           return []; 
       }
     }
@@ -265,8 +264,6 @@ function Reports() {
   };
 
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
-  // const categoryUsageData = applyFilters(categoryTotalsData);
-  // const asistenciaData = applyAttendanceFilters(asistenciaDataOriginal);
   const asistenciaData = chartReadyAttendanceData;
 
   return (
@@ -292,10 +289,15 @@ function Reports() {
           <div className="filter-group">
             <select onChange={(e) => setCourse(e.target.value)}>
               <option value="">Curso</option>
-              <option value="POO">POO</option>
-              <option value="Ingeniería de Software I">Ingeniería de Software I</option>
-              <option value="Mundos Posibles 2">Mundos Posibles 2</option>
-              <option value="Estructuras de Datos">Estructuras de Datos</option>
+              {optionCourses && Array.isArray(optionCourses) && optionCourses.length > 0 ? (
+                optionCourses.map((item, idx) => (
+                  <option key={idx} value={item.name}>
+                    {item.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>Cargando cursos...</option>
+              )}
             </select>
           </div>
           <div className="filter-group">
@@ -327,9 +329,9 @@ function Reports() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="Completadas" stackId="a" fill="rgb(0, 196, 159)" />
-              <Bar dataKey="Tardias" stackId="a" fill="rgb(255, 187, 40)" />
-              <Bar dataKey="Pendientes" stackId="a" fill="rgb(255, 82, 82)" />
+              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
+              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
             </BarChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
