@@ -30,6 +30,9 @@ function Applicants() {
             for (const applicant of nonElectedApplicants) {
                 await fetch(`http://localhost:5433/monitor/${applicant.code}`, {
                     method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' ,
+                        'Authorization':localStorage.getItem('token')
+                    },
                 });
             }
             
@@ -53,8 +56,10 @@ function Applicants() {
         console.log(electedCodes)
         try {
             const response = await fetch('http://localhost:5433/email-finish-selection', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' ,
+                    'Authorization':localStorage.getItem('token')
+                },
                 body: JSON.stringify(electedCodes),
             });
 
@@ -70,7 +75,12 @@ function Applicants() {
 
     useEffect(() => {
         // Load data from Applicants.json
-        fetch('http://localhost:5433/monitor/getA')
+        fetch('http://localhost:5433/monitor/getA',{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+        })
             .then(response => response.json())
             .then(data => {
                 // Sort records by 'pacumulado' (promedio acumulado) descending

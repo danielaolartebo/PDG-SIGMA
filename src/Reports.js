@@ -1,5 +1,5 @@
 import './Reports.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -8,10 +8,17 @@ import {
 } from 'recharts';
 
 function Reports() {
+
   console.log("Reports se está renderizando");
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
   const [professorData, setProfessorData] = useState('');
+
+  // console.log("Reports se está renderizando");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [asistenciaDataOriginal, setAsistenciaDataOriginal] = useState([]);
+
+  // const [categoryUsageDataOriginal, setCategoryUsageDataOriginal] = useState([]);
+  const [categoryReportData, setCategoryReportData] = useState([]);
   const [courseSelectedM, setCourseSelectedM] = useState("");
   const [courseSelectedP, setCourseSelectedP] = useState("");
   const [filteredMonitorPerformanceData, setFilteredMonitorPerformanceData] = useState([]);
@@ -24,7 +31,7 @@ const [semester, setSemester] = useState('');
   const [professor, setProfessor] = useState('');
   const [monitor, setMonitor] = useState('');
 
-  //Porcentaje afectividad por materia de monitores
+  //Porcentaje efectividad por materia de monitores
   const[completedPercent, setCompletedPercent] = useState("")
   const[pendingPercent, setPendingPercent] = useState("")
   const[latePercent, setLatePercent] = useState("")
@@ -36,10 +43,15 @@ const [semester, setSemester] = useState('');
     setRole(role);
     const fetchActivities = async () => {
       try {
-        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}/${role}`);
+        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}/${role}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
-
+        
         if (monitorJson.length > 0) {
           const firstCourse = monitorJson[0].course;
           const filtered = monitorJson.filter(a => a.course === firstCourse);
@@ -50,7 +62,12 @@ const [semester, setSemester] = useState('');
       }
       if(role === 'professor'){
         try {
-            const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`);
+            const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`,{
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' ,
+                    'Authorization':localStorage.getItem('token')
+                },
+                });
             const professorJson = await professorResponse.json();
             setProfessorData(professorJson);
     
@@ -66,16 +83,51 @@ const [semester, setSemester] = useState('');
     };
 
     fetchActivities();
+
+    const fetchAttendance = async () => {
+      try {
+        const attendanceResponse = await fetch(`http://localhost:5433/monitoring/getAttendanceReport/${user}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
+        const attendanceJson = await attendanceResponse.json();
+        setAsistenciaDataOriginal(attendanceJson);
+
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+      }
+    };
+    fetchAttendance();
+
+    const fetchCategories = async () => {
+
+      const url = `http://localhost:5433/monitoring/getCategoriesReport/${user}`;
+
+      try {
+        const categoriesResponse = await fetch(url,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
+        if (!categoriesResponse.ok) {
+             const errorData = await categoriesResponse.json().catch(() => ({}));
+             throw new Error(errorData.error || `Error ${categoriesResponse.status}`);
+        }
+        const categoriesJson = await categoriesResponse.json();
+        console.log("Respuesta API Categorías:", categoriesJson); 
+
+        setCategoryReportData(categoriesJson);
+
+      } catch (error) {
+        console.error('Error fetching categories data:', error);
+        setCategoryReportData(null); 
+      }
+    };
+    fetchCategories();
   }, []);
-
-  
-
-  // Datos de ejemplo con atributos para filtros
-  /*const monitorPerformanceDataOriginal = [
-    { name: 'Monitor A', completed: 12, late: 3, pending: 2, semester: '2024-1', program: 'Ingenieria de Sistemas', course: 'POO', professor: 'Claudia Castiblanco'}
-  ];*/
-  
-  
 
   const getValues = (data) =>{
     
@@ -110,29 +162,19 @@ const [semester, setSemester] = useState('');
     return list;
   }
 
-  const categoryUsageDataOriginal = [
-    { name: 'POO', value: 20, semestre: '2024-1' },
-    { name: 'Arreglos', value: 30, semestre: '2024-1' },
-    { name: 'Redes', value: 10, semestre: '2024-2' },
-    { name: 'Estructuras', value: 25, semestre: '2024-2' },
-  ];
-
-  const asistenciaDataOriginal = [
-    { mes: 'Enero', asistencia: 40, semestre: '2024-1' },
-    { mes: 'Febrero', asistencia: 52, semestre: '2024-1' },
-    { mes: 'Marzo', asistencia: 33, semestre: '2024-2' },
-    { mes: 'Abril', asistencia: 60, semestre: '2024-2' },
-  ];
-
- /* const resumenTareasData = [
-    { estado: 'Completadas', porcentaje: '68%' },
-    { estado: 'Tardias', porcentaje: '20%' },
-    { estado: 'Pendientes', porcentaje: '12%' },
-  ];*/
+  // const monitorPerformanceDataOriginal = [
+  //   { name: 'Monitor A', Completadas: 12, Tardias: 3, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
+  // ];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
   //  Función que aplica los filtros actuales
   const applyFilters = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("applyFilters recibió datos que no son un array:", data);
+      return [];
+    }
+
     return data.filter(d =>
       (!semester || d.semester === semester) &&
       (!program || d.program === program) &&
@@ -140,10 +182,81 @@ const [semester, setSemester] = useState('');
       (!professor || d.professor === professor) &&
       (!monitor || d.name === monitor)
     );
+    
   };
 
-  const exportToCSV = (data, filename) => {
-    if (!data || data.length === 0) return;
+  const applyAttendanceFilters = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("applyAttendanceFilters recibió datos que no son un array:", data);
+      return [];
+    }
+    return data.filter(d => {
+      if (!d) return false;
+
+      const semesterMatch = !semester || d.semestre === semester;
+
+      const courseMatch = !course ||
+        (Array.isArray(d.asistencia_por_curso) && 
+         d.asistencia_por_curso.some(item => item.curso === course));
+
+      return semesterMatch && courseMatch;
+    });
+  };
+
+  const filteredAttendanceData = applyAttendanceFilters(asistenciaDataOriginal);
+
+  const chartReadyAttendanceData = filteredAttendanceData.map(d => {
+    let displayValue;
+    if (course) {
+      const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
+      displayValue = courseEntry ? courseEntry.cantidad : 0;
+    } else {
+      displayValue = d.total_mes;
+    }
+
+    return {
+      mes: d.mes,
+      semestre: d.semestre, 
+      valorMostrado: displayValue
+    };
+  });
+
+  const lineName = course ? `Asistentes - ${course}` : "Total Asistentes";
+
+  const pieChartData = useMemo(() => {
+    if (!categoryReportData) {
+      return [];
+    }
+
+    if (course) {
+      const courseDetail = categoryReportData.detalle_por_curso?.find(
+        (detail) => detail.curso === course
+      );
+
+      if (courseDetail && Array.isArray(courseDetail.categorias)) {
+        
+        return courseDetail.categorias.map(cat => ({
+          categoria: cat.categoria,
+          cantidad_total: cat.cantidad 
+        }));
+      } else {
+        return [];
+      }
+    } else {
+      if (Array.isArray(categoryReportData.totales_por_categoria)) {
+         console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
+          return categoryReportData.totales_por_categoria; 
+      } else {
+          // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
+          return []; 
+      }
+    }
+  }, [categoryReportData, course]); 
+
+    const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Uso de Categorías (Totales)";
+
+    const exportToCSV = (data, filename) => {
+        if (!data || data.length === 0) return;
 
     const csvRows = [];
     const headers = Object.keys(data[0]);
@@ -167,7 +280,7 @@ const [semester, setSemester] = useState('');
   };
 
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
-  const categoryUsageData = applyFilters(categoryUsageDataOriginal);
+  //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
   const asistenciaData = applyFilters(asistenciaDataOriginal);
   
   const semestersToShow = getValues("semester");
@@ -204,6 +317,7 @@ const [semester, setSemester] = useState('');
     }
   }, [monitorPerformanceData]);
 
+
   return (
     <div className="main">
       <div className="reports-top-bar">
@@ -218,7 +332,6 @@ const [semester, setSemester] = useState('');
                     </option>
                 ))}
           </select>
-          </div>
           <div className="filter-group">
             <select onChange={(e) => setProgram(e.target.value)}>
               <option value="">Programa</option>
@@ -291,7 +404,6 @@ const [semester, setSemester] = useState('');
                   return map[value] || value;
                 }} 
               />
-
               <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
               <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
               <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
@@ -301,43 +413,51 @@ const [semester, setSemester] = useState('');
             </div>
           </div>
 
-          {/* Gráfico de pastel */}
+          {/* Gráfico de pastel*/}
           <div className="chart-card">
-            <h3>Categoría con mayor demanda </h3>
+            <h3>{categoryChartTitle}</h3>
             <PieChart width={400} height={300}>
               <Pie
-                data={categoryUsageData}
+                data={pieChartData}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                dataKey="value"
-                nameKey="name"
-                label={({ name }) => name}
+                dataKey="cantidad_total"
+                nameKey="categoria"
+                label={({ categoria }) => categoria}
               >
-                {categoryUsageData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}-${entry.categoria}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip formatter={(value) => `${value} actividades`} />
             </PieChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(categoryUsageData, 'Categoria_Mayor_Demanda')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
             </div>
           </div>
 
-          {/* Gráfico de línea */}
+          {/* Asistencias */}
           <div className="chart-card">
-            <h3>Asistencia a monitorías</h3>
+            <h3> {`Asistencia a monitorías ${course ? `(${course})` : '(Total Mensual)'}`}</h3>
             <LineChart width={500} height={300} data={asistenciaData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
-              <YAxis />
-              <Tooltip />
+              <YAxis allowDecimals={false} />
+              <Tooltip formatter={(value, name, props) => [`${value} asistentes`, lineName]} />
               <Legend />
-              <Line type="monotone" dataKey="asistencia" stroke="#8884d8" />
+              <Line
+                type="monotone"
+                dataKey="valorMostrado"
+                stroke="#8884d8"
+                name={lineName}
+                activeDot={{ r: 8 }}
+              />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, 'Asistencia_Monitorias')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar Vista Actual</button>
+              {/* datos filtrados originales*/}
+              {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
           </div>
 
@@ -364,6 +484,7 @@ const [semester, setSemester] = useState('');
           </div>
         </div>
       </div>
+     </div>
     </div>
   );
 }

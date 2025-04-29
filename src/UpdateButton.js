@@ -35,6 +35,7 @@ const UpdateButton = ({ role, userId }) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+            'Authorization':localStorage.getItem('token')
       },
       body: JSON.stringify(requestData),
     })

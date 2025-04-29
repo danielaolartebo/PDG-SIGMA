@@ -259,6 +259,33 @@
   .checkbox-container .checkbox-label {
     width: calc(100% / 6 - 10px); /* Hasta 6 elementos por fila */
   }
+
+  .checkbox-container2 {
+    max-height: 160px; 
+    overflow-y: auto;
+    border: 1px solid #ccc; 
+    padding: 10px;
+    margin-top: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  .checkbox-container2 .checkbox-label {
+    display: block; 
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+  
+  .disabled-section {
+    opacity: 0.5;
+    pointer-events: none; 
+    background-color: #eee; 
+  }
+  .disabled-message {
+      font-style: italic;
+      color: #666;
+      text-align: center;
+      padding: 10px 0;
+  }
   
   
   

@@ -4,22 +4,30 @@ import logo from "../src/img/logo2.png";
 import "./VerticalNavbar.css";
 
 function VerticalNavbar() {
-  const [role, setRole] = useState("professor"); 
-  const [user, setUser] = useState(null);
+  const [role, setRole] = useState("");
+  const [user, setUser] = useState("");
   const [initials, setInitials] = useState("");
   const [showProfileOption, setShowProfileOption] = useState(true);
 
   useEffect(() => {
     let id = localStorage.getItem('userId')
     let roleS = localStorage.getItem('role')
-    while(id === null && role === null){
+    while(id === null || roleS === null){
       id = localStorage.getItem('userId');
-      role = localStorage.getItem('role');
-      setRole(role);
+      roleS = localStorage.getItem('role');
+      
     }
+    setRole(roleS);
+    console.log(roleS);
     let nameToUse = "";
         if(roleS === 'professor'){
-          fetch(`http://localhost:5433/professor/profile/${id}`)
+          console.log('Inside professor');
+          fetch(`http://localhost:5433/professor/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization': localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -30,6 +38,7 @@ function VerticalNavbar() {
           })
           .then(data => {
               if (data) {
+                console.log('Inside professor2');
                 getInitials(data.name);
                   setUser(data)
               } else {
@@ -39,7 +48,12 @@ function VerticalNavbar() {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else if(roleS === 'monitor'){
-          fetch(`http://localhost:5433/monitor/profile/${id}`)
+          fetch(`http://localhost:5433/monitor/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                Authorization:localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -60,7 +74,12 @@ function VerticalNavbar() {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else{
-          fetch(`http://localhost:5433/department-head/profile/${id}`)
+          fetch(`http://localhost:5433/department-head/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -114,7 +133,7 @@ function VerticalNavbar() {
           <NavLink
             to="/Profile"
             className="user-avatar"
-            title={user ? `${user.firstname} ${user.lastname}` : ""}
+            title={user ? `${user.name}` : ""}
           >
             {initials}
           </NavLink>

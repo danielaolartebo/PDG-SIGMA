@@ -199,7 +199,11 @@ function CreateMonitoria() {
           try {
             const response = await fetch(`http://localhost:5433/monitoring/createAll/${idProfessor}`, {
               method: "POST",
+                headers: { 'Content-Type': 'application/json' ,
+                    'Authorization':localStorage.getItem('token')
+                },
               body: formData,
+              
             });
             
             const message = await response.text();
@@ -238,6 +242,7 @@ function CreateMonitoria() {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                    'Authorization':localStorage.getItem('token')
               },
               body: JSON.stringify(data),
             });

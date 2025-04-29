@@ -16,7 +16,12 @@ const NotificationIcon = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+        const response = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' ,
+              'Authorization':localStorage.getItem('token')
+          },
+          });
         if (!response.ok) throw new Error("Error al obtener actividades");
 
         const activities = await response.json();

@@ -44,14 +44,17 @@ function Login() {
 
           if(res.role === 'professor'){
             localStorage.setItem('role',res.role)
+            localStorage.setItem('token',`Bearer ${res.token}`)
             navigate('/Task');// Redirige a la pagina del profesor
           }
           else if(res.role === 'monitor') {
             localStorage.setItem('role',res.role)
+            localStorage.setItem('token',`Bearer ${res.token}`)
             navigate('/Task')// Redirige a la pagina de monitor
           }
           else{
             localStorage.setItem('role',res.role)
+            localStorage.setItem('token',`Bearer ${res.token}`)
             navigate('/Task')// Redirige a la pagina inicial con usuario iniciado sesion
           }
         }else{

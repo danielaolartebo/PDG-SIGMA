@@ -41,7 +41,12 @@ function Task() {
       const role = localStorage.getItem('role')
       try{
       
-        const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`); 
+        const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' ,
+              'Authorization':localStorage.getItem('token')
+          },
+          }); 
         const jsonData = await data.json();
         setActivities(jsonData);
         console.log(jsonData);
@@ -50,7 +55,12 @@ function Task() {
         }
     };
     fetchActivities();
-    fetch('http://localhost:5433/student/getA')
+    fetch('http://localhost:5433/student/getA',{
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' ,
+          'Authorization':localStorage.getItem('token')
+      },
+      })
       .then(res => res.json())
       .then(data => setAllStudents(data))
       .catch(error => console.error('Error al obtener los all students:', error));
@@ -157,7 +167,12 @@ console.log("Rol recuperado del localStorage:", userRole);
  
  const fetchMonitors = (monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
-    fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`)
+    fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`,{
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' ,
+          'Authorization':localStorage.getItem('token')
+      },
+      })
       .then(response => response.json())
       .then(data => {
         let filtered = data
@@ -173,7 +188,12 @@ console.log("Rol recuperado del localStorage:", userRole);
 };
 
 const getStudentsByCourse  = async (cursoId) => {
-  fetch(`http://localhost:5433/student/course/${cursoId}`)
+  fetch(`http://localhost:5433/student/course/${cursoId}`,{
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' ,
+        'Authorization':localStorage.getItem('token')
+    },
+    })
         .then((res) => res.json())
         .then((data) => {
           console.log("Datos recibidos:", data);
@@ -193,7 +213,12 @@ const handleExpand = (activityId, monitoringId,courseId) => {
   getStudentsByCourse(courseId)
 
   // Cargar asistencia existente
-  fetch(`http://localhost:5433/attendance/activity/${activityId}`)
+  fetch(`http://localhost:5433/attendance/activity/${activityId}`,{
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' ,
+        'Authorization':localStorage.getItem('token')
+    },
+    })
       .then((res) => res.json())
       .then((data) => {
         const asistenciasSet = new Set(data.map((a) => a.student.code));
@@ -225,6 +250,7 @@ const toggleAsistencia = (studentId) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+            'Authorization':localStorage.getItem('token')
       },
       body: JSON.stringify({...updatedActivityData, id: activityId})
     });
@@ -237,7 +263,12 @@ const toggleAsistencia = (studentId) => {
 
     const user = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
-    const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+    const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' ,
+          'Authorization':localStorage.getItem('token')
+      },
+      });
     const jsonData = await data.json();
     setActivities(jsonData);  
 
@@ -281,7 +312,8 @@ const toggleAsistencia = (studentId) => {
       nuevosAsistentes.map((studentId) =>
         fetch("http://localhost:5433/attendance/create", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json",
+              'Authorization':localStorage.getItem('token') },
           body: JSON.stringify({ activity: { id: activityId }, student: { code: studentId } }),
         })
       )
@@ -290,9 +322,12 @@ const toggleAsistencia = (studentId) => {
     // Eliminar solo los que se desmarcaron
     await Promise.all(
       asistentesEliminados.map((studentId) =>
-        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`, {
-          method: "DELETE",
-        })
+        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`,{
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' ,
+              'Authorization':localStorage.getItem('token')
+          },
+          })
       )
     );
 
@@ -317,9 +352,12 @@ const toggleAsistencia = (studentId) => {
     console.log(`Eliminando actividad con ID: ${activityId}`);
   
     try {
-      const response = await fetch(`http://localhost:5433/activity/${activityId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(`http://localhost:5433/activity/${activityId}`,{
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' ,
+            'Authorization':localStorage.getItem('token')
+        },
+        });
   
       if (!response.ok) {
         throw new Error(`Error al eliminar la actividad: ${await response.text()}`);
@@ -329,7 +367,12 @@ const toggleAsistencia = (studentId) => {
       
       const user = localStorage.getItem('userId');
       const role = localStorage.getItem('role');
-      const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`);
+      const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' ,
+            'Authorization':localStorage.getItem('token')
+        },
+        });
       const jsonData = await data.json();
       setActivities(jsonData);  
 
@@ -369,7 +412,8 @@ const toggleAsistencia = (studentId) => {
     const response = await fetch('http://localhost:5433/activity/updateState', {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json' ,
+          'Authorization':localStorage.getItem('token')
       },
       body: JSON.stringify(id),
     });
