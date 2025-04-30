@@ -281,7 +281,7 @@ const [semester, setSemester] = useState('');
 
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
   //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
-  const asistenciaData = applyFilters(asistenciaDataOriginal);
+  const asistenciaData = chartReadyAttendanceData;
   
   const semestersToShow = getValues("semester");
   const coursesToShow = getValues("courses");
@@ -324,14 +324,15 @@ const [semester, setSemester] = useState('');
         <h2 className="reports-title">Reportes</h2>
         <div className="filters-container">
           <div className="filter-group">
-          <select onChange={(e) => setSemester(e.target.value)}>
-                <option value="">Semestre</option>
-                {semestersToShow.map((semester, index) => (
-                    <option key={index} value={semester}>
-                    {semester}
-                    </option>
-                ))}
-          </select>
+            <select onChange={(e) => setSemester(e.target.value)}>
+                  <option value="">Semestre</option>
+                  {semestersToShow.map((semester, index) => (
+                      <option key={index} value={semester}>
+                      {semester}
+                      </option>
+                  ))}
+            </select>
+          </div>
           <div className="filter-group">
             <select onChange={(e) => setProgram(e.target.value)}>
               <option value="">Programa</option>
@@ -484,7 +485,6 @@ const [semester, setSemester] = useState('');
           </div>
         </div>
       </div>
-     </div>
     </div>
   );
 }
