@@ -14,7 +14,12 @@ useEffect(() => {
         const id = localStorage.getItem('userId')
         const role = localStorage.getItem('role')
         if(role === 'professor'){
-          fetch(`http://localhost:5433/professor/profile/${id}`)
+          fetch(`http://localhost:5433/professor/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -33,7 +38,12 @@ useEffect(() => {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else if(role === 'monitor'){
-          fetch(`http://localhost:5433/monitor/profile/${id}`)
+          fetch(`http://localhost:5433/monitor/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -53,7 +63,12 @@ useEffect(() => {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else{
-          fetch(`http://localhost:5433/department-head/profile/${id}`)
+          fetch(`http://localhost:5433/department-head/profile/${id}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            })
           .then(res => {
               if (!res.ok) {
                 const responseData = res.json();
@@ -73,7 +88,12 @@ useEffect(() => {
         }
         
         
-           fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`)
+           fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.json()}`);

@@ -1,5 +1,5 @@
 import './Reports.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -8,62 +8,255 @@ import {
 } from 'recharts';
 
 function Reports() {
-  const [semester, setSemester] = useState('');
+
+  console.log("Reports se está renderizando");
+  const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
+  const [professorData, setProfessorData] = useState('');
+
+  // console.log("Reports se está renderizando");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [asistenciaDataOriginal, setAsistenciaDataOriginal] = useState([]);
+
+  // const [categoryUsageDataOriginal, setCategoryUsageDataOriginal] = useState([]);
+  const [categoryReportData, setCategoryReportData] = useState([]);
+  const [courseSelectedM, setCourseSelectedM] = useState("");
+  const [courseSelectedP, setCourseSelectedP] = useState("");
+  const [filteredMonitorPerformanceData, setFilteredMonitorPerformanceData] = useState([]);
+  const [filteredProfessorData, setFilteredProfessorData] = useState([]);
+  const [role, setRole] = useState('')
+
+const [semester, setSemester] = useState('');
   const [program, setProgram] = useState('');
   const [course, setCourse] = useState('');
   const [professor, setProfessor] = useState('');
   const [monitor, setMonitor] = useState('');
 
-  // Datos de ejemplo con atributos para filtros
-  const monitorPerformanceDataOriginal = [
-    { name: 'Monitor A', Completadas: 12, Tardias: 3, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-    { name: 'Monitor B', Completadas: 9, Tardias: 4, Pendientes: 5, semestre: '2024-2', programa: 'Ingenieria Industrial', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-    { name: 'Monitor C', Completadas: 15, Tardias: 1, Pendientes: 0, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
-    { name: 'Monitor D', Completadas: 10, Tardias: 2, Pendientes: 1, semestre: '2025-1', programa: 'Ingenieria Industrial', curso: 'Redes', profesor: 'Carlos' },
-    { name: 'Monitor E', Completadas: 7, Tardias: 3, Pendientes: 4, semestre: '2024-2', programa: 'Ingenieria de Sistemas', curso: 'Arreglos', profesor: 'Claudia' },
-    { name: 'Monitor F', Completadas: 13, Tardias: 0, Pendientes: 2, semestre: '2025-1', programa: 'Ingenieria de Sistemas', curso: 'Estructuras de Datos', profesor: 'Carlos' },
-    { name: 'Monitor G', Completadas: 8, Tardias: 1, Pendientes: 3, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Bioinformática', profesor: 'Mariana' },
-    { name: 'Monitor H', Completadas: 11, Tardias: 0, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria Electrónica', curso: 'Circuitos Digitales', profesor: 'José' },
-    { name: 'Monitor I', Completadas: 6, Tardias: 5, Pendientes: 5, semestre: '2025-2', programa: 'Ingenieria Biomédica', curso: 'Señales Biomédicas', profesor: 'Mariana' },
-    { name: 'Monitor J', Completadas: 14, Tardias: 2, Pendientes: 1, semestre: '2024-2', programa: 'Ingenieria Electrónica', curso: 'Microcontroladores', profesor: 'José' },
-  ];
-  
+  //Porcentaje efectividad por materia de monitores
+  const[completedPercent, setCompletedPercent] = useState("")
+  const[pendingPercent, setPendingPercent] = useState("")
+  const[latePercent, setLatePercent] = useState("")
+  const[porcentages, setPorcentages] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
 
-  const categoryUsageDataOriginal = [
-    { name: 'POO', value: 20, semestre: '2024-1' },
-    { name: 'Arreglos', value: 30, semestre: '2024-1' },
-    { name: 'Redes', value: 10, semestre: '2024-2' },
-    { name: 'Estructuras', value: 25, semestre: '2024-2' },
-  ];
+  useEffect(() => {
+    const user = localStorage.getItem('userId');
+    const role = localStorage.getItem('role')
+    setRole(role);
+    const fetchActivities = async () => {
+      try {
+        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}/${role}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
+        const monitorJson = await monitorResponse.json();
+        setMonitorPerformanceDataOriginal(monitorJson);
+        
+        if (monitorJson.length > 0) {
+          const firstCourse = monitorJson[0].course;
+          const filtered = monitorJson.filter(a => a.course === firstCourse);
+          setFilteredMonitorPerformanceData(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching monitor data:', error);
+      }
+      if(role === 'professor'){
+        try {
+            const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`,{
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' ,
+                    'Authorization':localStorage.getItem('token')
+                },
+                });
+            const professorJson = await professorResponse.json();
+            setProfessorData(professorJson);
+    
+            if (professorJson.length > 0) {
+              const filtered = professorJson.filter(a => a.course === course);
+              setFilteredProfessorData(filtered);
+            }
+          } catch (error) {
+            console.error('Error fetching professor data:', error);
+          }
+      }
+      
+    };
 
-  const asistenciaDataOriginal = [
-    { mes: 'Enero', asistencia: 40, semestre: '2024-1' },
-    { mes: 'Febrero', asistencia: 52, semestre: '2024-1' },
-    { mes: 'Marzo', asistencia: 33, semestre: '2024-2' },
-    { mes: 'Abril', asistencia: 60, semestre: '2024-2' },
-  ];
+    fetchActivities();
 
-  const resumenTareasData = [
-    { estado: 'Completadas', porcentaje: '68%' },
-    { estado: 'Tardias', porcentaje: '20%' },
-    { estado: 'Pendientes', porcentaje: '12%' },
-  ];
+    const fetchAttendance = async () => {
+      try {
+        const attendanceResponse = await fetch(`http://localhost:5433/monitoring/getAttendanceReport/${user}`,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
+        const attendanceJson = await attendanceResponse.json();
+        setAsistenciaDataOriginal(attendanceJson);
+
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+      }
+    };
+    fetchAttendance();
+
+    const fetchCategories = async () => {
+
+      const url = `http://localhost:5433/monitoring/getCategoriesReport/${user}`;
+
+      try {
+        const categoriesResponse = await fetch(url,{
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' ,
+                'Authorization':localStorage.getItem('token')
+            },
+            });
+        if (!categoriesResponse.ok) {
+             const errorData = await categoriesResponse.json().catch(() => ({}));
+             throw new Error(errorData.error || `Error ${categoriesResponse.status}`);
+        }
+        const categoriesJson = await categoriesResponse.json();
+        console.log("Respuesta API Categorías:", categoriesJson); 
+
+        setCategoryReportData(categoriesJson);
+
+      } catch (error) {
+        console.error('Error fetching categories data:', error);
+        setCategoryReportData(null); 
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const getValues = (data) =>{
+    
+    const list = [];
+    monitorPerformanceDataOriginal.forEach((a) =>{
+
+        if(data === "semester"){
+            if(!list.includes(a.semester)){
+                list.push(a.semester);
+            }
+        }else if(data === "courses"){
+            if(!list.includes(a.course)){
+                list.push(a.course);
+            }
+        }else if(data === "professors"){
+
+            if(!list.includes(a.professor)){
+                list.push(a.professor);
+
+            }
+        }else if(data === "programs"){
+            if(!list.includes(a.program)){
+                list.push(a.program);
+            }
+        }else {
+            if(!list.includes(a.name)){
+                list.push(a.name);
+            }
+        }
+       
+    });
+    return list;
+  }
+
+  // const monitorPerformanceDataOriginal = [
+  //   { name: 'Monitor A', Completadas: 12, Tardias: 3, Pendientes: 2, semestre: '2024-1', programa: 'Ingenieria de Sistemas', curso: 'POO', profesor: 'Claudia' },
+  // ];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   //  Función que aplica los filtros actuales
   const applyFilters = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("applyFilters recibió datos que no son un array:", data);
+      return [];
+    }
+
     return data.filter(d =>
-      (!semester || d.semestre === semester) &&
-      (!program || d.programa === program) &&
-      (!course || d.curso === course) &&
-      (!professor || d.profesor === professor) &&
+      (!semester || d.semester === semester) &&
+      (!program || d.program === program) &&
+      (!course || d.course === course) &&
+      (!professor || d.professor === professor) &&
       (!monitor || d.name === monitor)
     );
+    
   };
 
-  const exportToCSV = (data, filename) => {
-    if (!data || data.length === 0) return;
+  const applyAttendanceFilters = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("applyAttendanceFilters recibió datos que no son un array:", data);
+      return [];
+    }
+    return data.filter(d => {
+      if (!d) return false;
+
+      const semesterMatch = !semester || d.semestre === semester;
+
+      const courseMatch = !course ||
+        (Array.isArray(d.asistencia_por_curso) && 
+         d.asistencia_por_curso.some(item => item.curso === course));
+
+      return semesterMatch && courseMatch;
+    });
+  };
+
+  const filteredAttendanceData = applyAttendanceFilters(asistenciaDataOriginal);
+
+  const chartReadyAttendanceData = filteredAttendanceData.map(d => {
+    let displayValue;
+    if (course) {
+      const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
+      displayValue = courseEntry ? courseEntry.cantidad : 0;
+    } else {
+      displayValue = d.total_mes;
+    }
+
+    return {
+      mes: d.mes,
+      semestre: d.semestre, 
+      valorMostrado: displayValue
+    };
+  });
+
+  const lineName = course ? `Asistentes - ${course}` : "Total Asistentes";
+
+  const pieChartData = useMemo(() => {
+    if (!categoryReportData) {
+      return [];
+    }
+
+    if (course) {
+      const courseDetail = categoryReportData.detalle_por_curso?.find(
+        (detail) => detail.curso === course
+      );
+
+      if (courseDetail && Array.isArray(courseDetail.categorias)) {
+        
+        return courseDetail.categorias.map(cat => ({
+          categoria: cat.categoria,
+          cantidad_total: cat.cantidad 
+        }));
+      } else {
+        return [];
+      }
+    } else {
+      if (Array.isArray(categoryReportData.totales_por_categoria)) {
+         console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
+          return categoryReportData.totales_por_categoria; 
+      } else {
+          // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
+          return []; 
+      }
+    }
+  }, [categoryReportData, course]); 
+
+    const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Uso de Categorías (Totales)";
+
+    const exportToCSV = (data, filename) => {
+        if (!data || data.length === 0) return;
 
     const csvRows = [];
     const headers = Object.keys(data[0]);
@@ -87,8 +280,43 @@ function Reports() {
   };
 
   const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
-  const categoryUsageData = applyFilters(categoryUsageDataOriginal);
-  const asistenciaData = applyFilters(asistenciaDataOriginal);
+  //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
+  const asistenciaData = chartReadyAttendanceData;
+  
+  const semestersToShow = getValues("semester");
+  const coursesToShow = getValues("courses");
+  const professorsToShow = getValues("professors");
+  const programsToShow = getValues("programs");
+  const monitorsToShow = getValues("monitors");
+
+  useEffect(() => {
+    if (monitorPerformanceData.length > 0) {
+      let completed = 0;
+      let late = 0;
+      let pending = 0;
+      
+      monitorPerformanceData.forEach(item => {
+        completed += item.completed || 0;
+        late += item.late || 0;
+        pending += item.pending || 0;
+      });
+  
+      const total = completed + late + pending;
+      
+      if (total > 0) {
+
+        setPorcentages([{
+          completed: `${((completed / total) * 100)}%`,
+          late: `${((late / total) * 100)}%`,
+          pending: `${((pending / total) * 100)}%`
+        }]);
+        setCompletedPercent(((completed/total)*100).toString()+"%");
+        setPendingPercent(((pending/total)*100).toString()+"%");
+        setLatePercent(((late/total)*100).toString()+"%");
+      }
+    }
+  }, [monitorPerformanceData]);
+
 
   return (
     <div className="main">
@@ -97,43 +325,56 @@ function Reports() {
         <div className="filters-container">
           <div className="filter-group">
             <select onChange={(e) => setSemester(e.target.value)}>
-              <option value="">Semestre</option>
-              <option value="2024-1">2024-1</option>
-              <option value="2024-2">2024-2</option>
+                  <option value="">Semestre</option>
+                  {semestersToShow.map((semester, index) => (
+                      <option key={index} value={semester}>
+                      {semester}
+                      </option>
+                  ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setProgram(e.target.value)}>
               <option value="">Programa</option>
-              <option value="Ingenieria de Sistemas">Ingenieria de Sistemas</option>
-              <option value="Ingenieria Industrial">Ingenieria Industrial</option>
+                {programsToShow.map((program, index) => (
+                    <option key={index} value={program}>
+                    {program}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setCourse(e.target.value)}>
-              <option value="">Curso</option>
-              <option value="POO">POO</option>
-              <option value="Estructuras de Datos">Estructuras de Datos</option>
+            <option value="">Curso</option>
+                {coursesToShow.map((course, index) => (
+                    <option key={index} value={course}>
+                    {course}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setProfessor(e.target.value)}>
-              <option value="">Profesor</option>
-              <option value="Claudia">Claudia</option>
-              <option value="Carlos">Carlos</option>
+            <option value="">Profesor</option>
+                {professorsToShow.map((professor, index) => (
+                    <option key={index} value={professor}>
+                    {professor}
+                    </option>
+                ))}
             </select>
           </div>
           <div className="filter-group">
             <select onChange={(e) => setMonitor(e.target.value)}>
               <option value="">Monitor</option>
-              <option value="Monitor A">Monitor A</option>
-              <option value="Monitor B">Monitor B</option>
-              <option value="Monitor C">Monitor C</option>
+              {monitorsToShow.map((monitor, index) => (
+                    <option key={index} value={monitor}>
+                    {monitor}
+                    </option>
+                ))}
             </select>
           </div>
         </div>
       </div>
-
       <div className="reports-container">
         <VerticalNavbar />
         <div className="reports-content">
@@ -142,56 +383,82 @@ function Reports() {
             <h3>Rendimiento de monitores</h3>
             <BarChart width={500} height={300} data={monitorPerformanceData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
+              <XAxis dataKey="nameAndCourse" />
               <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Completadas" stackId="a" fill="rgb(0, 196, 159)" />
-              <Bar dataKey="Tardias" stackId="a" fill="rgb(255, 187, 40)" />
-              <Bar dataKey="Pendientes" stackId="a" fill="rgb(255, 82, 82)" />
+              <Tooltip 
+                formatter={(value, name) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return [value, map[name] || name];
+                }} 
+              />
+              <Legend 
+                formatter={(value) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return map[value] || value;
+                }} 
+              />
+              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
+              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
             </BarChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
             </div>
           </div>
 
-          {/* Gráfico de pastel */}
+          {/* Gráfico de pastel*/}
           <div className="chart-card">
-            <h3>Categoría con mayor demanda </h3>
+            <h3>{categoryChartTitle}</h3>
             <PieChart width={400} height={300}>
               <Pie
-                data={categoryUsageData}
+                data={pieChartData}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                dataKey="value"
-                nameKey="name"
-                label={({ name }) => name}
+                dataKey="cantidad_total"
+                nameKey="categoria"
+                label={({ categoria }) => categoria}
               >
-                {categoryUsageData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}-${entry.categoria}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip formatter={(value) => `${value} actividades`} />
             </PieChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(categoryUsageData, 'Categoria_Mayor_Demanda')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
             </div>
           </div>
 
-          {/* Gráfico de línea */}
+          {/* Asistencias */}
           <div className="chart-card">
-            <h3>Asistencia a monitorías</h3>
+            <h3> {`Asistencia a monitorías ${course ? `(${course})` : '(Total Mensual)'}`}</h3>
             <LineChart width={500} height={300} data={asistenciaData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
-              <YAxis />
-              <Tooltip />
+              <YAxis allowDecimals={false} />
+              <Tooltip formatter={(value, name, props) => [`${value} asistentes`, lineName]} />
               <Legend />
-              <Line type="monotone" dataKey="asistencia" stroke="#8884d8" />
+              <Line
+                type="monotone"
+                dataKey="valorMostrado"
+                stroke="#8884d8"
+                name={lineName}
+                activeDot={{ r: 8 }}
+              />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, 'Asistencia_Monitorias')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar Vista Actual</button>
+              {/* datos filtrados originales*/}
+              {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
           </div>
 
@@ -199,15 +466,21 @@ function Reports() {
           <div className="chart-card">
             <h3>Tareas completadas, tardías y pendientes</h3>
             <div className="reports-summary">
-              {resumenTareasData.map((item, idx) => (
-                <div key={idx} className={`summary-card ${item.estado.toLowerCase()}`}>
-                  <h4>{item.estado}</h4>
-                  <p>{item.porcentaje}</p>
-                </div>
-              ))}
+              <div className="summary-card completadas">
+                <h4>Completadas</h4>
+                <p>{completedPercent}</p>
+              </div>
+              <div className="summary-card tardias">
+                <h4>Tardías</h4>
+                <p>{latePercent}</p>
+              </div>
+              <div className="summary-card pendientes">
+                <h4>Pendientes</h4>
+                <p>{pendingPercent}</p>
+              </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(resumenTareasData, 'Resumen_Tareas')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas')}>Descargar</button>
             </div>
           </div>
         </div>
