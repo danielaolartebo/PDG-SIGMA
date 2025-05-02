@@ -244,14 +244,16 @@ const [semester, setSemester] = useState('');
         return courseDetail.categorias.map(cat => ({
           categoria: cat.categoria,
           cantidad_total: cat.cantidad 
-        }));
+        }))
+        .slice(0, 5); // Maximo se muestran 5 categorías;
+        
       } else {
         return [];
       }
     } else {
       if (Array.isArray(categoryReportData.totales_por_categoria)) {
          console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
-          return categoryReportData.totales_por_categoria; 
+          return categoryReportData.totales_por_categoria.slice(0, 5);  // Maximo se muestran 5 categorías;
       } else {
           // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
           return []; 
@@ -507,7 +509,13 @@ const [semester, setSemester] = useState('');
                   <Cell key={`cell-${index}-${entry.categoria}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} actividades`} />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const total = pieChartData.reduce((acc, curr) => acc + curr.cantidad_total, 0);
+                  const percent = ((value / total) * 100).toFixed(1);
+                  return [`${value} actividades (${percent}%)`, 'Cantidad'];
+                }} 
+              />
             </PieChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
