@@ -139,4 +139,10 @@
     width: 100%;
     box-sizing: border-box;
   }
+
+  .required {
+    color: red;
+    margin-left: 4px;
+    font-weight: bold;
+  }
   
