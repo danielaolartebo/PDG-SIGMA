@@ -4,7 +4,7 @@ import VerticalNavbar from './VerticalNavbar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   PieChart, Pie, Cell,
-  LineChart, Line,
+  LineChart, Line, LabelList
 } from 'recharts';
 
 function Reports() {
@@ -36,6 +36,12 @@ const [semester, setSemester] = useState('');
   const[pendingPercent, setPendingPercent] = useState("")
   const[latePercent, setLatePercent] = useState("")
   const[porcentages, setPorcentages] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
+
+  //Porcentaje efectividad por materia de profesores
+  const[completedPercentProfessor, setCompletedPercentProfessor] = useState("")
+  const[pendingPercentProfessor, setPendingPercentProfessor] = useState("")
+  const[latePercentProfessor, setLatePercentProfessor] = useState("")
+  const[porcentagesProfessor, setPorcentagesProfessor] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
 
   useEffect(() => {
     const user = localStorage.getItem('userId');
@@ -238,14 +244,16 @@ const [semester, setSemester] = useState('');
         return courseDetail.categorias.map(cat => ({
           categoria: cat.categoria,
           cantidad_total: cat.cantidad 
-        }));
+        }))
+        .slice(0, 5); // Maximo se muestran 5 categorías;
+        
       } else {
         return [];
       }
     } else {
       if (Array.isArray(categoryReportData.totales_por_categoria)) {
          console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
-          return categoryReportData.totales_por_categoria; 
+          return categoryReportData.totales_por_categoria.slice(0, 5);  // Maximo se muestran 5 categorías;
       } else {
           // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
           return []; 
@@ -253,7 +261,7 @@ const [semester, setSemester] = useState('');
     }
   }, [categoryReportData, course]); 
 
-    const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Uso de Categorías (Totales)";
+    const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Top 5 de actividades por categoría";
 
     const exportToCSV = (data, filename) => {
         if (!data || data.length === 0) return;
@@ -289,6 +297,8 @@ const [semester, setSemester] = useState('');
   const programsToShow = getValues("programs");
   const monitorsToShow = getValues("monitors");
 
+  //Porcentaje actividades monitores
+
   useEffect(() => {
     if (monitorPerformanceData.length > 0) {
       let completed = 0;
@@ -318,6 +328,37 @@ const [semester, setSemester] = useState('');
   }, [monitorPerformanceData]);
 
 
+  //Porcentaje actividades profesores
+
+  useEffect(() => {
+    if (professorData.length > 0) {
+      let completed = 0;
+      let late = 0;
+      let pending = 0;
+      
+      professorData.forEach(item => {
+        completed += item.completed || 0;
+        late += item.late || 0;
+        pending += item.pending || 0;
+      });
+  
+      const total = completed + late + pending;
+      
+      if (total > 0) {
+
+        setPorcentages([{
+          completed: `${((completed / total) * 100)}%`,
+          late: `${((late / total) * 100)}%`,
+          pending: `${((pending / total) * 100)}%`
+        }]);
+        setCompletedPercentProfessor(((completed/total)*100).toString()+"%");
+        setPendingPercentProfessor(((pending/total)*100).toString()+"%");
+        setLatePercentProfessor(((late/total)*100).toString()+"%");
+      }
+    }
+  }, [professorData]);
+
+
   return (
     <div className="main">
       <div className="reports-top-bar">
@@ -325,7 +366,7 @@ const [semester, setSemester] = useState('');
         <div className="filters-container">
           <div className="filter-group">
             <select onChange={(e) => setSemester(e.target.value)}>
-                  <option value="">Semestre</option>
+                  <option value="">Semestre*</option>
                   {semestersToShow.map((semester, index) => (
                       <option key={index} value={semester}>
                       {semester}
@@ -335,7 +376,7 @@ const [semester, setSemester] = useState('');
           </div>
           <div className="filter-group">
             <select onChange={(e) => setProgram(e.target.value)}>
-              <option value="">Programa</option>
+              <option value="">Programa*</option>
                 {programsToShow.map((program, index) => (
                     <option key={index} value={program}>
                     {program}
@@ -345,7 +386,7 @@ const [semester, setSemester] = useState('');
           </div>
           <div className="filter-group">
             <select onChange={(e) => setCourse(e.target.value)}>
-            <option value="">Curso</option>
+            <option value="">Curso*</option>
                 {coursesToShow.map((course, index) => (
                     <option key={index} value={course}>
                     {course}
@@ -378,39 +419,76 @@ const [semester, setSemester] = useState('');
       <div className="reports-container">
         <VerticalNavbar />
         <div className="reports-content">
-          {/* Gráfico de barras */}
-          <div className="chart-card">
-            <h3>Rendimiento de monitores</h3>
-            <BarChart width={500} height={300} data={monitorPerformanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="nameAndCourse" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value, name) => {
+        {/* Gráfico de barras - MONITOR */}
+        <div className="chart-card">
+          <h3>Rendimiento de monitores</h3>
+          <BarChart width={500} height={300} data={monitorPerformanceData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            
+            {/* Mostrar solo el nombre del monitor */}
+            <XAxis 
+              dataKey="nameAndCourse" 
+              tickFormatter={(value) => value.split(' ')[0]} 
+            />
+            
+            <YAxis />
+            <Tooltip 
+              formatter={(value, name, props) => {
+                if (props.payload && props.payload[0]) {
+                  const fullName = props.payload[0].nameAndCourse;
                   const map = {
                     completed: 'Completado',
                     pending: 'Pendiente',
                     late: 'Tarde',
                   };
-                  return [value, map[name] || name];
-                }} 
-              />
-              <Legend 
-                formatter={(value) => {
-                  const map = {
-                    completed: 'Completado',
-                    pending: 'Pendiente',
-                    late: 'Tarde',
-                  };
-                  return map[value] || value;
-                }} 
-              />
-              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
-              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
-              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
-            </BarChart>
+                  return [
+                    `${value}%`,
+                    map[name] || name,
+                    `Monitor: ${fullName}`, // Esto muestra el nombre completo en el tooltip
+                  ];
+                }
+                return [`${value}%`, name];
+              }} 
+            />
+            <Legend 
+              formatter={(value) => {
+                const map = {
+                  completed: 'Completado',
+                  pending: 'Pendiente',
+                  late: 'Tarde',
+                };
+                return map[value] || value;
+              }} 
+            />
+            
+            <Bar dataKey="completed" label="Completado" stackId="a" fill="rgb(0, 196, 159)" />
+            <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
+            <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+          </BarChart>
+          <div className="chart-download-container">
+            <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
+          </div>
+        </div>
+
+         {/* Porcentaje de tareas - MONITOR*/}
+         <div className="chart-card">
+            <h3>Tareas completadas, tardías y pendientes de monitores</h3>
+            <div className="reports-summary">
+              <div className="summary-card completadas">
+                <h4>Completadas</h4>
+                <p>{completedPercent}</p>
+              </div>
+              <div className="summary-card tardias">
+                <h4>Tardías</h4>
+                <p>{latePercent}</p>
+              </div>
+              <div className="summary-card pendientes">
+                <h4>Pendientes</h4>
+                <p>{pendingPercent}</p>
+              </div>
+            </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Monitor')}>Descargar</button>
             </div>
           </div>
 
@@ -431,7 +509,13 @@ const [semester, setSemester] = useState('');
                   <Cell key={`cell-${index}-${entry.categoria}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} actividades`} />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const total = pieChartData.reduce((acc, curr) => acc + curr.cantidad_total, 0);
+                  const percent = ((value / total) * 100).toFixed(1);
+                  return [`${value} actividades (${percent}%)`, 'Cantidad'];
+                }} 
+              />
             </PieChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
@@ -440,7 +524,7 @@ const [semester, setSemester] = useState('');
 
           {/* Asistencias */}
           <div className="chart-card">
-            <h3> {`Asistencia a monitorías ${course ? `(${course})` : '(Total Mensual)'}`}</h3>
+            <h3> {`Asistencia a monitorías ${course ? `(${course})` : '(mensual)'}`}</h3>
             <LineChart width={500} height={300} data={asistenciaData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
@@ -456,33 +540,86 @@ const [semester, setSemester] = useState('');
               />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar Vista Actual</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar</button>
               {/* datos filtrados originales*/}
               {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
           </div>
 
-          {/* Porcentaje de tareas */}
-          <div className="chart-card">
-            <h3>Tareas completadas, tardías y pendientes</h3>
+        {/* Gráfico de barras - PROFESOR */}
+        <div className="chart-card">
+          <h3>Rendimiento de profesores</h3>
+          <BarChart width={500} height={300} data={professorData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            
+            {/* Mostrar solo el nombre del profesor */}
+            <XAxis 
+              dataKey="nameAndCourse" 
+              tickFormatter={(value) => value.split(' ')[0]} 
+            />
+            
+            <YAxis />
+            <Tooltip 
+              formatter={(value, name, props) => {
+                if (props.payload && props.payload[0]) {
+                  const fullName = props.payload[0].nameAndCourse;
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return [
+                    `${value}%`,
+                    map[name] || name,
+                    `Profesor: ${fullName}`, // Esto muestra el nombre completo en el tooltip
+                  ];
+                }
+                return [`${value}%`, name];
+              }} 
+            />
+            <Legend 
+              formatter={(value) => {
+                const map = {
+                  completed: 'Completado',
+                  pending: 'Pendiente',
+                  late: 'Tarde',
+                };
+                return map[value] || value;
+              }} 
+            />
+            
+            <Bar dataKey="completed" label="Completado" stackId="a" fill="rgb(0, 196, 159)" />
+            <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
+            <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+          </BarChart>
+          <div className="chart-download-container">
+            <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores')}>Descargar</button>
+          </div>
+        </div>
+
+
+         {/* Porcentaje de tareas - PROFESOR */}
+         <div className="chart-card">
+            <h3>Tareas completadas, tardías y pendientes de profesores</h3>
             <div className="reports-summary">
               <div className="summary-card completadas">
                 <h4>Completadas</h4>
-                <p>{completedPercent}</p>
+                <p>{completedPercentProfessor}</p>
               </div>
               <div className="summary-card tardias">
                 <h4>Tardías</h4>
-                <p>{latePercent}</p>
+                <p>{latePercentProfessor}</p>
               </div>
               <div className="summary-card pendientes">
                 <h4>Pendientes</h4>
-                <p>{pendingPercent}</p>
+                <p>{pendingPercentProfessor}</p>
               </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Profesor')}>Descargar</button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
