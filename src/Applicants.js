@@ -2,6 +2,7 @@ import './Applicants.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import AlertElect from './AlertElect';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Applicants() {
     const [records, setRecords] = useState([]);
@@ -23,12 +24,13 @@ function Applicants() {
         
         
         try {
+            
             const nonElectedApplicants = currentRecords.filter(
                 (_, index) => !electionStatuses[indexOfFirstRecord + index]
             );
             
             for (const applicant of nonElectedApplicants) {
-                await fetch(`http://localhost:5433/monitor/${applicant.code}`, {
+                await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' ,
                         'Authorization':localStorage.getItem('token')
@@ -55,7 +57,7 @@ function Applicants() {
 
         console.log(electedCodes)
         try {
-            const response = await fetch('http://localhost:5433/email-finish-selection', {
+            const response = await fetch(`${BACKEND_URL}/email-finish-selection`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' ,
                     'Authorization':localStorage.getItem('token')
@@ -75,7 +77,7 @@ function Applicants() {
 
     useEffect(() => {
         // Load data from Applicants.json
-        fetch('http://localhost:5433/monitor/getA',{
+        fetch(`${BACKEND_URL}/monitor/getA`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')

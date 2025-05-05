@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell,
   LineChart, Line, LabelList
 } from 'recharts';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Reports() {
 
@@ -49,7 +50,7 @@ const [semester, setSemester] = useState('');
     setRole(role);
     const fetchActivities = async () => {
       try {
-        const monitorResponse = await fetch(`http://localhost:5433/monitoring/getMonitorsReport/${user}/${role}`,{
+        const monitorResponse = await fetch(`${BACKEND_URL}/monitoring/getMonitorsReport/${user}/${role}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -68,7 +69,7 @@ const [semester, setSemester] = useState('');
       }
       if(role === 'professor'){
         try {
-            const professorResponse = await fetch(`http://localhost:5433/monitoring/getProfessorReport/${user}`,{
+            const professorResponse = await fetch(`${BACKEND_URL}/monitoring/getProfessorReport/${user}`,{
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' ,
                     'Authorization':localStorage.getItem('token')
@@ -92,7 +93,7 @@ const [semester, setSemester] = useState('');
 
     const fetchAttendance = async () => {
       try {
-        const attendanceResponse = await fetch(`http://localhost:5433/monitoring/getAttendanceReport/${user}`,{
+        const attendanceResponse = await fetch(`${BACKEND_URL}/monitoring/getAttendanceReport/${user}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -109,7 +110,7 @@ const [semester, setSemester] = useState('');
 
     const fetchCategories = async () => {
 
-      const url = `http://localhost:5433/monitoring/getCategoriesReport/${user}`;
+      const url = `${BACKEND_URL}/monitoring/getCategoriesReport/${user}`;
 
       try {
         const categoriesResponse = await fetch(url,{

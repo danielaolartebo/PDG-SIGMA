@@ -5,6 +5,7 @@ import AlertIcon from './NotificationIcon';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationIcon from './NotificationIcon';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Task() {
   // Estado para almacenar las actividades
@@ -41,7 +42,7 @@ function Task() {
       const role = localStorage.getItem('role')
       try{
       
-        const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+        const data = await fetch(`${BACKEND_URL}/activity/findAll/${user}/${role}`,{
           method: 'GET',
           headers: { 'Content-Type': 'application/json' ,
               'Authorization':localStorage.getItem('token')
@@ -55,7 +56,7 @@ function Task() {
         }
     };
     fetchActivities();
-    fetch('http://localhost:5433/student/getA',{
+    fetch(`${BACKEND_URL}/student/getA`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' ,
           'Authorization':localStorage.getItem('token')
@@ -167,7 +168,7 @@ console.log("Rol recuperado del localStorage:", userRole);
  
  const fetchMonitors = (monitoringId) => {
   if (!monitorsByMonitoring[monitoringId]) {
-    fetch(`http://localhost:5433/monitoring-monitor/${monitoringId}/monitors`,{
+    fetch(`${BACKEND_URL}/monitoring-monitor/${monitoringId}/monitors`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' ,
           'Authorization':localStorage.getItem('token')
@@ -188,7 +189,7 @@ console.log("Rol recuperado del localStorage:", userRole);
 };
 
 const getStudentsByCourse  = async (cursoId) => {
-  fetch(`http://localhost:5433/student/course/${cursoId}`,{
+  fetch(`${BACKEND_URL}/student/course/${cursoId}`,{
     method: 'GET',
     headers: { 'Content-Type': 'application/json' ,
         'Authorization':localStorage.getItem('token')
@@ -213,7 +214,7 @@ const handleExpand = (activityId, monitoringId,courseId) => {
   getStudentsByCourse(courseId)
 
   // Cargar asistencia existente
-  fetch(`http://localhost:5433/attendance/activity/${activityId}`,{
+  fetch(`${BACKEND_URL}/attendance/activity/${activityId}`,{
     method: 'GET',
     headers: { 'Content-Type': 'application/json' ,
         'Authorization':localStorage.getItem('token')
@@ -246,7 +247,7 @@ const toggleAsistencia = (studentId) => {
   console.log(`Guardando cambios para la actividad con ID: ${activityId}`, updatedActivityData);
 
   try {
-    const response = await fetch(`http://localhost:5433/activity/update`, {
+    const response = await fetch(`${BACKEND_URL}/activity/update`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -263,7 +264,7 @@ const toggleAsistencia = (studentId) => {
 
     const user = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
-    const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+    const data = await fetch(`${BACKEND_URL}/activity/findAll/${user}/${role}`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' ,
           'Authorization':localStorage.getItem('token')
@@ -288,7 +289,7 @@ const toggleAsistencia = (studentId) => {
   //         student: { code: studentId }
   //       };
   
-  //       return fetch("http://localhost:5433/attendance/create", {
+  //       return fetch(`${BACKEND_URL}/attendance/create`, {
   //         method: "POST",
   //         headers: { "Content-Type": "application/json" },
   //         body: JSON.stringify(requestBody),
@@ -310,7 +311,7 @@ const toggleAsistencia = (studentId) => {
     // Enviar solo nuevos asistentes
     await Promise.all(
       nuevosAsistentes.map((studentId) =>
-        fetch("http://localhost:5433/attendance/create", {
+        fetch(`${BACKEND_URL}/attendance/create`, {
           method: "POST",
           headers: { "Content-Type": "application/json",
               'Authorization':localStorage.getItem('token') },
@@ -322,7 +323,7 @@ const toggleAsistencia = (studentId) => {
     // Eliminar solo los que se desmarcaron
     await Promise.all(
       asistentesEliminados.map((studentId) =>
-        fetch(`http://localhost:5433/attendance/delete/${activityId}/${studentId}`,{
+        fetch(`${BACKEND_URL}/attendance/delete/${activityId}/${studentId}`,{
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' ,
               'Authorization':localStorage.getItem('token')
@@ -352,7 +353,7 @@ const toggleAsistencia = (studentId) => {
     console.log(`Eliminando actividad con ID: ${activityId}`);
   
     try {
-      const response = await fetch(`http://localhost:5433/activity/${activityId}`,{
+      const response = await fetch(`${BACKEND_URL}/activity/${activityId}`,{
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -367,7 +368,7 @@ const toggleAsistencia = (studentId) => {
       
       const user = localStorage.getItem('userId');
       const role = localStorage.getItem('role');
-      const data = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+      const data = await fetch(`${BACKEND_URL}/activity/findAll/${user}/${role}`,{
         method: 'GET',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -409,7 +410,7 @@ const toggleAsistencia = (studentId) => {
   };
 
   const sendState = async (id) =>{
-    const response = await fetch('http://localhost:5433/activity/updateState', {
+    const response = await fetch(`${BACKEND_URL}/activity/updateState`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json' ,

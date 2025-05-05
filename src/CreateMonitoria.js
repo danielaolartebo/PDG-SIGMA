@@ -6,6 +6,7 @@ import VerticalNavbar from './VerticalNavbar';
 import Popup from "./PopUp";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from 'react';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function CreateMonitoria() {
 
@@ -33,7 +34,7 @@ function CreateMonitoria() {
 
     // Fetch Faculty options
     useEffect(() => {
-        fetch('http://localhost:5433/school/getSchools')
+        fetch(`${BACKEND_URL}/school/getSchools`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -49,7 +50,7 @@ function CreateMonitoria() {
             })
             .catch(error => console.error('Error fetching faculty data:', error));
 
-            fetch('http://localhost:5433/monitoring/getA')
+            fetch(`${BACKEND_URL}/monitoring/getA`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -68,7 +69,7 @@ function CreateMonitoria() {
     }, []);
 
     useEffect(() => {
-            fetch('http://localhost:5433/monitoring/getA')
+            fetch(`${BACKEND_URL}/monitoring/getA`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -93,7 +94,7 @@ function CreateMonitoria() {
             name:selectedFaculty
         }
 
-        fetch('http://localhost:5433/program/getProgramsSchool',{
+        fetch(`${BACKEND_URL}/program/getProgramsSchool`,{
             method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -123,7 +124,7 @@ function CreateMonitoria() {
         const prog = {
             name:selectedProgram
         }
-        fetch('http://localhost:5433/course/getCoursesProgram',{
+        fetch(`${BACKEND_URL}/course/getCoursesProgram`,{
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
