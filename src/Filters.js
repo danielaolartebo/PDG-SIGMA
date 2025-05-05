@@ -23,7 +23,7 @@ function Dropdown() {
 
     // Fetch Faculty options
     useEffect(() => {
-        fetch(`${BACKEND_URL}/school/getSchools`)
+        fetch(`http://3.22.242.137:5433/school/getSchools`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -45,7 +45,7 @@ function Dropdown() {
         const prog = {
             name:selectedFaculty
         }
-        fetch(`${BACKEND_URL}/program/getProgramsSchool`,{
+        fetch(`http://3.22.242.137:5433/program/getProgramsSchool`,{
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -74,7 +74,7 @@ function Dropdown() {
         const prog = {
             name:selectedProgram
         }
-        fetch(`${BACKEND_URL}/course/getCoursesProgram`,{
+        fetch(`http://3.22.242.137:5433/course/getCoursesProgram`,{
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
