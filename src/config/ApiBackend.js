@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://3.22.242.137:5433';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://3.22.242.137:5433';
 // const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5433';
 
 export { BACKEND_URL };
