@@ -2,6 +2,7 @@ import './Login.css';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from './img/logo.png';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Login() {
     const navigate = useNavigate();
@@ -27,8 +28,11 @@ function Login() {
         password:password
       }
       console.log('Data to send:', data);
+
+      const apiUrl = `${BACKEND_URL}/auth/login`;
+      
       try {
-        const response = await fetch('http://localhost:5433/auth/login', {
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

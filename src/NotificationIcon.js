@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Bell } from "./CustomComponents";
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 const NotificationIcon = () => {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -16,7 +17,7 @@ const NotificationIcon = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:5433/activity/findAll/${user}/${role}`,{
+        const response = await fetch(`${BACKEND_URL}/activity/findAll/${user}/${role}`,{
           method: 'GET',
           headers: { 'Content-Type': 'application/json' ,
               'Authorization':localStorage.getItem('token')

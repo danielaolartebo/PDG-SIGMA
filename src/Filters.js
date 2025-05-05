@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MyContext } from './MyContext';
 import { useContext } from 'react';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Dropdown() {
     const [faculties, setFaculties] = useState([]); // State for Faculty options
@@ -22,7 +23,7 @@ function Dropdown() {
 
     // Fetch Faculty options
     useEffect(() => {
-        fetch('http://localhost:5433/school/getSchools')
+        fetch(`${BACKEND_URL}/school/getSchools`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -44,7 +45,7 @@ function Dropdown() {
         const prog = {
             name:selectedFaculty
         }
-        fetch('http://localhost:5433/program/getProgramsSchool',{
+        fetch(`${BACKEND_URL}/program/getProgramsSchool`,{
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -73,7 +74,7 @@ function Dropdown() {
         const prog = {
             name:selectedProgram
         }
-        fetch('http://localhost:5433/course/getCoursesProgram',{
+        fetch(`${BACKEND_URL}/course/getCoursesProgram`,{
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

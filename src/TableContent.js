@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import PopupCheck from './PopUpCheck';
 import { MyContext } from './MyContext';
 import { useContext } from 'react';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function TableContent() {
     const [column, setColumn] = useState([]);
@@ -36,7 +37,7 @@ function TableContent() {
     };
 
     useEffect(() => {
-        fetch('http://localhost:5433/monitoring/getA')
+        fetch(`${BACKEND_URL}/monitoring/getA`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -81,7 +82,7 @@ function TableContent() {
         
         if(selectedRequest === 'faculty' || selectedRequest === ''){
             
-            fetch('http://localhost:5433/monitoring/findByFaculty',{
+            fetch(`${BACKEND_URL}/monitoring/findByFaculty`,{
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -105,7 +106,7 @@ function TableContent() {
             .catch(error => console.error('Error fetching data:', error));
         }
         else if(selectedRequest === 'program'){
-            fetch('http://localhost:5433/monitoring/findByProgram',{
+            fetch(`${BACKEND_URL}/monitoring/findByProgram`,{
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -128,7 +129,7 @@ function TableContent() {
             })
             .catch(error => console.error('Error fetching data:', error));
         }else{
-            fetch('http://localhost:5433/monitoring/findByCourse',{
+            fetch(`${BACKEND_URL}/monitoring/findByCourse`,{
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -175,7 +176,7 @@ function TableContent() {
         }
         try{
             if(state === "Activo"){
-                const response = await fetch('http://localhost:5433/monitor/create', {
+                const response = await fetch(`${BACKEND_URL}/monitor/create`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'

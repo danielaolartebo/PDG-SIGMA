@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../src/img/logo2.png";
 import "./VerticalNavbar.css";
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function VerticalNavbar() {
   const [role, setRole] = useState("");
@@ -22,7 +23,7 @@ function VerticalNavbar() {
     let nameToUse = "";
         if(roleS === 'professor'){
           console.log('Inside professor');
-          fetch(`http://localhost:5433/professor/profile/${id}`,{
+          fetch(`${BACKEND_URL}/professor/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization': localStorage.getItem('token')
@@ -74,7 +75,7 @@ function VerticalNavbar() {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else{
-          fetch(`http://localhost:5433/department-head/profile/${id}`,{
+          fetch(`${BACKEND_URL}/department-head/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')

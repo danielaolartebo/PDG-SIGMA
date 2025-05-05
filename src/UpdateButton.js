@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./UpdateButton.css"; // Importa los estilos
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 const UpdateButton = ({ role, userId }) => {
   const [showOptions, setShowOptions] = useState(false);
@@ -31,7 +32,7 @@ const UpdateButton = ({ role, userId }) => {
 
     console.log("Datos enviados:", requestData);
 
-    fetch("http://localhost:5433/api/sync/update", {
+    fetch(`${BACKEND_URL}/api/sync/update`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

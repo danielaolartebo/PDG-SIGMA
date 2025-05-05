@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import VerticalNavbar from "./VerticalNavbar";
 import profilePic from "./img/profile-pic.png";
 import UpdateButton from "./UpdateButton"; 
-
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Profile() {
   console.log("Profile se está renderizando");
@@ -14,7 +14,7 @@ useEffect(() => {
         const id = localStorage.getItem('userId')
         const role = localStorage.getItem('role')
         if(role === 'professor'){
-          fetch(`http://localhost:5433/professor/profile/${id}`,{
+          fetch(`${BACKEND_URL}/professor/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -38,7 +38,7 @@ useEffect(() => {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else if(role === 'monitor'){
-          fetch(`http://localhost:5433/monitor/profile/${id}`,{
+          fetch(`${BACKEND_URL}/monitor/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -63,7 +63,7 @@ useEffect(() => {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else{
-          fetch(`http://localhost:5433/department-head/profile/${id}`,{
+          fetch(`${BACKEND_URL}/department-head/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -88,7 +88,7 @@ useEffect(() => {
         }
         
         
-           fetch(`http://localhost:5433/monitoring/profile/${id}/${role}`,{
+           fetch(`${BACKEND_URL}/monitoring/profile/${id}/${role}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')

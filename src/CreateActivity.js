@@ -1,6 +1,7 @@
 import './CreateActivity.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
+import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function CreateActivity() {
   // Estados
@@ -25,11 +26,11 @@ function CreateActivity() {
   const user = localStorage.getItem('userId');
   const [rolResponsable, setRolResponsable] = useState("");
   useEffect(() => {
-    fetch('http://localhost:5433/monitoring/getA')
+    fetch(`${BACKEND_URL}/monitoring/getA`)
       .then(res => res.json())
       .then(data => setCursos(data))
       .catch(error => console.error('Error al obtener los cursos:', error));
-    fetch('http://localhost:5433/student/getA',{
+    fetch(`${BACKEND_URL}/student/getA`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' ,
           'Authorization':localStorage.getItem('token')
@@ -42,7 +43,7 @@ function CreateActivity() {
   }, []);
 
   const getMonitors = async (cursoId) => {
-    fetch(`http://localhost:5433/monitoring-monitor/${cursoId}/monitors`,{
+    fetch(`${BACKEND_URL}/monitoring-monitor/${cursoId}/monitors`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' ,
           'Authorization':localStorage.getItem('token')
@@ -55,7 +56,7 @@ function CreateActivity() {
 
   const fetchCategorias = async (cursoId) => {
     try {
-      const response = await fetch(`http://localhost:5433/category/course/${cursoId}`,{
+      const response = await fetch(`${BACKEND_URL}/category/course/${cursoId}`,{
         method: 'GET',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -72,7 +73,7 @@ function CreateActivity() {
   };
 
   const getStudentsByCourse  = async (cursoId) => {
-    fetch(`http://localhost:5433/student/course/${cursoId}`,{
+    fetch(`${BACKEND_URL}/student/course/${cursoId}`,{
         method: 'GET',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -87,7 +88,7 @@ function CreateActivity() {
   };
 
   // const getAssistantsByCourse = async (actId) => {
-  //   fetch(`http://localhost:5433/attendance/activity/${actId}`)
+  //   fetch(`${BACKEND_URL}/attendance/activity/${actId}`)
   //     .then(res => res.json())
   //     .then(data => setAsistentesList(data))
   //     .catch(error => console.error("Error al cargar asistentes:", error));
@@ -120,7 +121,7 @@ function CreateActivity() {
     console.log(nuevaActividad)
 
     try {
-      const response = await fetch('http://localhost:5433/activity/create', {
+      const response = await fetch(`${BACKEND_URL}/activity/create`, {
           method: 'POST', 
           headers: {
               'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ function CreateActivity() {
               };
               console.log("Enviando payload de asistencia:", attendancePayload); // Log para depurar
 
-              const attendanceResponse = await fetch('http://localhost:5433/attendance/create', {
+              const attendanceResponse = await fetch(`${BACKEND_URL}/attendance/create`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json',
                         'Authorization':localStorage.getItem('token') },
@@ -197,7 +198,7 @@ function CreateActivity() {
     }
   
     try {
-      const response = await fetch("http://localhost:5433/category/create", {
+      const response = await fetch(`${BACKEND_URL}/category/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json" ,
