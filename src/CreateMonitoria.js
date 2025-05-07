@@ -449,7 +449,7 @@ function CreateMonitoria() {
                                             <td className="table-data">{record.endFormatted}</td>
                                             <td className="table-data">
                                                 <div className="requirement-container">
-                                                    <button className="edit-button">Editar</button>
+                                                    {/* <button className="edit-button">Editar</button> */}
                                                     <button className="cancel-button">Eliminar</button>
                                                 </div>
                                             </td>
