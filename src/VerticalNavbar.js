@@ -124,7 +124,9 @@ function VerticalNavbar() {
     <div className="vertical-navbar">
       {/* Logo */}
       <div className="logo-container">
-        <img src={logo} alt="Logo" className="logo" />
+        <NavLink to="/Task">
+          <img src={logo} alt="Logo" className="logo" />
+        </NavLink>
       </div>
   
       {/* Menú */}
