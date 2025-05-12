@@ -242,27 +242,27 @@ const [semester, setSemester] = useState('');
       const courseDetail = categoryReportData.detalle_por_curso?.find(
         (detail) => detail.curso === course
       );
-
+    
       if (courseDetail && Array.isArray(courseDetail.categorias)) {
-        
         return courseDetail.categorias.map(cat => ({
           categoria: cat.categoria,
           cantidad_total: cat.cantidad 
         }))
-        .slice(0, 5); // Maximo se muestran 5 categorías;
-        
+        .slice(0, 5);
       } else {
         return [];
       }
     } else {
-      if (Array.isArray(categoryReportData.totales_por_categoria)) {
-         console.log("Calculando pieChartData: Devolviendo totales:", categoryReportData.totales_por_categoria);
-          return categoryReportData.totales_por_categoria.slice(0, 5);  // Maximo se muestran 5 categorías;
+      const totals = categoryReportData?.totales_por_categoria;
+      if (Array.isArray(totals)) {
+        console.log("Calculando pieChartData: Devolviendo totales:", totals);
+        return totals.slice(0, 5);
       } else {
-          // console.log("Calculando pieChartData: totales_por_categoria no es un array.");
-          return []; 
+        console.warn("totales_por_categoria no es un arreglo válido:", totals);
+        return [];
       }
     }
+    
   }, [categoryReportData, course]); 
 
     const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Top 5 de actividades por categoría";
