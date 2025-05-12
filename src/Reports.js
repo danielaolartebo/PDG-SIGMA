@@ -602,7 +602,7 @@ const [semester, setSemester] = useState('');
                 <p>{completedPercent}</p>
               </div>
               <div className="summary-card tardias">
-                <h4>Tardías</h4>
+                <h4>Completadas tardías</h4>
                 <p>{latePercent}</p>
               </div>
               <div className="summary-card pendientes">
@@ -730,7 +730,7 @@ const [semester, setSemester] = useState('');
                 <p>{completedPercentProfessor}</p>
               </div>
               <div className="summary-card tardias">
-                <h4>Tardías</h4>
+                <h4>Completadas tardías</h4>
                 <p>{latePercentProfessor}</p>
               </div>
               <div className="summary-card pendientes">
