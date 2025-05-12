@@ -611,7 +611,7 @@ const [semester, setSemester] = useState('');
           {/* Gráfico de pastel*/}
           <div className="chart-card">
             <h3>{categoryChartTitle}</h3>
-            <PieChart width={400} height={300}>
+            {/* <PieChart width={400} height={300}>
               <Pie
                 data={pieChartData}
                 cx="50%"
@@ -635,7 +635,7 @@ const [semester, setSemester] = useState('');
             </PieChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
-            </div>
+            </div>*/}
           </div>
 
           {/* Asistencias */}
