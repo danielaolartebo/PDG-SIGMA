@@ -580,13 +580,6 @@ const [semester, setSemester] = useState('');
 
       </BarChart>
 
-
-
-
-
-
-
-
           <div className="chart-download-container">
             <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
           </div>
