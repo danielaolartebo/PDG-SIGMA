@@ -10,7 +10,6 @@ import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Reports() {
 
-  console.log("Reports se está renderizando");
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
   const [professorData, setProfessorData] = useState('');
 
@@ -46,26 +45,30 @@ const [semester, setSemester] = useState('');
 
   useEffect(() => {
     const user = localStorage.getItem('userId');
-    const role = localStorage.getItem('role')
+    const role = localStorage.getItem('role');
     setRole(role);
     const fetchActivities = async () => {
       try {
-        const monitorResponse = await fetch(`${BACKEND_URL}/monitoring/getMonitorsReport/${user}/${role}`,{
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' ,
-                'Authorization':localStorage.getItem('token')
-            },
-            });
+        const monitorResponse = await fetch(`${BACKEND_URL}/monitoring/getMonitorsReport/${user}/${role}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('token')
+          },
+        });
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
-        
+  
         if (monitorJson.length > 0) {
           const firstCourse = monitorJson[0].course;
           const filtered = monitorJson.filter(a => a.course === firstCourse);
           setFilteredMonitorPerformanceData(filtered);
+  
+          // <- Aquí actualizas los datos "activos" para el cálculo
+          setMonitorPerformanceData(filtered);
         }
       } catch (error) {
-        console.error('Error fetching monitor data:', error);
+        console.error("Error fetching monitor data:", error);
       }
       if(role === 'professor'){
         try {
@@ -288,9 +291,9 @@ const [semester, setSemester] = useState('');
     document.body.removeChild(link);
   };
 
-  const monitorPerformanceData = applyFilters(monitorPerformanceDataOriginal);
   //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
   const asistenciaData = chartReadyAttendanceData;
+
   
   const semestersToShow = getValues("semester");
   const coursesToShow = getValues("courses");
@@ -298,35 +301,38 @@ const [semester, setSemester] = useState('');
   const programsToShow = getValues("programs");
   const monitorsToShow = getValues("monitors");
 
+
+  const [monitorPerformanceData, setMonitorPerformanceData] = useState([]);
+  console.log("BEFORE",monitorPerformanceData);
+
   //Porcentaje actividades monitores
 
-  useEffect(() => {
-    if (monitorPerformanceData.length > 0) {
-      let completed = 0;
-      let late = 0;
-      let pending = 0;
-      
-      monitorPerformanceData.forEach(item => {
-        completed += item.completed || 0;
-        late += item.late || 0;
-        pending += item.pending || 0;
-      });
-  
-      const total = completed + late + pending;
-      
-      if (total > 0) {
 
-        setPorcentages([{
-          completed: `${((completed / total) * 100)}%`,
-          late: `${((late / total) * 100)}%`,
-          pending: `${((pending / total) * 100)}%`
-        }]);
-        setCompletedPercent(((completed/total)*100).toString()+"%");
-        setPendingPercent(((pending/total)*100).toString()+"%");
-        setLatePercent(((late/total)*100).toString()+"%");
-      }
-    }
+  useEffect(() => {
+  if (monitorPerformanceData.length > 0) {
+    const enrichedData = monitorPerformanceData.map((item) => {
+      const completed = item.completed || 0;
+      const late = item.late || 0;
+      const pending = item.pending || 0;
+      const total = completed + late + pending;
+
+      return {
+        ...item,
+        completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
+        pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
+        latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
+      };
+    });
+
+    setMonitorPerformanceDataOriginal(enrichedData);
+  }
+}, [monitorPerformanceData]); 
+
+  useEffect(() => {
+    console.log("Updated monitorPerformanceData: ", monitorPerformanceData);
   }, [monitorPerformanceData]);
+
+  
 
 
   //Porcentaje actividades profesores
@@ -420,56 +426,172 @@ const [semester, setSemester] = useState('');
       <div className="reports-container">
         <VerticalNavbar />
         <div className="reports-content">
+          
         {/* Gráfico de barras - MONITOR */}
-        <div className="chart-card">
-          <h3>Rendimiento de monitores</h3>
-          <BarChart width={500} height={300} data={monitorPerformanceData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            
-            {/* Mostrar solo el nombre del monitor */}
-            <XAxis 
-              dataKey="nameAndCourse" 
-              tickFormatter={(value) => value.split(' ')[0]} 
+    <div className="chart-card">
+      <h3>Rendimiento de monitores</h3>
+      <BarChart width={500} height={300} data={monitorPerformanceData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        
+        {/* Mostrar solo el nombre del monitor */}
+        <XAxis 
+          dataKey="nameAndCourse" 
+          tickFormatter={(value) => value.split(' ')[0]} 
+        />
+        
+        <YAxis />
+        
+        {/* Tooltip */}
+        <Tooltip 
+          formatter={(value, name, props) => {
+            const map = {
+              completed: 'Completado',
+              pending: 'Pendiente',
+              late: 'Tarde',
+            };
+
+            const payload = props.payload;
+
+            if (payload && typeof value === 'number') {
+              const completed = payload.completed || 0;
+              const pending = payload.pending || 0;
+              const late = payload.late || 0;
+              const total = completed + pending + late;
+
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+              return [`${value} actividades - ${percentage}%`, map[name] || name];
+            }
+
+            return [`${value}`, map[name] || name];
+          }}
+          labelFormatter={(label) => `${label}`}
+        />
+
+        {/* Legend */}
+        <Legend 
+          formatter={(value) => {
+            const map = {
+              completed: 'Completado',
+              pending: 'Pendiente',
+              late: 'Tarde',
+            };
+            return map[value] || value;
+          }} 
+        />
+        
+        {/* Barra de Completado */}
+        <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)">
+          <LabelList
+            dataKey="completed"
+            position="center"
+            content={({ x, y, width, height, value, payload }) => {
+              const completed = payload?.completed || 0;
+              const pending = payload?.pending || 0;
+              const late = payload?.late || 0;
+              const total = completed + pending + late;
+
+              // Verificar que los valores estén llegando correctamente
+              console.log("Completado - Payload:", payload);
+
+              const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+              return (
+                <text
+                  x={x + width / 2}
+                  y={y + height / 2}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#fff"
+                  fontSize={12}
+                  fontWeight="bold"
+                >
+                  {`${percentage}%`}
+                </text>
+              );
+            }}
+          />
+        </Bar>
+
+
+
+
+          {/* Barra de Pendiente */}
+          <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)">
+            <LabelList
+              dataKey="pending"
+              position="center"
+              fill="#fff"
+              fontSize={12}
+              fontWeight="bold"
+              content={({ x, y, width, height, value, payload }) => {
+                const { completed = 0, pending = 0, late = 0 } = payload || {};
+                const total = completed + pending + late;
+                const percentage = total > 0 ? Math.round((pending / total) * 100) : 0;
+
+                return (
+                  <text
+                    x={x + width / 2}
+                    y={y + height / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#fff"
+                    fontSize={12}
+                    fontWeight="bold"
+                  >
+                    {`${percentage}%`}
+                  </text>
+                );
+              }}
             />
-            
-            <YAxis />
-            <Tooltip 
-              formatter={(value, name, props) => {
-                if (props.payload && props.payload[0]) {
-                  const fullName = props.payload[0].nameAndCourse;
-                  const map = {
-                    completed: 'Completado',
-                    pending: 'Pendiente',
-                    late: 'Tarde',
-                  };
-                  return [
-                    `${value}%`,
-                    map[name] || name,
-                    `Monitor: ${fullName}`, // Esto muestra el nombre completo en el tooltip
-                  ];
-                }
-                return [`${value}%`, name];
-              }} 
+          </Bar>
+
+
+          {/* Barra de Tarde */}
+          <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)">
+            <LabelList
+              dataKey="late"
+              position="center"
+              fill="#000"
+              fontSize={12}
+              fontWeight="bold"
+              content={({ x, y, width, height, value, payload }) => {
+                const { completed = 0, pending = 0, late = 0 } = payload || {};
+                const total = completed + pending + late;
+                const percentage = total > 0 ? Math.round((late / total) * 100) : 0;
+
+                return (
+                  <text
+                    x={x + width / 2}
+                    y={y + height / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#000"
+                    fontSize={12}
+                    fontWeight="bold"
+                  >
+                    {`${percentage}%`}
+                  </text>
+                );
+              }}
             />
-            <Legend 
-              formatter={(value) => {
-                const map = {
-                  completed: 'Completado',
-                  pending: 'Pendiente',
-                  late: 'Tarde',
-                };
-                return map[value] || value;
-              }} 
-            />
-            
-            <Bar dataKey="completed" label="Completado" stackId="a" fill="rgb(0, 196, 159)" />
-            <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
-            <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
-          </BarChart>
+          </Bar>
+
+
+      </BarChart>
+
+
+
+
+
+
+
+
           <div className="chart-download-container">
             <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
           </div>
         </div>
+
 
          {/* Porcentaje de tareas - MONITOR*/}
          <div className="chart-card">
