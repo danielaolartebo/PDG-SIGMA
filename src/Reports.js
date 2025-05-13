@@ -64,8 +64,23 @@ const [semester, setSemester] = useState('');
           const filtered = monitorJson.filter(a => a.course === firstCourse);
           setFilteredMonitorPerformanceData(filtered);
   
-          // <- Aquí actualizas los datos "activos" para el cálculo
-          setMonitorPerformanceData(filtered);
+          const enriched = filtered.map((item) => {
+            const completed = item.completed || 0;
+            const late = item.late || 0;
+            const pending = item.pending || 0;
+            const total = completed + late + pending;
+          
+            return {
+              ...item,
+              completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
+              pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
+              latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
+            };
+          });
+          
+          setMonitorPerformanceData(enriched);
+          setMonitorPerformanceDataOriginal(enriched);
+          
         }
       } catch (error) {
         console.error("Error fetching monitor data:", error);
@@ -326,7 +341,7 @@ const [semester, setSemester] = useState('');
   
       setMonitorPerformanceDataOriginal(enrichedData);
   
-      // Calculamos los porcentajes globales para monitores
+      // Calcula los porcentajes globales para monitores
       let totalCompleted = 0;
       let totalLate = 0;
       let totalPending = 0;
@@ -510,17 +525,8 @@ const [semester, setSemester] = useState('');
           <LabelList
             dataKey="completed"
             position="center"
-            content={({ x, y, width, height, value, payload }) => {
-              const completed = payload?.completed || 0;
-              const pending = payload?.pending || 0;
-              const late = payload?.late || 0;
-              const total = completed + pending + late;
-
-              // Verificar que los valores estén llegando correctamente
-              console.log("Completado - Payload:", payload);
-
-              const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-
+            content={({ x, y, width, height, payload }) => {
+              const percentage = payload?.completedPercent ?? 0;
               return (
                 <text
                   x={x + width / 2}
@@ -539,21 +545,13 @@ const [semester, setSemester] = useState('');
         </Bar>
 
 
-
-
           {/* Barra de Pendiente */}
           <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)">
             <LabelList
               dataKey="pending"
               position="center"
-              fill="#fff"
-              fontSize={12}
-              fontWeight="bold"
-              content={({ x, y, width, height, value, payload }) => {
-                const { completed = 0, pending = 0, late = 0 } = payload || {};
-                const total = completed + pending + late;
-                const percentage = total > 0 ? Math.round((pending / total) * 100) : 0;
-
+              content={({ x, y, width, height, payload }) => {
+                const percentage = payload?.pendingPercent ?? 0;
                 return (
                   <text
                     x={x + width / 2}
@@ -577,14 +575,8 @@ const [semester, setSemester] = useState('');
             <LabelList
               dataKey="late"
               position="center"
-              fill="#000"
-              fontSize={12}
-              fontWeight="bold"
-              content={({ x, y, width, height, value, payload }) => {
-                const { completed = 0, pending = 0, late = 0 } = payload || {};
-                const total = completed + pending + late;
-                const percentage = total > 0 ? Math.round((late / total) * 100) : 0;
-
+              content={({ x, y, width, height, payload }) => {
+                const percentage = payload?.latePercent ?? 0;
                 return (
                   <text
                     x={x + width / 2}
