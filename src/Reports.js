@@ -467,7 +467,7 @@ const [semester, setSemester] = useState('');
         <VerticalNavbar />
         <div className="reports-content">
           
-        {/* Gráfico de barras - MONITOR */}
+    {/* Gráfico de barras - MONITOR */}
     <div className="chart-card">
       <h3>Rendimiento de monitores</h3>
       <BarChart width={500} height={300} data={monitorPerformanceData}>
@@ -653,7 +653,7 @@ const [semester, setSemester] = useState('');
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
             </div>*
-          </div>
+
 
           {/* Asistencias */}
           <div className="chart-card">
