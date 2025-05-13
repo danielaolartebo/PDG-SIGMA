@@ -309,24 +309,49 @@ const [semester, setSemester] = useState('');
 
 
   useEffect(() => {
-  if (monitorPerformanceData.length > 0) {
-    const enrichedData = monitorPerformanceData.map((item) => {
-      const completed = item.completed || 0;
-      const late = item.late || 0;
-      const pending = item.pending || 0;
-      const total = completed + late + pending;
-
-      return {
-        ...item,
-        completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
-        pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
-        latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
-      };
-    });
-
-    setMonitorPerformanceDataOriginal(enrichedData);
-  }
-}, [monitorPerformanceData]); 
+    if (monitorPerformanceData.length > 0) {
+      const enrichedData = monitorPerformanceData.map((item) => {
+        const completed = item.completed || 0;
+        const late = item.late || 0;
+        const pending = item.pending || 0;
+        const total = completed + late + pending;
+  
+        return {
+          ...item,
+          completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
+          pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
+          latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
+        };
+      });
+  
+      setMonitorPerformanceDataOriginal(enrichedData);
+  
+      // Calculamos los porcentajes globales para monitores
+      let totalCompleted = 0;
+      let totalLate = 0;
+      let totalPending = 0;
+  
+      monitorPerformanceData.forEach(item => {
+        totalCompleted += item.completed || 0;
+        totalLate += item.late || 0;
+        totalPending += item.pending || 0;
+      });
+  
+      const total = totalCompleted + totalLate + totalPending;
+  
+      if (total > 0) {
+        setCompletedPercent(`${Math.round((totalCompleted / total) * 100)}%`);
+        setPendingPercent(`${Math.round((totalPending / total) * 100)}%`);
+        setLatePercent(`${Math.round((totalLate / total) * 100)}%`);
+        setPorcentages([{
+          completed: `${Math.round((totalCompleted / total) * 100)}%`,
+          pending: `${Math.round((totalPending / total) * 100)}%`,
+          late: `${Math.round((totalLate / total) * 100)}%`
+        }]);
+      }
+    }
+  }, [monitorPerformanceData]);
+  
 
   useEffect(() => {
     console.log("Updated monitorPerformanceData: ", monitorPerformanceData);
@@ -611,7 +636,7 @@ const [semester, setSemester] = useState('');
           {/* Gráfico de pastel*/}
           <div className="chart-card">
             <h3>{categoryChartTitle}</h3>
-            {/* <PieChart width={400} height={300}>
+             <PieChart width={400} height={300}>
               <Pie
                 data={pieChartData}
                 cx="50%"
@@ -635,7 +660,7 @@ const [semester, setSemester] = useState('');
             </PieChart>
             <div className="chart-download-container">
               <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
-            </div>*/}
+            </div>*
           </div>
 
           {/* Asistencias */}
