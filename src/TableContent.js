@@ -1,7 +1,7 @@
 import './App.css';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import Popup from './PopUp';
+import {PopUp} from './PopUp';
 import { useMemo } from 'react';
 import PopupCheck from './PopUpCheck';
 import { MyContext } from './MyContext';
@@ -264,12 +264,12 @@ function TableContent() {
 
     return (
         <div className="main-container">
-             <Popup
+             <PopUp
                 show={isOpen}
                 onClose={() => handleClose()}
             >
                 {message}
-            </Popup>
+            </PopUp>
             <PopupCheck
                 show={isOpenCheck}
                 onClose={() => handleCloseCheck()}
