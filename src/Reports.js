@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell,
   LineChart, Line, LabelList
 } from 'recharts';
+import {PopUp} from "./PopUp";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Reports() {
@@ -25,7 +26,12 @@ function Reports() {
   const [filteredProfessorData, setFilteredProfessorData] = useState([]);
   const [role, setRole] = useState('')
 
-const [semester, setSemester] = useState('');
+  //Pop up
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
+
+  const [semester, setSemester] = useState('');
   const [program, setProgram] = useState('');
   const [course, setCourse] = useState('');
   const [professor, setProfessor] = useState('');
@@ -44,6 +50,10 @@ const [semester, setSemester] = useState('');
   const[porcentagesProfessor, setPorcentagesProfessor] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
 
   useEffect(() => {
+    console.log("obtener---")
+    setMessage("Para obtener la información de los reportes, debes al menos seleccionar información para los primeros 3 filtros.")
+    setIsOpen(!isOpen)
+    setChange(!change)
     const user = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
     setRole(role);
@@ -405,9 +415,19 @@ const [semester, setSemester] = useState('');
     }
   }, [professorData]);
 
+  const handleClose = () =>{
+      setIsOpen(!isOpen)
+      setChange(!change)
+  }
+
 
   return (
     <div className="main">
+      <PopUp
+        show={isOpen}
+        onClose={() => handleClose()}
+      >{message}
+      </PopUp>
       <div className="reports-top-bar">
         <h2 className="reports-title">Reportes</h2>
         <div className="filters-container">

@@ -81,7 +81,7 @@ function Applicants() {
 
             const result = await response.text();
             // alert(result);
-            setMessage("Proceso finalizado - Monitores seleccionados "+result)
+            setMessage("Proceso finalizado - Monitores seleccionados")
             setIsOpen(!isOpen)
             
         } catch (error) {

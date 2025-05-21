@@ -272,6 +272,29 @@ function CreateMonitoria() {
           }
     };
 
+    const handleDelete = async() => {
+        try {
+            //Delete logic in here
+    
+            if (true) {
+                // Estado ok
+                // setMessage("Estado: " + messageR)
+                setMessage("Se ha eliminado la monitoría")
+                setIsOpen(!isOpen)
+                
+            } else {
+                // console.error("Error: " + messageR)
+                // setMessage(error: messageR)
+                setMessage("No ha sido posible eliminar la monitoría")
+                setIsOpen(!isOpen)
+            }
+        } catch (error) {
+            console.error("Error deleting data:", error);
+            setMessage("Error en el servidor: No ha sido posible eliminar la monitoría")
+            setIsOpen(!isOpen)
+        }
+    };
+
     const handleClose = () =>{
         setIsOpen(!isOpen)
         setChange(!change)
@@ -456,7 +479,7 @@ function CreateMonitoria() {
                                             <td className="table-data">
                                                 <div className="requirement-container">
                                                     {/* <button className="edit-button">Editar</button> */}
-                                                    <button className="cancel-button">Eliminar</button>
+                                                    <button className="cancel-button" onClick={handleDelete}>Eliminar</button>
                                                 </div>
                                             </td>
                                         </tr>

@@ -17,7 +17,6 @@ function VerticalNavbar() {
   const handleClose = () =>{
       setIsOpen(!isOpen)
       setChange(!change)
-      setIsLoading(!isLoading)
   }
 
   useEffect(() => {
@@ -126,9 +125,9 @@ function VerticalNavbar() {
   }
 
   const handleCloseLogout = () => {
+    setMessage("Has cerrado sesión exitosamente.")
     setIsOpen(!isOpen)
     setChange(!change)
-    setMessage("Has cerrado sesión exitosamente.")
     localStorage.setItem("role", "");
     localStorage.setItem("userId", "");
   };
