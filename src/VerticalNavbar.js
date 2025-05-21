@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../src/img/logo2.png";
+import {PopUp} from "./PopUp";
 import "./VerticalNavbar.css";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
@@ -9,6 +10,15 @@ function VerticalNavbar() {
   const [user, setUser] = useState("");
   const [initials, setInitials] = useState("");
   const [showProfileOption, setShowProfileOption] = useState(true);
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
+
+  const handleClose = () =>{
+      setIsOpen(!isOpen)
+      setChange(!change)
+      setIsLoading(!isLoading)
+  }
 
   useEffect(() => {
     let id = localStorage.getItem('userId')
@@ -115,13 +125,22 @@ function VerticalNavbar() {
           }
   }
 
-  const handleClose = () => {
+  const handleCloseLogout = () => {
+    setIsOpen(!isOpen)
+    setChange(!change)
+    setMessage("Has cerrado sesión exitosamente.")
     localStorage.setItem("role", "");
     localStorage.setItem("userId", "");
   };
 
   return (
     <div className="vertical-navbar">
+      <PopUp
+          show={isOpen}
+          onClose={() => handleClose()}
+      >
+          {message}
+      </PopUp>
       {/* Logo */}
       <div className="logo-container">
         <NavLink to="/Task">
@@ -192,7 +211,7 @@ function VerticalNavbar() {
             className={({ isActive }) =>
               isActive ? "logout-button active" : "logout-button"
             }
-            onClick={handleClose}
+            onClick={handleCloseLogout}
           >
             Cerrar sesión
           </NavLink>
