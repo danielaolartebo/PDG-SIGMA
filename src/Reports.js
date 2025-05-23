@@ -11,7 +11,7 @@ import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 function Reports() {
 
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
-  const [professorData, setProfessorData] = useState('');
+  const [professorData, setProfessorData] = useState([]);
 
   // console.log("Reports se está renderizando");
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -70,26 +70,25 @@ const [semester, setSemester] = useState('');
       } catch (error) {
         console.error("Error fetching monitor data:", error);
       }
-      if(role === 'professor'){
+     
         try {
-            const professorResponse = await fetch(`${BACKEND_URL}/monitoring/getProfessorReport/${user}`,{
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' ,
-                    'Authorization':localStorage.getItem('token')
-                },
-                });
-            const professorJson = await professorResponse.json();
-            setProfessorData(professorJson);
-    
-            if (professorJson.length > 0) {
-              const filtered = professorJson.filter(a => a.course === course);
-              setFilteredProfessorData(filtered);
+          for (const [index, report] of monitorJson.entries()) {
+            let value = report.idProfessor;
+            if(!professorData.find(e => e.idProfessor === value)){
+                const professorResponse = await fetch(`${BACKEND_URL}/monitoring/getProfessorReport/${value}`,{
+                  method: 'GET',
+                  headers: { 'Content-Type': 'application/json' ,
+                      'Authorization':localStorage.getItem('token')
+                  },
+                  });
+              const professorJson = await professorResponse.json();
+              setProfessorData(prev => [...prev, professorJson]);
             }
-          } catch (error) {
-            console.error('Error fetching professor data:', error);
           }
-      }
-      
+          
+        } catch (error) {
+          console.error('Error fetching professor data:', error);
+        }
     };
 
     fetchActivities();
@@ -730,7 +729,7 @@ const [semester, setSemester] = useState('');
                 <p>{completedPercentProfessor}</p>
               </div>
               <div className="summary-card tardias">
-                <h4>Tardías</h4>
+                <h4>Completadas tarde</h4>
                 <p>{latePercentProfessor}</p>
               </div>
               <div className="summary-card pendientes">

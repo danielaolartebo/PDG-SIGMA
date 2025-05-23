@@ -49,7 +49,7 @@ function VerticalNavbar() {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else if(roleS === 'monitor'){
-          fetch(`http://localhost:5433/monitor/profile/${id}`,{
+          fetch(`${BACKEND_URL}/monitor/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 Authorization:localStorage.getItem('token')
@@ -74,7 +74,7 @@ function VerticalNavbar() {
           })
           .catch(error => console.error('Error fetching faculty data:', error));
         }
-        else{
+        else if(roleS === 'jfedpto'){
           fetch(`${BACKEND_URL}/department-head/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
