@@ -201,7 +201,7 @@ function CreateMonitoria() {
           const idProfessor = localStorage.getItem('userId')
     
           try {
-            const response = await fetch(`http://localhost:5433/monitoring/createAll/${idProfessor}`, {
+            const response = await fetch(`${BACKEND_URL}/monitoring/createAll/${idProfessor}`, {
               method: "POST",
                 headers: { 'Content-Type': 'application/json' ,
                     'Authorization':localStorage.getItem('token')
@@ -243,7 +243,7 @@ function CreateMonitoria() {
           console.log("Data to send:", data);
         
           try {
-            const response = await fetch("http://localhost:5433/monitoring/create", {
+            const response = await fetch(`${BACKEND_URL}/monitoring/create`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -272,22 +272,29 @@ function CreateMonitoria() {
           }
     };
 
-    const handleDelete = async() => {
+    const handleDelete = async(id) => {
         try {
             //Delete logic in here
-    
-            if (true) {
+            const responseDelete = await fetch(`${BACKEND_URL}/monitoring/deleteMonitoring/${id}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                    'Authorization':localStorage.getItem('token')
+              }
+            });
+            const answer = await responseDelete.json();
+            if (answer) {
                 // Estado ok
                 // setMessage("Estado: " + messageR)
                 setMessage("Se ha eliminado la monitoría")
-                setIsOpen(!isOpen)
+                
                 
             } else {
                 // console.error("Error: " + messageR)
                 // setMessage(error: messageR)
                 setMessage("No ha sido posible eliminar la monitoría")
-                setIsOpen(!isOpen)
             }
+            setIsOpen(!isOpen)
         } catch (error) {
             console.error("Error deleting data:", error);
             setMessage("Error en el servidor: No ha sido posible eliminar la monitoría")
@@ -296,7 +303,7 @@ function CreateMonitoria() {
     };
 
     const handleClose = () =>{
-        setIsOpen(!isOpen)
+        setIsOpen(false)
         setChange(!change)
     }
 
@@ -479,7 +486,7 @@ function CreateMonitoria() {
                                             <td className="table-data">
                                                 <div className="requirement-container">
                                                     {/* <button className="edit-button">Editar</button> */}
-                                                    <button className="cancel-button" onClick={handleDelete}>Eliminar</button>
+                                                    <button className="cancel-button" onClick={() =>handleDelete(record.id)}>Eliminar</button>
                                                 </div>
                                             </td>
                                         </tr>
