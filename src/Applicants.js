@@ -1,8 +1,9 @@
 import './Applicants.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
-import AlertElect from './AlertElect';
-import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
+import {PopUp} from "./PopUp";
+import { BACKEND_URL } from './config/ApiBackend';
+import LoadingSpinner from './LoadingSpinner';
 
 function Applicants() {
     const [records, setRecords] = useState([]);
@@ -10,8 +11,19 @@ function Applicants() {
     const [currentPage, setCurrentPage] = useState(1);
     const [electionStatuses, setElectionStatuses] = useState({});
     const recordsPerPage = 8;
-    const [showElectAlert, setShowElectAlert] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState("Todos"); // Selected course
+    const [selectedCourse, setSelectedCourse] = useState("Todos"); 
+
+    const [isOpen, setIsOpen] = useState(false)
+    const [message, setMessage] = useState("")
+    const [change, setChange] = useState(false)
+
+    const [isLoading, setIsLoading] = useState(false)
+
+    const handleClose = () =>{
+        setIsOpen(!isOpen)
+        setChange(!change)
+        setIsLoading(!isLoading)
+    }
 
     const handleFinishClick = async () => {
 
@@ -22,7 +34,7 @@ function Applicants() {
         
         //   setRecords(electedApplicants);
         
-        
+        setIsLoading(true)
         try {
             
             const nonElectedApplicants = currentRecords.filter(
@@ -48,7 +60,9 @@ function Applicants() {
     
         } catch (error) {
             console.error('Error during end of selection:', error);
-            alert('Hubo un error al finalizar la selección.');
+            // alert('Hubo un error al finalizar la selección.');
+            setMessage("Hubo un error al finalizar la selección")
+            setIsOpen(!isOpen)
         }
 
         const electedCodes = currentRecords
@@ -58,7 +72,7 @@ function Applicants() {
         console.log(electedCodes)
         try {
             const response = await fetch(`${BACKEND_URL}/email-finish-selection`, {
-                method: 'DELETE',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' ,
                     'Authorization':localStorage.getItem('token')
                 },
@@ -66,12 +80,16 @@ function Applicants() {
             });
 
             const result = await response.text();
-            alert(result);
+            // alert(result);
+            setMessage("Proceso finalizado - Monitores seleccionados")
+            setIsOpen(!isOpen)
+            
         } catch (error) {
             console.error("Error finishing selection:", error);
-            alert("Failed to finalize the selection.");
+            // alert("No se pudo finalizar la selección.");
+            setMessage("No se pudo finalizar la selección:" + error)
+            setIsOpen(!isOpen)
         }
-        setShowElectAlert(true)
     };
     
 
@@ -139,7 +157,15 @@ function Applicants() {
 
     return (
         <div>
-            <AlertElect show={showElectAlert} onClose={() => setShowElectAlert(false)} />
+            {/* Rueda de carga */}
+            {isLoading && <LoadingSpinner />}
+            {/* Ventana emergente */}
+            <PopUp
+                show={isOpen}
+                onClose={() => handleClose()}
+            >
+                {message}
+            </PopUp>
             {/* Load file button starts */}
             
             <button className="applicants-top-right-button" onClick={handleFinishClick}>Terminar selección</button>

@@ -2,6 +2,7 @@ import './Task.css';
 import VerticalNavbar from './VerticalNavbar';
 import './Login.css';
 import AlertIcon from './NotificationIcon';
+import {PopUp, PopupDelete} from "./PopUp";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationIcon from './NotificationIcon';
@@ -25,11 +26,26 @@ function Task() {
   const rolActual = localStorage.getItem('role');
   const userActual = localStorage.getItem('userId') 
 
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [isOpenDelete, setIsOpenDelete] = useState(false)
+  const [change, setChange] = useState(false)
+
   // Función para alternar filas expandibles
   const toggleRow = (id, monitoringId, courseId) => {
     setExpandedRow(expandedRow === id ? null : id);
     handleExpand(id, monitoringId,courseId);
   };
+
+  const handleClose = () =>{
+    setIsOpen(!isOpen)
+    setChange(!change)
+  }
+
+  const handleCloseDelete = () =>{
+    setIsOpen(!isOpenDelete)
+    setChange(!change)
+  }
 
   // Función para manejar el cambio de página
   const changePage = (newPage) => {
@@ -66,7 +82,7 @@ function Task() {
       .then(data => setAllStudents(data))
       .catch(error => console.error('Error al obtener los all students:', error));
     
-  }, []);
+  }, [change]);
 
   const [editedActivities, setEditedActivities] = useState({});
   
@@ -260,7 +276,9 @@ const toggleAsistencia = (studentId) => {
       throw new Error(`Error al guardar los cambios: ${await response.text()}`);
     }
 
-    alert("Actividad actualizada correctamente");
+    // alert("Actividad actualizada correctamente");
+    setMessage("Actividad actualizada correctamente")
+    setIsOpen(!isOpen)
 
     const user = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
@@ -275,7 +293,9 @@ const toggleAsistencia = (studentId) => {
 
   } catch (error) {
     console.error("Error guardando la actividad:", error);
-    alert("Error al guardar los cambios");
+    setMessage("Error guardando cambios: "+ error)
+    setIsOpen(!isOpen)
+    // alert("Error al guardar los cambios");
   }
 
   
@@ -346,10 +366,10 @@ const toggleAsistencia = (studentId) => {
   };
   
   const handleDelete = async (activityId) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
-      return;
-    }
-  
+    // if (!window.confirm("¿Estás seguro de que deseas eliminar esta actividad?")) {
+    //   return;
+    // }
+
     console.log(`Eliminando actividad con ID: ${activityId}`);
   
     try {
@@ -364,7 +384,9 @@ const toggleAsistencia = (studentId) => {
         throw new Error(`Error al eliminar la actividad: ${await response.text()}`);
       }
   
-      alert("Actividad eliminada correctamente");
+      // alert("Actividad eliminada correctamente");
+      setMessage("Actividad eliminada correctamente")
+      setIsOpen(!isOpen)
       
       const user = localStorage.getItem('userId');
       const role = localStorage.getItem('role');
@@ -380,7 +402,9 @@ const toggleAsistencia = (studentId) => {
 
     } catch (error) {
       console.error("Error eliminando la actividad:", error);
-      alert("No se pudo eliminar la actividad");
+      // alert("No se pudo eliminar la actividad");
+      setMessage("Error al eliminar la actividad: "+ error)
+      setIsOpen(!isOpen)
     }
   };
   
@@ -431,6 +455,13 @@ const toggleAsistencia = (studentId) => {
   return (
     <div className="task-container">
       <VerticalNavbar />
+      {/* Ventana emergente */}
+      <PopUp
+          show={isOpen}
+          onClose={() => handleClose()}
+      >
+          {message}
+      </PopUp>
       <div className="content">
 
         {/* Title starts*/}
@@ -751,8 +782,14 @@ const toggleAsistencia = (studentId) => {
                             <button className="save-button-act" onClick={() => handleSave(activity.id, {
                                                                                         ...editedActivities[activity.id]})}>Guardar</button>
                             <button className="cancel-button-act" onClick={() => handleCancel(activity.id)}>Cancelar</button>
-                            <button className="delete-button-act" onClick={() => handleDelete(activity.id)}>Eliminar</button>
+                            <button className="delete-button-act" onClick={() => setIsOpenDelete(true)}>Eliminar</button>
                           </div>
+
+                          <PopupDelete
+                            show={isOpenDelete}
+                            onClose={() => handleCloseDelete()}
+                            onApply={() => handleDelete(activity.id)}
+                          />
                         </div>
                         
                     </td>

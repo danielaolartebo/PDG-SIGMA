@@ -3,7 +3,7 @@ import './CreateMonitoria.css';
 // import './Task.css';
 import { Link } from 'react-router-dom';
 import VerticalNavbar from './VerticalNavbar';
-import Popup from "./PopUp";
+import {PopUp} from "./PopUp";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from 'react';
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
@@ -188,7 +188,10 @@ function CreateMonitoria() {
           const file = event.target.files[0];
     
           if (!file) {
-            alert("No se seleccionó ningún archivo.");
+            // alert("No se seleccionó ningún archivo.");
+            setMessage("No se seleccionó ningún archivo.")
+            setIsOpen(!isOpen)
+            
             return;
           }
     
@@ -208,15 +211,16 @@ function CreateMonitoria() {
             });
             
             const message = await response.text();
+            // alert(message);
+            setMessage("Estado: "+message)
+            setIsOpen(!isOpen)
 
-            if (response.ok) {
-              alert(message);
-            } else {
-              alert(message);
-            }
           } catch (error) {
             console.error("Error:", error);
-            alert("Error al conectar con el servidor");
+            // alert("Error al conectar con el servidor");
+            setMessage("Error al conectar con el servidor")
+            setIsOpen(!isOpen)
+            
           }
         };
     
@@ -252,7 +256,7 @@ function CreateMonitoria() {
             const messageR = await response.text();
         
             if (response.ok) {
-                setMessage(messageR)
+                setMessage("Estado: " + messageR)
                 setIsOpen(!isOpen)
                 
             } else {
@@ -262,8 +266,33 @@ function CreateMonitoria() {
             }
           } catch (error) {
             console.error("Error fetching data:", error);
-            alert("Ocurrió un error inesperado. Por favor, inténtalo nuevamente.");
+            // alert("Ocurrió un error inesperado. Por favor, inténtalo nuevamente.");
+            setMessage("Ocurrió un error inesperado. Por favor, inténtalo nuevamente.")
+            setIsOpen(!isOpen)
           }
+    };
+
+    const handleDelete = async() => {
+        try {
+            //Delete logic in here
+    
+            if (true) {
+                // Estado ok
+                // setMessage("Estado: " + messageR)
+                setMessage("Se ha eliminado la monitoría")
+                setIsOpen(!isOpen)
+                
+            } else {
+                // console.error("Error: " + messageR)
+                // setMessage(error: messageR)
+                setMessage("No ha sido posible eliminar la monitoría")
+                setIsOpen(!isOpen)
+            }
+        } catch (error) {
+            console.error("Error deleting data:", error);
+            setMessage("Error en el servidor: No ha sido posible eliminar la monitoría")
+            setIsOpen(!isOpen)
+        }
     };
 
     const handleClose = () =>{
@@ -316,12 +345,12 @@ function CreateMonitoria() {
             {/* Load file button ends */}
 
             {/* Ventana emergente */}
-            <Popup
+            <PopUp
                 show={isOpen}
                 onClose={() => handleClose()}
             >
                 {message}
-            </Popup>
+            </PopUp>
 
             <VerticalNavbar />
             <div className="cm-content">
@@ -450,7 +479,7 @@ function CreateMonitoria() {
                                             <td className="table-data">
                                                 <div className="requirement-container">
                                                     {/* <button className="edit-button">Editar</button> */}
-                                                    <button className="cancel-button">Eliminar</button>
+                                                    <button className="cancel-button" onClick={handleDelete}>Eliminar</button>
                                                 </div>
                                             </td>
                                         </tr>

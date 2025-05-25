@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import "./UpdateButton.css"; // Importa los estilos
+import {PopUp} from "./PopUp";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 const UpdateButton = ({ role, userId }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [updateType, setUpdateType] = useState("sameSemester");
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
 
   const handleUpdateTypeChange = (type) => {
     if (type === "newSemester") {
@@ -19,6 +23,11 @@ const UpdateButton = ({ role, userId }) => {
 
     setUpdateType(type);
   };
+
+  const handleClose = () =>{
+    setIsOpen(!isOpen)
+    setChange(!change)
+  }
 
   const handleSubmit = (event) => {
     event.preventDefault(); // Evita la recarga de la página
@@ -42,17 +51,29 @@ const UpdateButton = ({ role, userId }) => {
     })
       .then((response) => response.text())
       .then((data) => {
-        alert(`Actualización completada: ${data}`);
+        setMessage(`Estado : ${data}`)
+        setIsOpen(!isOpen)
+        // alert(`Actualización : ${data}`);
         setShowOptions(false); 
       })
       .catch((error) => {
         console.error("Error en la actualización:", error);
-        alert("Hubo un error en la actualización.");
+        // alert("Hubo un error en la actualización.");
+        setMessage("Error en la actualización: "+ error)
+        setIsOpen(!isOpen)
       });
   };
 
   return (
     <div className="update-button-container">
+      <PopUp
+          show={isOpen}
+          onClose={() => handleClose()}
+      >
+          {message}
+      </PopUp>
+      <div className="content"></div>
+
       <button className="update-button" onClick={() => setShowOptions(!showOptions)}>
         Actualizar
       </button>

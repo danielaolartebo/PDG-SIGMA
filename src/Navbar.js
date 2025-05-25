@@ -1,7 +1,8 @@
 import './App.css';
-import React from 'react';
+import React , {useState} from 'react';
 import logo from './img/logo.png';
 import { useNavigate } from 'react-router-dom';
+
 
 function Navbar() {
   const navigate = useNavigate();

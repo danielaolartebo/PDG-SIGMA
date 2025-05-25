@@ -1,6 +1,7 @@
 import './CreateActivity.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
+import {PopUp} from "./PopUp";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function CreateActivity() {
@@ -25,6 +26,11 @@ function CreateActivity() {
   const role = localStorage.getItem('role');
   const user = localStorage.getItem('userId');
   const [rolResponsable, setRolResponsable] = useState("");
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
+  
   useEffect(() => {
     fetch(`${BACKEND_URL}/monitoring/getA`)
       .then(res => res.json())
@@ -40,7 +46,7 @@ function CreateActivity() {
       .then(data => setAllStudents(data))
       .catch(error => console.error('Error al obtener los all students:', error));
     
-  }, []);
+  }, [change]);
 
   const getMonitors = async (cursoId) => {
     fetch(`${BACKEND_URL}/monitoring-monitor/${cursoId}/monitors`,{
@@ -94,11 +100,18 @@ function CreateActivity() {
   //     .catch(error => console.error("Error al cargar asistentes:", error));
   // };
 
+  const handleClose = () =>{
+        setIsOpen(!isOpen)
+        setChange(!change)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre || !curso || !categoria || !fechaFinalizacion || !asignarA) {
-        alert('Por favor, complete todos los campos obligatorios.');
+        // alert('Por favor, complete todos los campos obligatorios.');
+        setMessage("Por favor, complete todos los campos obligatorios")
+        setIsOpen(!isOpen)
         return;
     }
     
@@ -131,8 +144,11 @@ function CreateActivity() {
       });
 
       if (!response.ok) {
-           const errorText = await response.text();
-           throw new Error(`Error al crear la actividad: ${response.status} ${errorText}`);
+        const errorText = await response.text();
+        throw new Error(`Error al crear la actividad: ${response.status} ${errorText}`);
+      } else{
+        setMessage("¡Actividad creada exitosamente!")
+        setIsOpen(!isOpen)
       }
 
       const data = await response.json();
@@ -158,16 +174,17 @@ function CreateActivity() {
               if (!attendanceResponse.ok) {
                   const errorText = await attendanceResponse.text();
                   console.error(`Error al guardar asistencia para el estudiante ${studentId}: ${attendanceResponse.status} ${errorText}`);
+                  setMessage(errorText)
+                  console.error("Error: " + errorText)
+                  setIsOpen(!isOpen)
               } else {
-                   console.log(`Asistencia guardada para ${studentId}`);
+                  console.log(`Asistencia guardada para ${studentId}`);
+                  setMessage("¡Actividad y Registro de asistencia exitoso!")
+                  setIsOpen(!isOpen)
               }
           }));
           console.log("Proceso de registro de asistencia completado.");
-          alert('¡Actividad creada y asistencia registrada exitosamente!');
-      } else {
-          alert('¡Actividad creada exitosamente!');
-          // if (!requiresAttendance) console.log("No se registró asistencia porque la opción estaba desmarcada.");
-          // if (asistentesList.length === 0 && requiresAttendance) console.log("No se registró asistencia porque no se seleccionaron estudiantes.");
+          
       }
 
         // 
@@ -182,7 +199,9 @@ function CreateActivity() {
 
     } catch (error) {
         console.error(error);
-        alert(error);
+        // alert(error);
+        setMessage("Error: "+ error)
+        setIsOpen(!isOpen)
     }
 };
 
@@ -193,7 +212,9 @@ function CreateActivity() {
 
   const handleAddCategory = async () => {
     if (!newCategory.trim() || !curso) {
-      alert("Debe ingresar una categoría y seleccionar un curso");
+      // alert("Debe ingresar una categoría y seleccionar un curso");
+      setMessage("Debe ingresar una categoría y seleccionar un curso")
+      setIsOpen(!isOpen)
       return;
     }
   
@@ -223,13 +244,17 @@ function CreateActivity() {
   
       setCategorias((prev) => [...prev, createdCategory]); 
   
-      alert(`Categoría creada: ${categoryName}`);
+      // alert(`Categoría creada: ${categoryName}`);
+      setMessage(`Categoría creada: ${categoryName}`)
+      setIsOpen(!isOpen)
   
       setNewCategory("");
       setShowNewCategoryField(false);
     } catch (error) {
       console.error("Error al crear la categoría:", error);
-      alert("No se pudo crear la categoría");
+      // alert("No se pudo crear la categoría");
+      setMessage("No se pudo crear la categoría:" + error)
+      setIsOpen(!isOpen)
     }
   };
 
@@ -262,6 +287,13 @@ function CreateActivity() {
   return (
     <div className="create-activity-container">
       <VerticalNavbar />
+      {/* Ventana emergente */}
+          <PopUp
+              show={isOpen}
+              onClose={() => handleClose()}
+          >
+              {message}
+          </PopUp>
       <div className="create-activity-content">
         <div className="form-header">Crear Actividad</div>
         <form onSubmit={handleSubmit}>
