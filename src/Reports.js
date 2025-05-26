@@ -69,8 +69,7 @@ function Reports() {
         });
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
-        setMonitorPerformanceData(monitorJson);
-
+        
         let professorList = [];
         for (const [index, report] of monitorJson.entries()) {
             let value = report.idProfessor;
@@ -153,13 +152,13 @@ function Reports() {
             if(!list.includes(a.semester)){
                 list.push(a.semester);
             }
-        }else if(data === "courses"){
-            if(!list.includes(a.course)){
+        }else if(data === "courses" && program !== ''){
+            if(!list.includes(a.course) && a.program === program){
                 list.push(a.course);
             }
-        }else if(data === "professors"){
+        }else if(data === "professors" && course !== ''){
 
-            if(!list.includes(a.professor)){
+            if(!list.includes(a.professor) && a.course === course){
                 list.push(a.professor);
 
             }
@@ -168,7 +167,7 @@ function Reports() {
                 list.push(a.program);
             }
         }else {
-            if(!list.includes(a.name)){
+            if(!list.includes(a.name) && a.course === course){
                 list.push(a.name);
             }
         }
@@ -221,25 +220,31 @@ function Reports() {
   const filteredAttendanceData = applyAttendanceFilters(asistenciaDataOriginal);
 
   const chartReadyAttendanceData = filteredAttendanceData.map(d => {
-    let displayValue;
-    if (course) {
-      const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
-      displayValue = courseEntry ? courseEntry.cantidad : 0;
-    } else {
-      displayValue = d.total_mes;
-    }
+    if(course !== '' && program !=='' && semester !== ''){
+      let displayValue;
+      if (course) {
+        const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
+        displayValue = courseEntry ? courseEntry.cantidad : 0;
+      } else {
+        displayValue = d.total_mes;
+      }
 
-    return {
-      mes: d.mes,
-      semestre: d.semestre, 
-      valorMostrado: displayValue
-    };
+      return {
+        mes: d.mes,
+        semestre: d.semestre, 
+        valorMostrado: displayValue
+      };
+    }
+    return undefined;
   });
 
   const lineName = course ? `Asistentes - ${course}` : "Total Asistentes";
 
   const pieChartData = useMemo(() => {
     if (!categoryReportData) {
+      return [];
+    }
+    if(course === '' || program ==='' || semester === '') {
       return [];
     }
 
@@ -344,6 +349,23 @@ function Reports() {
   
   //Filter monitors information
   useEffect(() => {
+    setMonitor('');
+    setProfessor('');
+    const data = monitorPerformanceDataOriginal; 
+    const report = data.filter(d =>
+      (!semester || d.semester === semester) &&
+      (!program || d.program === program) &&
+      (!course || d.course === course)
+    );
+
+    if(course !== '' && program !=='' && semester !== ''){
+      setMonitorPerformanceData(report);
+    }
+    
+    
+  }, [course]); 
+
+  useEffect(() => {
     const data = monitorPerformanceDataOriginal; 
     const report = data.filter(d =>
       (!semester || d.semester === semester) &&
@@ -353,14 +375,16 @@ function Reports() {
       (!monitor || d.name === monitor)
     );
 
-    setMonitorPerformanceData(report);
+    if(course !== '' && program !=='' && semester !== ''){
+      setMonitorPerformanceData(report);
+    }
     
-  }, [course, monitor]); 
+    
+  }, [monitor]); 
 
   //Filter professor report 
   useEffect(() => {
-    const data = professorDataOriginal; 
-    console.log(data);
+    const data = professorDataOriginal;
     const report = data.filter(d => d.name === professor);
     setProfessorData(report);
     
