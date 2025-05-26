@@ -277,20 +277,40 @@ function Reports() {
 
     const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Top 5 de actividades por categoría";
 
-    const exportToCSV = (data, filename) => {
-        if (!data || data.length === 0) return;
+   const exportToCSV = (data, filename, filters) => {
+    if (!data || data.length === 0) return;
 
     const csvRows = [];
+
+    // Tabla principal
     const headers = Object.keys(data[0]);
     csvRows.push(headers.join(','));
 
     data.forEach(row => {
-      const values = headers.map(header => `"${row[header]}"`);
+      const values = headers.map(header => `"${row[header] ?? ''}"`);
       csvRows.push(values.join(','));
     });
 
+    // Separación visual
+    csvRows.push('', '', 'Filtros aplicados:');
+
+    // Filtros con etiquetas
+    csvRows.push('Filtro,Valor');
+    csvRows.push(`Semestre,${filters.semester}`);
+    csvRows.push(`Programa,${filters.program}`);
+    csvRows.push(`Curso,${filters.course}`);
+
+    if (filters.professor && filters.professor.trim() !== '') {
+      csvRows.push(`Profesor,${filters.professor}`);
+    }
+
+    if (filters.monitor && filters.monitor.trim() !== '') {
+      csvRows.push(`Monitor,${filters.monitor}`);
+    }
+
+    // Crear blob y descargar
     const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv' });
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
 
     const link = document.createElement('a');
@@ -300,7 +320,6 @@ function Reports() {
     link.click();
     document.body.removeChild(link);
   };
-
   //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
   const asistenciaData = chartReadyAttendanceData;
 
@@ -624,7 +643,14 @@ function Reports() {
       </BarChart>
 
           <div className="chart-download-container">
-            <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
+            <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
           </div>
         </div>
 
@@ -647,7 +673,14 @@ function Reports() {
               </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Monitor')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Monitor', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
             </div>
           </div>
 
@@ -677,7 +710,14 @@ function Reports() {
               />
             </PieChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
             </div>*
           </div>
 
@@ -699,7 +739,14 @@ function Reports() {
               />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`, {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
               {/* datos filtrados originales*/}
               {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
@@ -752,7 +799,14 @@ function Reports() {
             <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
           </BarChart>
           <div className="chart-download-container">
-            <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores')}>Descargar</button>
+            <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
           </div>
         </div>
 
@@ -775,7 +829,14 @@ function Reports() {
               </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(porcentagesProfessor, 'Resumen_Tareas_Profesor')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentagesProfessor, 'Resumen_Tareas_Profesor', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
             </div>
           </div>
 
