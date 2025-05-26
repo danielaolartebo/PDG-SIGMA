@@ -222,9 +222,11 @@ function Reports() {
   const chartReadyAttendanceData = filteredAttendanceData.map(d => {
     if(course !== '' && program !=='' && semester !== ''){
       let displayValue;
+      let attendance;
       if (course) {
         const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
         displayValue = courseEntry ? courseEntry.cantidad : 0;
+        attendance = courseEntry? courseEntry.estudiantes : [];
       } else {
         displayValue = d.total_mes;
       }
@@ -232,7 +234,8 @@ function Reports() {
       return {
         mes: d.mes,
         semestre: d.semestre, 
-        valorMostrado: displayValue
+        asistencia: displayValue,
+        asistentes:attendance
       };
     }
     return undefined;
@@ -732,7 +735,7 @@ function Reports() {
               <Legend />
               <Line
                 type="monotone"
-                dataKey="valorMostrado"
+                dataKey="asistencia"
                 stroke="#8884d8"
                 name={lineName}
                 activeDot={{ r: 8 }}
