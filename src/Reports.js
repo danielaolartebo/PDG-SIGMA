@@ -660,7 +660,7 @@ useEffect(() => {
                   monitor
                 })
               }>Descargar</button>
-            </div>*
+            </div>
           </div>
 
           {/* Asistencias */}
