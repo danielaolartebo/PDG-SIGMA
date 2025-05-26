@@ -415,33 +415,38 @@ function Reports() {
 
   //Porcentaje actividades profesores
 
-  useEffect(() => {
-    if (professorData.length > 0) {
-      let completed = 0;
-      let late = 0;
-      let pending = 0;
-      
-      professorData.forEach(item => {
-        completed += item.completed || 0;
-        late += item.late || 0;
-        pending += item.pending || 0;
-      });
-  
-      const total = completed + late + pending;
-      
-      if (total > 0) {
+useEffect(() => {
+  if (professorData.length > 0) {
+    let completed = 0;
+    let late = 0;
+    let pending = 0;
+    
+    professorData.forEach(item => {
+      completed += item.completed || 0;
+      late += item.late || 0;
+      pending += item.pending || 0;
+    });
 
-        setPorcentagesProfessor([{
-          completed: `${((completed / total) * 100)}%`,
-          late: `${((late / total) * 100)}%`,
-          pending: `${((pending / total) * 100)}%`
-        }]);
-        setCompletedPercentProfessor(((completed/total)*100).toString()+"%");
-        setPendingPercentProfessor(((pending/total)*100).toString()+"%");
-        setLatePercentProfessor(((late/total)*100).toString()+"%");
-      }
+    const total = completed + late + pending;
+
+    if (total > 0) {
+      const completedPercent = Math.round((completed / total) * 100);
+      const latePercent = Math.round((late / total) * 100);
+      const pendingPercent = Math.round((pending / total) * 100);
+
+      setPorcentagesProfessor([{
+        completed: `${completedPercent}%`,
+        late: `${latePercent}%`,
+        pending: `${pendingPercent}%`
+      }]);
+
+      setCompletedPercentProfessor(`${completedPercent}%`);
+      setPendingPercentProfessor(`${pendingPercent}%`);
+      setLatePercentProfessor(`${latePercent}%`);
     }
-  }, [professorData]);
+  }
+}, [professorData]);
+
 
   const handleClose = () =>{
       setIsOpen(!isOpen)
@@ -515,7 +520,7 @@ function Reports() {
         <VerticalNavbar />
         <div className="reports-content">
           
-        {/* Gráfico de barras - MONITOR */}
+    {/* Gráfico de barras - MONITOR */}
     <div className="chart-card">
       <h3>Rendimiento de monitores</h3>
       <BarChart width={500} height={300} data={monitorPerformanceData}>
@@ -569,80 +574,14 @@ function Reports() {
         />
         
         {/* Barra de Completado */}
-        <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)">
-          <LabelList
-            dataKey="completed"
-            position="center"
-            content={({ x, y, width, height, payload }) => {
-              const percentage = payload?.completedPercent ?? 0;
-              return (
-                <text
-                  x={x + width / 2}
-                  y={y + height / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="#fff"
-                  fontSize={12}
-                  fontWeight="bold"
-                >
-                  {`${percentage}%`}
-                </text>
-              );
-            }}
-          />
-        </Bar>
+        <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
 
+        {/* Barra de Pendiente */}
+        <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)"/>
 
-          {/* Barra de Pendiente */}
-          <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)">
-            <LabelList
-              dataKey="pending"
-              position="center"
-              content={({ x, y, width, height, payload }) => {
-                const percentage = payload?.pendingPercent ?? 0;
-                return (
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#fff"
-                    fontSize={12}
-                    fontWeight="bold"
-                  >
-                    {`${percentage}%`}
-                  </text>
-                );
-              }}
-            />
-          </Bar>
-
-
-          {/* Barra de Tarde */}
-          <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)">
-            <LabelList
-              dataKey="late"
-              position="center"
-              content={({ x, y, width, height, payload }) => {
-                const percentage = payload?.latePercent ?? 0;
-                return (
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#000"
-                    fontSize={12}
-                    fontWeight="bold"
-                  >
-                    {`${percentage}%`}
-                  </text>
-                );
-              }}
-            />
-          </Bar>
-
-
+        {/* Barra de Tarde */}
+        <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+           
       </BarChart>
 
           <div className="chart-download-container">
@@ -758,49 +697,65 @@ function Reports() {
         {/* Gráfico de barras - PROFESOR */}
         <div className="chart-card">
           <h3>Rendimiento de profesores</h3>
-          <BarChart width={500} height={300} data={professorData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            
-            {/* Mostrar solo el nombre del profesor */}
-            <XAxis 
-              dataKey="nameAndCourse" 
-              tickFormatter={(value) => value.split(' ')[0]} 
-            />
-            
-            <YAxis />
-            <Tooltip 
-              formatter={(value, name, props) => {
-                if (props.payload && props.payload[0]) {
-                  const fullName = props.payload[0].nameAndCourse;
+            <BarChart width={500} height={300} data={professorData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              
+              {/* Mostrar solo el nombre (no apellido) en el eje X */}
+              <XAxis 
+                dataKey="nameAndCourse" 
+                tickFormatter={(value) => value.split(' ')[0]} 
+              />
+              
+              <YAxis />
+
+              {/* Tooltip personalizado */}
+              <Tooltip 
+                formatter={(value, name, props) => {
                   const map = {
                     completed: 'Completado',
                     pending: 'Pendiente',
                     late: 'Tarde',
                   };
-                  return [
-                    `${value}%`,
-                    map[name] || name,
-                    `Profesor: ${name}`, // Esto muestra el nombre completo en el tooltip
-                  ];
-                }
-                return [`${value}%`, name];
-              }} 
-            />
-            <Legend 
-              formatter={(value) => {
-                const map = {
-                  completed: 'Completado',
-                  pending: 'Pendiente',
-                  late: 'Tarde',
-                };
-                return map[value] || value;
-              }} 
-            />
-            
-            <Bar dataKey="completed" label="Completado" stackId="a" fill="rgb(0, 196, 159)" />
-            <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
-            <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
-          </BarChart>
+
+                  const payload = props.payload;
+
+                  if (payload && typeof value === 'number') {
+                    const completed = payload.completed || 0;
+                    const pending = payload.pending || 0;
+                    const late = payload.late || 0;
+                    const total = completed + pending + late;
+
+                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+                    return [`${value} actividades - ${percentage}%`, map[name] || name];
+                  }
+
+                  return [`${value}`, map[name] || name];
+                }}
+                
+                labelFormatter={(label) => {
+                  // Muestra nombre y apellido completos
+                  const parts = label.split(' ');
+                  return `Profesor: ${parts[0]} ${parts[1]}`;
+                }}
+              />
+
+              <Legend 
+                formatter={(value) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return map[value] || value;
+                }} 
+              />
+
+              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
+              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
+              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+            </BarChart>
+
           <div className="chart-download-container">
             <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores', {
                   semester,
