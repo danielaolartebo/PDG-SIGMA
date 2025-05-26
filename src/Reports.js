@@ -700,7 +700,7 @@ useEffect(() => {
             <BarChart width={500} height={300} data={professorData}>
               <CartesianGrid strokeDasharray="3 3" />
               
-              {/* Mostrar solo el nombre (no apellido) en el eje X */}
+              {/* Mostrar solo el nombre (jeje sin el apellido) en el eje X */}
               <XAxis 
                 dataKey="nameAndCourse" 
                 tickFormatter={(value) => value.split(' ')[0]} 
@@ -708,7 +708,6 @@ useEffect(() => {
               
               <YAxis />
 
-              {/* Tooltip personalizado */}
               <Tooltip 
                 formatter={(value, name, props) => {
                   const map = {
@@ -732,13 +731,19 @@ useEffect(() => {
 
                   return [`${value}`, map[name] || name];
                 }}
-                
+
                 labelFormatter={(label) => {
-                  // Muestra nombre y apellido completos
                   const parts = label.split(' ');
-                  return `Profesor: ${parts[0]} ${parts[1]}`;
+                  if (parts.length >= 3) {
+                    const nombreCompleto = `${parts[0]} ${parts[1]}`;
+                    const nombreCurso = parts.slice(2).join(' ');
+                    return `${nombreCompleto} - ${nombreCurso}`;
+                  }
+                  return label; // fallback
                 }}
               />
+
+
 
               <Legend 
                 formatter={(value) => {
