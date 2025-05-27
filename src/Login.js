@@ -8,6 +8,7 @@ function Login() {
     const navigate = useNavigate();
     const [password, setPassword] = useState('')
     const [userId, setUserId] = useState('')
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleReturnClick = () => {
         navigate('/'); // Redirige a la página principal
@@ -42,6 +43,7 @@ function Login() {
         console.log(response);
         if(response.ok){
           localStorage.setItem('userId',userId)
+          setErrorMessage('');
           
           const res =  await response.json()
           console.log(res.role)
@@ -63,6 +65,7 @@ function Login() {
           }
         }else{
           console.log("Can't find it")
+          setErrorMessage('Contraseña o usuario inválido');
         }
 
       }catch (error){
@@ -96,6 +99,10 @@ function Login() {
                     <input className="inputs-login" type="text" name="user" placeholder=" Usuario" value={userId} onChange={handleChangeUser} required />
                     <input className="inputs-login" type="password" name="pswd" placeholder=" Clave" value={password} onChange={handleChangePassword} required />
                 </div>
+                {errorMessage && (
+                  <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                )}
+
                 <div className="login-btn-container-login">
                     <button className="login-btn-login" id="login-btn-login" type="submit" onClick={handleLoginClick}>Iniciar sesión</button>
                 </div>
