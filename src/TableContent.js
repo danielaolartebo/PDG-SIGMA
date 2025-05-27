@@ -156,8 +156,8 @@ function TableContent() {
     }, [selectedValue, selectedCondition]);
 
     const handlePopUpCheck = (id,status) =>{
-        if(localStorage.getItem('role') !=='student'){
-            setMessage('Tiene que iniciar sesión como estudiante')
+        if(!(localStorage.getItem('role') =='student' || localStorage.getItem('role') =='monitor')){
+            setMessage('Tiene que iniciar sesión como estudiante/monitor')
             setOpen(!isOpen)
         }else{
             setIdMonitoring(id)
@@ -178,18 +178,18 @@ function TableContent() {
             if(state === "Activo"){
                 const response = await fetch(`${BACKEND_URL}/monitor/create`, {
                     method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
+                    headers: { 'Content-Type': 'application/json' ,
+                        'Authorization':localStorage.getItem('token')
                     },
                     body: JSON.stringify(data)
                   });
-                  const mess = await response.text()
+                const mess = await response.text();
                 if(response.ok){
-                    setMessage(mess)
+                    setMessage("Se ha aplicado exitosamente a la monitoria. Te notificaremos por medio de correo electrónico la decisión")
                     setOpen(!isOpen)
                 }
                 else{
-                    setMessage(mess)
+                    setMessage("No se pudo completar el proceso")
                     setOpen(!isOpen)
                 }  
             }
@@ -201,7 +201,6 @@ function TableContent() {
                 setMessage('La fecha está inactiva')
                 setOpen(!isOpen)
             }
-            setOpen(!isOpen)
         }
         catch(error){
             console.error('Error in fetching', error)

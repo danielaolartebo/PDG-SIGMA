@@ -42,12 +42,20 @@ function Applicants() {
             );
             
             for (const applicant of nonElectedApplicants) {
-                await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' ,
-                        'Authorization':localStorage.getItem('token')
-                    },
-                });
+                // Esta lógica va a cambiar, porque está eliminando a los monitores(aplicantes)
+                // y no la relación entre monitor-monitoría. 
+                // Si solo aplica a una monitoria no hay problema, pero si son 2 o mas
+                // borra todas. 
+                // De igual forma, la lógica del back cambia al enviar el correo, 
+                // No itera sobre la lista de monitores, sino que lo va a hacer sobre 
+                // las relaciones monitor-monitoring
+
+                // await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
+                //     method: 'DELETE',
+                //     headers: { 'Content-Type': 'application/json' ,
+                //         'Authorization':localStorage.getItem('token')
+                //     },
+                // });
             }
             
             //setElectionStatuses(new Array(electedApplicants.length).fill(true))
