@@ -6,12 +6,14 @@ import {
   PieChart, Pie, Cell,
   LineChart, Line, LabelList
 } from 'recharts';
+import {PopUp} from "./PopUp";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
 function Reports() {
 
   const [monitorPerformanceDataOriginal, setMonitorPerformanceDataOriginal] = useState([]);
-  const [professorData, setProfessorData] = useState('');
+  const [professorData, setProfessorData] = useState([]);
+  const [professorDataOriginal, setProfessorDataOriginal] = useState([]);
 
   // console.log("Reports se está renderizando");
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -25,7 +27,12 @@ function Reports() {
   const [filteredProfessorData, setFilteredProfessorData] = useState([]);
   const [role, setRole] = useState('')
 
-const [semester, setSemester] = useState('');
+  //Pop up
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
+
+  const [semester, setSemester] = useState('');
   const [program, setProgram] = useState('');
   const [course, setCourse] = useState('');
   const [professor, setProfessor] = useState('');
@@ -44,6 +51,10 @@ const [semester, setSemester] = useState('');
   const[porcentagesProfessor, setPorcentagesProfessor] = useState([{ completed: "0%", late: "0%", pending: "0%" }]);
 
   useEffect(() => {
+    console.log("obtener---")
+    setMessage("Para obtener la información de los reportes, debes al menos seleccionar información para los primeros 3 filtros.")
+    setIsOpen(!isOpen)
+    setChange(!change)
     const user = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
     setRole(role);
@@ -58,53 +69,31 @@ const [semester, setSemester] = useState('');
         });
         const monitorJson = await monitorResponse.json();
         setMonitorPerformanceDataOriginal(monitorJson);
-  
-        if (monitorJson.length > 0) {
-          const firstCourse = monitorJson[0].course;
-          const filtered = monitorJson.filter(a => a.course === firstCourse);
-          setFilteredMonitorPerformanceData(filtered);
-  
-          const enriched = filtered.map((item) => {
-            const completed = item.completed || 0;
-            const late = item.late || 0;
-            const pending = item.pending || 0;
-            const total = completed + late + pending;
-          
-            return {
-              ...item,
-              completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
-              pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
-              latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
-            };
-          });
-          
-          setMonitorPerformanceData(enriched);
-          setMonitorPerformanceDataOriginal(enriched);
-          
+        
+        let professorList = [];
+        for (const [index, report] of monitorJson.entries()) {
+            let value = report.idProfessor;
+            console.log('Times');
+            if(!professorList.find(e => e.idProfessor === value)){
+                const professorResponse = await fetch(`${BACKEND_URL}/monitoring/getProfessorReport/${value}`,{
+                  method: 'GET',
+                  headers: { 'Content-Type': 'application/json' ,
+                      'Authorization':localStorage.getItem('token')
+                  },
+                  });
+              const professorJson = await professorResponse.json();
+              
+              console.log('Value '+professorJson)
+              professorList = professorList.concat(professorJson);
+              
+            }
         }
+
+        setProfessorDataOriginal(professorList)
+        
       } catch (error) {
         console.error("Error fetching monitor data:", error);
       }
-      if(role === 'professor'){
-        try {
-            const professorResponse = await fetch(`${BACKEND_URL}/monitoring/getProfessorReport/${user}`,{
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' ,
-                    'Authorization':localStorage.getItem('token')
-                },
-                });
-            const professorJson = await professorResponse.json();
-            setProfessorData(professorJson);
-    
-            if (professorJson.length > 0) {
-              const filtered = professorJson.filter(a => a.course === course);
-              setFilteredProfessorData(filtered);
-            }
-          } catch (error) {
-            console.error('Error fetching professor data:', error);
-          }
-      }
-      
     };
 
     fetchActivities();
@@ -163,13 +152,13 @@ const [semester, setSemester] = useState('');
             if(!list.includes(a.semester)){
                 list.push(a.semester);
             }
-        }else if(data === "courses"){
-            if(!list.includes(a.course)){
+        }else if(data === "courses" && program !== ''){
+            if(!list.includes(a.course) && a.program === program){
                 list.push(a.course);
             }
-        }else if(data === "professors"){
+        }else if(data === "professors" && course !== ''){
 
-            if(!list.includes(a.professor)){
+            if(!list.includes(a.professor) && a.course === course){
                 list.push(a.professor);
 
             }
@@ -178,7 +167,7 @@ const [semester, setSemester] = useState('');
                 list.push(a.program);
             }
         }else {
-            if(!list.includes(a.name)){
+            if(!list.includes(a.name) && a.course === course){
                 list.push(a.name);
             }
         }
@@ -231,25 +220,34 @@ const [semester, setSemester] = useState('');
   const filteredAttendanceData = applyAttendanceFilters(asistenciaDataOriginal);
 
   const chartReadyAttendanceData = filteredAttendanceData.map(d => {
-    let displayValue;
-    if (course) {
-      const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
-      displayValue = courseEntry ? courseEntry.cantidad : 0;
-    } else {
-      displayValue = d.total_mes;
-    }
+    if(course !== '' && program !=='' && semester !== ''){
+      let displayValue;
+      let attendance;
+      if (course) {
+        const courseEntry = d.asistencia_por_curso?.find(item => item.curso === course);
+        displayValue = courseEntry ? courseEntry.cantidad : 0;
+        attendance = courseEntry? courseEntry.estudiantes : [];
+      } else {
+        displayValue = d.total_mes;
+      }
 
-    return {
-      mes: d.mes,
-      semestre: d.semestre, 
-      valorMostrado: displayValue
-    };
+      return {
+        mes: d.mes,
+        semestre: d.semestre, 
+        asistencia: displayValue,
+        asistentes:attendance
+      };
+    }
+    return undefined;
   });
 
   const lineName = course ? `Asistentes - ${course}` : "Total Asistentes";
 
   const pieChartData = useMemo(() => {
     if (!categoryReportData) {
+      return [];
+    }
+    if(course === '' || program ==='' || semester === '') {
       return [];
     }
 
@@ -282,20 +280,40 @@ const [semester, setSemester] = useState('');
 
     const categoryChartTitle = course ? `Uso de Categorías - ${course}` : "Top 5 de actividades por categoría";
 
-    const exportToCSV = (data, filename) => {
-        if (!data || data.length === 0) return;
+   const exportToCSV = (data, filename, filters) => {
+    if (!data || data.length === 0) return;
 
     const csvRows = [];
+
+    // Tabla principal
     const headers = Object.keys(data[0]);
     csvRows.push(headers.join(','));
 
     data.forEach(row => {
-      const values = headers.map(header => `"${row[header]}"`);
+      const values = headers.map(header => `"${row[header] ?? ''}"`);
       csvRows.push(values.join(','));
     });
 
+    // Separación visual
+    csvRows.push('', '', 'Filtros aplicados:');
+
+    // Filtros con etiquetas
+    csvRows.push('Filtro,Valor');
+    csvRows.push(`Semestre,${filters.semester}`);
+    csvRows.push(`Programa,${filters.program}`);
+    csvRows.push(`Curso,${filters.course}`);
+
+    if (filters.professor && filters.professor.trim() !== '') {
+      csvRows.push(`Profesor,${filters.professor}`);
+    }
+
+    if (filters.monitor && filters.monitor.trim() !== '') {
+      csvRows.push(`Monitor,${filters.monitor}`);
+    }
+
+    // Crear blob y descargar
     const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv' });
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
 
     const link = document.createElement('a');
@@ -305,7 +323,6 @@ const [semester, setSemester] = useState('');
     link.click();
     document.body.removeChild(link);
   };
-
   //const categoryUsageData = applyFilters(categoryUsageDataOriginal);
   const asistenciaData = chartReadyAttendanceData;
 
@@ -325,21 +342,6 @@ const [semester, setSemester] = useState('');
 
   useEffect(() => {
     if (monitorPerformanceData.length > 0) {
-      const enrichedData = monitorPerformanceData.map((item) => {
-        const completed = item.completed || 0;
-        const late = item.late || 0;
-        const pending = item.pending || 0;
-        const total = completed + late + pending;
-  
-        return {
-          ...item,
-          completedPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
-          pendingPercent: total > 0 ? Math.round((pending / total) * 100) : 0,
-          latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
-        };
-      });
-  
-      setMonitorPerformanceDataOriginal(enrichedData);
   
       // Calcula los porcentajes globales para monitores
       let totalCompleted = 0;
@@ -367,47 +369,98 @@ const [semester, setSemester] = useState('');
     }
   }, [monitorPerformanceData]);
   
+  //Filter monitors information
+  useEffect(() => {
+    setMonitor('');
+    setProfessor('');
+    const data = monitorPerformanceDataOriginal; 
+    const report = data.filter(d =>
+      (!semester || d.semester === semester) &&
+      (!program || d.program === program) &&
+      (!course || d.course === course)
+    );
+
+    if(course !== '' && program !=='' && semester !== ''){
+      setMonitorPerformanceData(report);
+    }
+    
+    
+  }, [course]); 
 
   useEffect(() => {
-    console.log("Updated monitorPerformanceData: ", monitorPerformanceData);
-  }, [monitorPerformanceData]);
+    const data = monitorPerformanceDataOriginal; 
+    const report = data.filter(d =>
+      (!semester || d.semester === semester) &&
+      (!program || d.program === program) &&
+      (!course || d.course === course) &&
+      (!professor || d.professor === professor) &&
+      (!monitor || d.name === monitor)
+    );
 
-  
+    if(course !== '' && program !=='' && semester !== ''){
+      setMonitorPerformanceData(report);
+    }
+    
+    
+  }, [monitor]); 
+
+  //Filter professor report 
+  useEffect(() => {
+    const data = professorDataOriginal;
+    const report = data.filter(d => d.name === professor);
+    setProfessorData(report);
+    
+  }, [professor]); 
 
 
   //Porcentaje actividades profesores
 
-  useEffect(() => {
-    if (professorData.length > 0) {
-      let completed = 0;
-      let late = 0;
-      let pending = 0;
-      
-      professorData.forEach(item => {
-        completed += item.completed || 0;
-        late += item.late || 0;
-        pending += item.pending || 0;
-      });
-  
-      const total = completed + late + pending;
-      
-      if (total > 0) {
+useEffect(() => {
+  if (professorData.length > 0) {
+    let completed = 0;
+    let late = 0;
+    let pending = 0;
+    
+    professorData.forEach(item => {
+      completed += item.completed || 0;
+      late += item.late || 0;
+      pending += item.pending || 0;
+    });
 
-        setPorcentages([{
-          completed: `${((completed / total) * 100)}%`,
-          late: `${((late / total) * 100)}%`,
-          pending: `${((pending / total) * 100)}%`
-        }]);
-        setCompletedPercentProfessor(((completed/total)*100).toString()+"%");
-        setPendingPercentProfessor(((pending/total)*100).toString()+"%");
-        setLatePercentProfessor(((late/total)*100).toString()+"%");
-      }
+    const total = completed + late + pending;
+
+    if (total > 0) {
+      const completedPercent = Math.round((completed / total) * 100);
+      const latePercent = Math.round((late / total) * 100);
+      const pendingPercent = Math.round((pending / total) * 100);
+
+      setPorcentagesProfessor([{
+        completed: `${completedPercent}%`,
+        late: `${latePercent}%`,
+        pending: `${pendingPercent}%`
+      }]);
+
+      setCompletedPercentProfessor(`${completedPercent}%`);
+      setPendingPercentProfessor(`${pendingPercent}%`);
+      setLatePercentProfessor(`${latePercent}%`);
     }
-  }, [professorData]);
+  }
+}, [professorData]);
+
+
+  const handleClose = () =>{
+      setIsOpen(!isOpen)
+      setChange(!change)
+  }
 
 
   return (
     <div className="main">
+      <PopUp
+        show={isOpen}
+        onClose={() => handleClose()}
+      >{message}
+      </PopUp>
       <div className="reports-top-bar">
         <h2 className="reports-title">Reportes</h2>
         <div className="filters-container">
@@ -467,7 +520,7 @@ const [semester, setSemester] = useState('');
         <VerticalNavbar />
         <div className="reports-content">
           
-        {/* Gráfico de barras - MONITOR */}
+    {/* Gráfico de barras - MONITOR */}
     <div className="chart-card">
       <h3>Rendimiento de monitores</h3>
       <BarChart width={500} height={300} data={monitorPerformanceData}>
@@ -521,84 +574,25 @@ const [semester, setSemester] = useState('');
         />
         
         {/* Barra de Completado */}
-        <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)">
-          <LabelList
-            dataKey="completed"
-            position="center"
-            content={({ x, y, width, height, payload }) => {
-              const percentage = payload?.completedPercent ?? 0;
-              return (
-                <text
-                  x={x + width / 2}
-                  y={y + height / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="#fff"
-                  fontSize={12}
-                  fontWeight="bold"
-                >
-                  {`${percentage}%`}
-                </text>
-              );
-            }}
-          />
-        </Bar>
+        <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
 
+        {/* Barra de Pendiente */}
+        <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)"/>
 
-          {/* Barra de Pendiente */}
-          <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)">
-            <LabelList
-              dataKey="pending"
-              position="center"
-              content={({ x, y, width, height, payload }) => {
-                const percentage = payload?.pendingPercent ?? 0;
-                return (
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#fff"
-                    fontSize={12}
-                    fontWeight="bold"
-                  >
-                    {`${percentage}%`}
-                  </text>
-                );
-              }}
-            />
-          </Bar>
-
-
-          {/* Barra de Tarde */}
-          <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)">
-            <LabelList
-              dataKey="late"
-              position="center"
-              content={({ x, y, width, height, payload }) => {
-                const percentage = payload?.latePercent ?? 0;
-                return (
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#000"
-                    fontSize={12}
-                    fontWeight="bold"
-                  >
-                    {`${percentage}%`}
-                  </text>
-                );
-              }}
-            />
-          </Bar>
-
-
+        {/* Barra de Tarde */}
+        <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+           
       </BarChart>
 
           <div className="chart-download-container">
-            <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores')}>Descargar</button>
+            <button className="chart-download-button" onClick={() => exportToCSV(monitorPerformanceData, 'Rendimiento_Monitores', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
           </div>
         </div>
 
@@ -621,7 +615,14 @@ const [semester, setSemester] = useState('');
               </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Monitor')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Monitor', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
             </div>
           </div>
 
@@ -651,8 +652,15 @@ const [semester, setSemester] = useState('');
               />
             </PieChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso')}>Descargar</button>
-            </div>*
+              <button className="chart-download-button" onClick={() => exportToCSV(pieChartData, 'Categorias_Por_Curso', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
+            </div>
           </div>
 
           {/* Asistencias */}
@@ -666,14 +674,21 @@ const [semester, setSemester] = useState('');
               <Legend />
               <Line
                 type="monotone"
-                dataKey="valorMostrado"
+                dataKey="asistencia"
                 stroke="#8884d8"
                 name={lineName}
                 activeDot={{ r: 8 }}
               />
             </LineChart>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`)}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(asistenciaData, `Asistencia_${lineName.replace(' ', '_')}`, {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
               {/* datos filtrados originales*/}
               {/* <button className="chart-download-button" onClick={() => exportToCSV(filteredAttendanceData, 'Asistencia_Detallada_Filtrada')}>Descargar Detalle Filtrado</button> */}
             </div>
@@ -682,51 +697,79 @@ const [semester, setSemester] = useState('');
         {/* Gráfico de barras - PROFESOR */}
         <div className="chart-card">
           <h3>Rendimiento de profesores</h3>
-          <BarChart width={500} height={300} data={professorData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            
-            {/* Mostrar solo el nombre del profesor */}
-            <XAxis 
-              dataKey="nameAndCourse" 
-              tickFormatter={(value) => value.split(' ')[0]} 
-            />
-            
-            <YAxis />
-            <Tooltip 
-              formatter={(value, name, props) => {
-                if (props.payload && props.payload[0]) {
-                  const fullName = props.payload[0].nameAndCourse;
+            <BarChart width={500} height={300} data={professorData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              
+              {/* Mostrar solo el nombre (jeje sin el apellido) en el eje X */}
+              <XAxis 
+                dataKey="nameAndCourse" 
+                tickFormatter={(value) => value.split(' ')[0]} 
+              />
+              
+              <YAxis />
+
+              <Tooltip 
+                formatter={(value, name, props) => {
                   const map = {
                     completed: 'Completado',
                     pending: 'Pendiente',
                     late: 'Tarde',
                   };
-                  return [
-                    `${value}%`,
-                    map[name] || name,
-                    `Profesor: ${fullName}`, // Esto muestra el nombre completo en el tooltip
-                  ];
-                }
-                return [`${value}%`, name];
-              }} 
-            />
-            <Legend 
-              formatter={(value) => {
-                const map = {
-                  completed: 'Completado',
-                  pending: 'Pendiente',
-                  late: 'Tarde',
-                };
-                return map[value] || value;
-              }} 
-            />
-            
-            <Bar dataKey="completed" label="Completado" stackId="a" fill="rgb(0, 196, 159)" />
-            <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
-            <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
-          </BarChart>
+
+                  const payload = props.payload;
+
+                  if (payload && typeof value === 'number') {
+                    const completed = payload.completed || 0;
+                    const pending = payload.pending || 0;
+                    const late = payload.late || 0;
+                    const total = completed + pending + late;
+
+                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+                    return [`${value} actividades - ${percentage}%`, map[name] || name];
+                  }
+
+                  return [`${value}`, map[name] || name];
+                }}
+
+                labelFormatter={(label) => {
+                  const parts = label.split(' ');
+                  if (parts.length >= 3) {
+                    const nombreCompleto = `${parts[0]} ${parts[1]}`;
+                    const nombreCurso = parts.slice(2).join(' ');
+                    return `${nombreCompleto} - ${nombreCurso}`;
+                  }
+                  return label; // fallback
+                }}
+              />
+
+
+
+              <Legend 
+                formatter={(value) => {
+                  const map = {
+                    completed: 'Completado',
+                    pending: 'Pendiente',
+                    late: 'Tarde',
+                  };
+                  return map[value] || value;
+                }} 
+              />
+
+              <Bar dataKey="completed" stackId="a" fill="rgb(0, 196, 159)" />
+              <Bar dataKey="pending" stackId="a" fill="rgb(255, 82, 82)" />
+              <Bar dataKey="late" stackId="a" fill="rgb(255, 187, 40)" />
+            </BarChart>
+
           <div className="chart-download-container">
-            <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores')}>Descargar</button>
+            <button className="chart-download-button" onClick={() => exportToCSV(professorData, 'Rendimiento_Profesores', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
           </div>
         </div>
 
@@ -749,7 +792,14 @@ const [semester, setSemester] = useState('');
               </div>
             </div>
             <div className="chart-download-container">
-              <button className="chart-download-button" onClick={() => exportToCSV(porcentages, 'Resumen_Tareas_Profesor')}>Descargar</button>
+              <button className="chart-download-button" onClick={() => exportToCSV(porcentagesProfessor, 'Resumen_Tareas_Profesor', {
+                  semester,
+                  program,
+                  course,
+                  professor,
+                  monitor
+                })
+              }>Descargar</button>
             </div>
           </div>
 

@@ -2,7 +2,8 @@ import './Applicants.css';
 import React, { useState, useEffect } from 'react';
 import VerticalNavbar from './VerticalNavbar';
 import {PopUp} from "./PopUp";
-import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
+import { BACKEND_URL } from './config/ApiBackend';
+import LoadingSpinner from './LoadingSpinner';
 
 function Applicants() {
     const [records, setRecords] = useState([]);
@@ -10,16 +11,19 @@ function Applicants() {
     const [currentPage, setCurrentPage] = useState(1);
     const [electionStatuses, setElectionStatuses] = useState({});
     const recordsPerPage = 8;
-    const [selectedCourse, setSelectedCourse] = useState("Todos"); // Selected course
+    const [selectedCourse, setSelectedCourse] = useState("Todos"); 
 
     const [isOpen, setIsOpen] = useState(false)
     const [message, setMessage] = useState("")
     const [change, setChange] = useState(false)
 
+    const [isLoading, setIsLoading] = useState(false)
+
     const handleClose = () =>{
         setIsOpen(!isOpen)
         setChange(!change)
-  }
+        setIsLoading(!isLoading)
+    }
 
     const handleFinishClick = async () => {
 
@@ -30,7 +34,7 @@ function Applicants() {
         
         //   setRecords(electedApplicants);
         
-        
+        setIsLoading(true)
         try {
             
             const nonElectedApplicants = currentRecords.filter(
@@ -38,12 +42,20 @@ function Applicants() {
             );
             
             for (const applicant of nonElectedApplicants) {
-                await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' ,
-                        'Authorization':localStorage.getItem('token')
-                    },
-                });
+                // Esta lógica va a cambiar, porque está eliminando a los monitores(aplicantes)
+                // y no la relación entre monitor-monitoría. 
+                // Si solo aplica a una monitoria no hay problema, pero si son 2 o mas
+                // borra todas. 
+                // De igual forma, la lógica del back cambia al enviar el correo, 
+                // No itera sobre la lista de monitores, sino que lo va a hacer sobre 
+                // las relaciones monitor-monitoring
+
+                // await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
+                //     method: 'DELETE',
+                //     headers: { 'Content-Type': 'application/json' ,
+                //         'Authorization':localStorage.getItem('token')
+                //     },
+                // });
             }
             
             //setElectionStatuses(new Array(electedApplicants.length).fill(true))
@@ -68,7 +80,7 @@ function Applicants() {
         console.log(electedCodes)
         try {
             const response = await fetch(`${BACKEND_URL}/email-finish-selection`, {
-                method: 'DELETE',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' ,
                     'Authorization':localStorage.getItem('token')
                 },
@@ -77,7 +89,7 @@ function Applicants() {
 
             const result = await response.text();
             // alert(result);
-            setMessage("Proceso finalizado - Monitores seleccionados "+result)
+            setMessage("Proceso finalizado - Monitores seleccionados")
             setIsOpen(!isOpen)
             
         } catch (error) {
@@ -153,6 +165,8 @@ function Applicants() {
 
     return (
         <div>
+            {/* Rueda de carga */}
+            {isLoading && <LoadingSpinner />}
             {/* Ventana emergente */}
             <PopUp
                 show={isOpen}

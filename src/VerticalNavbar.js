@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../src/img/logo2.png";
+import {PopUp} from "./PopUp";
 import "./VerticalNavbar.css";
 import { BACKEND_URL, getApiUrl } from './config/ApiBackend';
 
@@ -9,6 +10,14 @@ function VerticalNavbar() {
   const [user, setUser] = useState("");
   const [initials, setInitials] = useState("");
   const [showProfileOption, setShowProfileOption] = useState(true);
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [change, setChange] = useState(false)
+
+  const handleClose = () =>{
+      setIsOpen(!isOpen)
+      setChange(!change)
+  }
 
   useEffect(() => {
     let id = localStorage.getItem('userId')
@@ -49,7 +58,7 @@ function VerticalNavbar() {
           .catch(error => console.error('Error fetching faculty data:', error));
         }
         else if(roleS === 'monitor'){
-          fetch(`http://localhost:5433/monitor/profile/${id}`,{
+          fetch(`${BACKEND_URL}/monitor/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 Authorization:localStorage.getItem('token')
@@ -74,7 +83,7 @@ function VerticalNavbar() {
           })
           .catch(error => console.error('Error fetching faculty data:', error));
         }
-        else{
+        else if(roleS === 'jfedpto'){
           fetch(`${BACKEND_URL}/department-head/profile/${id}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
@@ -115,13 +124,22 @@ function VerticalNavbar() {
           }
   }
 
-  const handleClose = () => {
+  const handleCloseLogout = () => {
+    setMessage("Has cerrado sesión exitosamente.")
+    setIsOpen(!isOpen)
+    setChange(!change)
     localStorage.setItem("role", "");
     localStorage.setItem("userId", "");
   };
 
   return (
     <div className="vertical-navbar">
+      <PopUp
+          show={isOpen}
+          onClose={() => handleClose()}
+      >
+          {message}
+      </PopUp>
       {/* Logo */}
       <div className="logo-container">
         <NavLink to="/Task">
@@ -192,7 +210,7 @@ function VerticalNavbar() {
             className={({ isActive }) =>
               isActive ? "logout-button active" : "logout-button"
             }
-            onClick={handleClose}
+            onClick={handleCloseLogout}
           >
             Cerrar sesión
           </NavLink>
