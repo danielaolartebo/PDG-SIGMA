@@ -189,7 +189,7 @@ function TableContent() {
                     setOpen(!isOpen)
                 }
                 else{
-                    setMessage("No se pudo completar el proceso")
+                    setMessage("Error: "+ mess)
                     setOpen(!isOpen)
                 }  
             }

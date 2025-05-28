@@ -42,20 +42,22 @@ function Applicants() {
             );
             
             for (const applicant of nonElectedApplicants) {
-                // Esta lógica va a cambiar, porque está eliminando a los monitores(aplicantes)
-                // y no la relación entre monitor-monitoría. 
-                // Si solo aplica a una monitoria no hay problema, pero si son 2 o mas
-                // borra todas. 
-                // De igual forma, la lógica del back cambia al enviar el correo, 
-                // No itera sobre la lista de monitores, sino que lo va a hacer sobre 
-                // las relaciones monitor-monitoring
+                console.log("Not elected applicant (delete relationship): "+applicant.code+" - "+applicant.monitoringId)
+                // Borra las relaciones monitor-monitoring de los no electos
+                // Aun falta hacer la validacion, que no vaya a borrar relaciones de monitores
+                // que actualmente están en una monitoria ya electos (la otra hu soluciona eso)
+                await fetch(`${BACKEND_URL}/monitoring-monitor/${applicant.monitoringId}/${applicant.code}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': localStorage.getItem('token'), 
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                // await fetch(`${BACKEND_URL}/monitor/${applicant.code}`, {
-                //     method: 'DELETE',
-                //     headers: { 'Content-Type': 'application/json' ,
-                //         'Authorization':localStorage.getItem('token')
-                //     },
-                // });
+                //Debe agregarse una logica extra que permita saber,para todo,
+                // si es un monitor (temporal) o un monitor electo
+                // Para permisos por rol
+
             }
             
             //setElectionStatuses(new Array(electedApplicants.length).fill(true))
@@ -68,7 +70,6 @@ function Applicants() {
     
         } catch (error) {
             console.error('Error during end of selection:', error);
-            // alert('Hubo un error al finalizar la selección.');
             setMessage("Hubo un error al finalizar la selección")
             setIsOpen(!isOpen)
         }
@@ -78,7 +79,7 @@ function Applicants() {
         .map(applicant => applicant.code); 
 
         console.log(electedCodes)
-        try {
+        try { // TODO debe cambiarse la logica del backend
             const response = await fetch(`${BACKEND_URL}/email-finish-selection`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' ,
@@ -88,13 +89,11 @@ function Applicants() {
             });
 
             const result = await response.text();
-            // alert(result);
             setMessage("Proceso finalizado - Monitores seleccionados")
             setIsOpen(!isOpen)
             
         } catch (error) {
             console.error("Error finishing selection:", error);
-            // alert("No se pudo finalizar la selección.");
             setMessage("No se pudo finalizar la selección:" + error)
             setIsOpen(!isOpen)
         }
