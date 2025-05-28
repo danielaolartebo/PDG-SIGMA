@@ -87,9 +87,15 @@ function Applicants() {
                 },
                 body: JSON.stringify(electedCodes),
             });
-
+            
             const result = await response.text();
-            setMessage("Proceso finalizado - Monitores seleccionados")
+            console.log(result)
+
+            if(response.ok){
+                setMessage("Proceso finalizado - Monitores seleccionados")
+            } else{
+                setMessage("No se pudo finalizar la selección")
+            }
             setIsOpen(!isOpen)
             
         } catch (error) {

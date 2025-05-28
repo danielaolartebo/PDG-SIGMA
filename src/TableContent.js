@@ -218,7 +218,8 @@ function TableContent() {
                 const response = await fetch(`${BACKEND_URL}/monitor/create`, {
                     method: 'POST',
                     headers: {
-                      'Content-Type': 'application/json'
+                        'Authorization': localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
                   });
