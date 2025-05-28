@@ -407,7 +407,7 @@ function Reports() {
   //Filter professor report 
   useEffect(() => {
     const data = professorDataOriginal;
-    const report = data.filter(d => d.name === professor);
+    const report = data.filter(d => (d.name === professor) && (d.course === course));
     setProfessorData(report);
     
   }, [professor]); 
@@ -702,7 +702,7 @@ useEffect(() => {
               
               {/* Mostrar solo el nombre (jeje sin el apellido) en el eje X */}
               <XAxis 
-                dataKey="nameAndCourse" 
+                dataKey="name" 
                 tickFormatter={(value) => value.split(' ')[0]} 
               />
               
@@ -737,7 +737,7 @@ useEffect(() => {
                   if (parts.length >= 3) {
                     const nombreCompleto = `${parts[0]} ${parts[1]}`;
                     const nombreCurso = parts.slice(2).join(' ');
-                    return `${nombreCompleto} - ${nombreCurso}`;
+                    return `${nombreCompleto} ${nombreCurso}`;
                   }
                   return label; // fallback
                 }}
