@@ -20,9 +20,12 @@ function TableContent() {
     const recordsPerPage = 6;
     
     const context = useContext(MyContext);
-    const selectedValue = context?.selectedValue;
-    const selectedCondition = context?.selectedCondition;
-    const selectedRequest = context?.selectedRequest;
+    const selectedFaculty = context?.selectedFaculty;
+    const selectedProgram = context?.selectedProgram;
+    const selectedState = context?.selectedState;
+    const selectedSubject = context?.selectedSubject;
+
+
     const columnNames = {
         id: "ID - CRN",
         school: "Facultad",
@@ -55,7 +58,7 @@ function TableContent() {
             .catch(error => console.error('Error fetching data:', error));
     }, []);
 
-    useEffect(() => {
+    /*useEffect(() => {
         let prog ={
 
         }
@@ -153,10 +156,46 @@ function TableContent() {
             .catch(error => console.error('Error fetching data:', error));
         }
         
-    }, [selectedValue, selectedCondition]);
+    }, [selectedValue, selectedCondition]);*/
+
+    const checkStatus = (startPostulation, endPostulation) => {
+        const currentDate = new Date();
+        const [year, month, day] = startPostulation?.split('T')[0].split("-").map(Number);
+        const [year2, month2, day2] = endPostulation?.split('T')[0].split("-").map(Number);
+        const startDate = new Date(year, month - 1, day);
+        const endDate = new Date(year2, month2 - 1, day2);
+    
+        if (currentDate >= startDate && currentDate <= endDate) {
+            return { className: "status-active", text: "Activo" };
+        } else if(currentDate > startDate && currentDate> endDate){
+            return { className: "status-inactive", text: "Vencido" };
+        }else{
+            return { className: "status-inactive", text: "Inactivo" };
+        }
+    };
+
+    //New filter
+    const recordsFiltered = useMemo(() => {
+    console.log("Values Selected: "+selectedFaculty+", "+selectedProgram+", "+selectedSubject+", "+selectedState)
+    const values = records.filter(monitoring => (
+        (selectedFaculty === '' || selectedFaculty === monitoring.school.name) && 
+        (selectedProgram === '' || selectedProgram === monitoring.program.name) &&
+        (selectedSubject === '' || selectedSubject === monitoring.course.name)
+    ));
+
+    if (values.length === 0) return records;
+
+    const filtered = values.filter(monitoring =>
+        checkStatus(monitoring.start, monitoring.finish).text === selectedState
+    );
+    return filtered.length > 0 ? filtered : values;
+}, [records, selectedFaculty, selectedProgram, selectedSubject, selectedState]);
+
 
     const handlePopUpCheck = (id,status) =>{
-        if(!(localStorage.getItem('role') =='student' || localStorage.getItem('role') =='monitor')){
+        const role = localStorage.getItem('role');
+  
+        if (role !== 'student' && role !== 'monitor') {
             setMessage('Tiene que iniciar sesión como estudiante/monitor')
             setOpen(!isOpen)
         }else{
@@ -178,18 +217,19 @@ function TableContent() {
             if(state === "Activo"){
                 const response = await fetch(`${BACKEND_URL}/monitor/create`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' ,
-                        'Authorization':localStorage.getItem('token')
+                    headers: {
+                        'Authorization': localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
                   });
-                const mess = await response.text();
+                  const mess = await response.text()
                 if(response.ok){
-                    setMessage("Se ha aplicado exitosamente a la monitoria. Te notificaremos por medio de correo electrónico la decisión")
+                    setMessage(mess)
                     setOpen(!isOpen)
                 }
                 else{
-                    setMessage("No se pudo completar el proceso")
+                    setMessage(mess)
                     setOpen(!isOpen)
                 }  
             }
@@ -201,6 +241,7 @@ function TableContent() {
                 setMessage('La fecha está inactiva')
                 setOpen(!isOpen)
             }
+            setOpen(!isOpen)
         }
         catch(error){
             console.error('Error in fetching', error)
@@ -209,7 +250,7 @@ function TableContent() {
 
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
+    const currentRecords = recordsFiltered.slice(indexOfFirstRecord, indexOfLastRecord);
 
     const totalPages = Math.ceil(records.length / recordsPerPage);
 
@@ -224,23 +265,7 @@ function TableContent() {
             setCurrentPage(currentPage - 1);
         }
     };
-
-    const checkStatus = (startPostulation, endPostulation) => {
-        const currentDate = new Date();
-        const [year, month, day] = startPostulation?.split('T')[0].split("-").map(Number);
-        const [year2, month2, day2] = endPostulation?.split('T')[0].split("-").map(Number);
-        const startDate = new Date(year, month - 1, day);
-        const endDate = new Date(year2, month2 - 1, day2);
     
-        if (currentDate >= startDate && currentDate <= endDate) {
-            return { className: "status-active", text: "Activo" };
-        } else if(currentDate > startDate && currentDate> endDate){
-            return { className: "status-inactive", text: "Vencido" };
-        }else{
-            return { className: "status-inactive", text: "Inactivo" };
-        }
-    };
-
     const processedRecords = useMemo(() => {
         return currentRecords.map(record => {
             const startDateR = record.start.split('T')[0];

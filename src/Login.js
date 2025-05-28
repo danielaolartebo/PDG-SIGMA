@@ -58,10 +58,15 @@ function Login() {
             localStorage.setItem('token',`Bearer ${res.token}`)
             navigate('/Task')// Redirige a la pagina de monitor
           }
+          else if(res.role === 'jfedpto') {
+            localStorage.setItem('role',res.role)
+            localStorage.setItem('token',`Bearer ${res.token}`)
+            navigate('/Task')// Redirige a la pagina de monitor
+          }
           else{
             localStorage.setItem('role',res.role)
             localStorage.setItem('token',`Bearer ${res.token}`)
-            navigate('/Task')// Redirige a la pagina inicial con usuario iniciado sesion
+            navigate('/ApplyMonitor')// Redirige a la para aplicar a monitor con usuario iniciado sesion
           }
         }else{
           console.log("Can't find it")

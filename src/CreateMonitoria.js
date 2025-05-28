@@ -13,7 +13,7 @@ function CreateMonitoria() {
     const [column, setColumn] = useState([]);
     const [records, setRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const recordsPerPage = 2;
+    const recordsPerPage = 5;
     const navigate = useNavigate();
 
     const [monitories, setMonitories] = useState([]); // State for Monitories list
@@ -65,7 +65,37 @@ function CreateMonitoria() {
                 }
             })
             .catch(error => console.error('Error fetching data:', error));
-        
+
+            const message = (
+                    <>
+                        <p><strong>Si vas a cargar múltiples monitorias en "Cargar Datos",asegúrate de que el archivo Excel cumpla con el siguiente formato:</strong></p>
+                        <ul>
+                            <li>El archivo debe estar en formato <strong>.xlsx</strong>.</li>
+                            <li>Cada fila representa una monitoría diferente.</li>
+                            <li>No dejes columnas vacías si son obligatorias.</li>
+                            <li>Revisa que las fechas estén en el formato correcto (por ejemplo, <em>dd/mm/aaaa</em>).</li>
+                        </ul>
+                        <p><strong>Debes incluir los siguientes campos obligatorios por fila:</strong></p>
+                        <ul>
+                            <li>Nombre de la monitoría</li>
+                            <li>Fecha de inicio de postulación</li>
+                            <li>Fecha de cierre de postulación</li>
+                        </ul>
+                        <p>
+                            Puedes descargar un ejemplo del formato correcto haciendo clic aquí:&nbsp;
+                            <a
+                                href="https://github.com/danielaolartebo/PDG-SIGMA/tree/draft/doc/Formatos"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Ejemplo Formato
+                            </a>
+                        </p>
+                    </>
+                );
+                
+        setMessage(message)
+        setIsOpen(!isOpen)
     }, []);
 
     useEffect(() => {
@@ -203,7 +233,7 @@ function CreateMonitoria() {
           try {
             const response = await fetch(`${BACKEND_URL}/monitoring/createAll/${idProfessor}`, {
               method: "POST",
-                headers: { 'Content-Type': 'application/json' ,
+                headers: {
                     'Authorization':localStorage.getItem('token')
                 },
               body: formData,
@@ -212,7 +242,7 @@ function CreateMonitoria() {
             
             const message = await response.text();
             // alert(message);
-            setMessage("Estado: "+message)
+            setMessage(message)
             setIsOpen(!isOpen)
 
           } catch (error) {
