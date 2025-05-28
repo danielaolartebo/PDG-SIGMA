@@ -1,0 +1,299 @@
+{
+	"info": {
+		"_postman_id": "321c4801-b510-4d0d-9449-3c0efc8b5d3e",
+		"name": "SIGMA - Monitoria Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45256902",
+		"_collection_link": "https://danielaolarte-2797333.postman.co/workspace/Daniela-Olarte's-Workspace~eb753441-ac85-4180-89c3-2a0aad0fb14b/collection/45256902-321c4801-b510-4d0d-9449-3c0efc8b5d3e?action=share&source=collection_link&creator=45256902"
+	},
+	"item": [
+		{
+			"name": "Get_Monitorias",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Consulta exitosa (Status 200)\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODM2NzM1OCwiZXhwIjoxNzQ4NDUzNzU4fQ.QD8QxOuORExTkLiYSZwOTdxF6qRi0RJ3F-w_MrAk0Go"
+					}
+				],
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/monitoring/getA",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"monitoring",
+						"getA"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net//monitoring/getA \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Accept: application/json\" \\\n  -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODM2NzM1OCwiZXhwIjoxNzQ4NDUzNzU4fQ.QD8QxOuORExTkLiYSZwOTdxF6qRi0RJ3F-w_MrAk0Go\"\n"
+			},
+			"response": []
+		},
+		{
+			"name": "Create_Monitoria_Not_Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Debe fallar con status 400 o 403\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 403]);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"programName\": \"\",               // Vacío, no permitido\n    \"courseName\": \"123\",            // Nombre inválido o muy corto\n    \"schoolName\": \"NoExiste\",       // Escuela que no existe en el sistema\n    \"start\": \"2025-06-20\",\n    \"finish\": \"2025-06-10\",         // Fecha fin antes de fecha inicio (inválido)\n    \"professorId\": \"abcde\",         // Id inválido (debería ser numérico)\n    \"semester\": \"2024-99\"           // Semestre inválido o inexistente\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/monitoring/create",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"monitoring",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find_Monitoria_By_Faculty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Consulta de facultades exitosa (Status 200)\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/school/getSchools",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"school",
+						"getSchools"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_Monitoria_By_Id_Not_Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"No debe permitir eliminar monitoria asociada (Status 403)\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/monitoring/deleteMonitoring/15",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"monitoring",
+						"deleteMonitoring",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_Monitoria_Sucess",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							" m.test(\"Creación exitosa (Status 200)\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODM2NzM1OCwiZXhwIjoxNzQ4NDUzNzU4fQ.QD8QxOuORExTkLiYSZwOTdxF6qRi0RJ3F-w_MrAk0Go"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"programName\": \"Ciencia Política\",\n    \"courseName\": \"Análisis Político I\",\n    \"schoolName\": \"Ciencias Humanas\",\n    \"start\": \"2025-06-02\",\n    \"finish\": \"2025-06-31\",\n    \"professorId\": \"1234567\",\n    \"semester\": \"2025-2\"\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/monitoring/create",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"monitoring",
+						"create"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST 'https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/monitoring/create' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Accept: application/json' \\\n  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODM2NzM1OCwiZXhwIjoxNzQ4NDUzNzU4fQ.QD8QxOuORExTkLiYSZwOTdxF6qRi0RJ3F-w_MrAk0Go' \\\n  --data-raw '{\n    \"programName\": \"Ciencia Política\",\n    \"courseName\": \"Análisis Político II\",\n    \"schoolName\": \"Ciencias Humanas\",\n    \"start\": \"2025-06-01\",\n    \"finish\": \"2025-06-30\",\n    \"professorId\": \"1234567\",\n    \"semester\": \"2025-2\"\n  }'\n"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMTE0OCwiZXhwIjoxNzQ4Mzg3NTQ4fQ.JgB1bylJ5m_x0caNyHrS0guaxya2UM43QhELBTEs9xI",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+			"type": "string"
+		}
+	]
+}

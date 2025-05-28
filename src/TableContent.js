@@ -20,10 +20,6 @@ function TableContent() {
     const recordsPerPage = 6;
     
     const context = useContext(MyContext);
-    const selectedValue = context?.selectedValue;
-    const selectedCondition = context?.selectedCondition;
-    const selectedRequest = context?.selectedRequest;
-
     const selectedFaculty = context?.selectedFaculty;
     const selectedProgram = context?.selectedProgram;
     const selectedState = context?.selectedState;
@@ -197,8 +193,10 @@ function TableContent() {
 
 
     const handlePopUpCheck = (id,status) =>{
-        if(localStorage.getItem('role') !=='student'){
-            setMessage('Tiene que iniciar sesión como estudiante')
+        const role = localStorage.getItem('role');
+  
+        if (role !== 'student' && role !== 'monitor') {
+            setMessage('Tiene que iniciar sesión como estudiante/monitor')
             setOpen(!isOpen)
         }else{
             setIdMonitoring(id)

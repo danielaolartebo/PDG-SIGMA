@@ -1,0 +1,321 @@
+{
+	"info": {
+		"_postman_id": "e1c28328-4cc2-41f0-8e0b-cd6f1501a3a3",
+		"name": "SIGMA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43769871",
+		"_collection_link": "https://danielaolarte-2797333.postman.co/workspace/Daniela-Olarte's-Workspace~eb753441-ac85-4180-89c3-2a0aad0fb14b/collection/43769871-e1c28328-4cc2-41f0-8e0b-cd6f1501a3a3?action=share&source=collection_link&creator=43769871"
+	},
+	"item": [
+		{
+			"name": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Creación exitosa\", function () {",
+							"  pm.response.to.have.status(201);",
+							"  var jsonData = pm.response.json();",
+							"  pm.environment.set(\"createdActivityId\", jsonData.id); // guarda el ID para próximos pasos",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"monitoringId\": 3,\n  \"name\": \"Actividad Automática\",\n  \"finish\": \"2025-06-30T18:00:00Z\",\n  \"roleCreator\": \"P\",\n  \"roleResponsable\": \"M\",\n  \"category\": \"PostmanTest\",\n  \"description\": \"Creación automática desde Postman.\",\n  \"delivey\": \"2025-06-15T18:00:00Z\",\n  \"semester\": \"2025-5\",\n  \"professorId\": 1234567,\n  \"monitorId\": 12345678\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/create",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"activity",
+						"create"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/create \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"monitoringId\": 5,\n    \"name\": \"Nombre de Actividad de Prueba\",\n    \"finish\": \"\",\n    \"roleCreator\": \"P\",\n    \"roleResponsable\": \"M\",\n    \"category\": \"CategoriaValida\",\n    \"description\": \"Descripción para la prueba de creación.\",\n    \"delivey\": \"2025-06-01T18:00:00Z\",\n    \"semester\": \"2025-5\",\n    \"professorId\": 1234567,\n    \"monitorId\": 987123456\n  }'\n"
+			},
+			"response": []
+		},
+		{
+			"name": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Actualización exitosa\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": 59,\n  \"monitoringId\": 15,\n  \"name\": \"Actividad Actualizada Postman\",\n  \"finish\": \"2025-06-10T18:00:00Z\",\n  \"roleCreator\": \"P\",\n  \"roleResponsable\": \"M\",\n  \"category\": \"CategoriaActualizada\",\n  \"description\": \"Actualizada desde Postman.\",\n  \"delivey\": \"2025-06-08T18:00:00Z\",\n  \"semester\": \"2025-5\",\n  \"professorId\": 1234567,\n  \"monitorId\": 12345678\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/update",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"activity",
+						"update"
+					]
+				},
+				"description": "Generated from cURL: curl -X PUT https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/update \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"id\": 1,\n    \"monitoringId\": 5,\n    \"name\": \"Actividad Actualizada\",\n    \"finish\": \"2025-06-10T18:00:00Z\",\n    \"roleCreator\": \"P\",\n    \"roleResponsable\": \"M\",\n    \"category\": \"NuevaCategoria\",\n    \"description\": \"Descripción actualizada de la actividad.\",\n    \"delivey\": \"2025-06-08T18:00:00Z\",\n    \"semester\": \"2025-5\",\n    \"professorId\": 1234567,\n    \"monitorId\": 47\n  }'\n\n"
+			},
+			"response": []
+		},
+		{
+			"name": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/47",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Consulta exitosa\", function () {",
+							"  pm.response.to.have.status(200);",
+							"  pm.expect(pm.response.json().id).to.eql(parseInt(pm.environment.get(\"createdActivityId\")));",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\n",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/74",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"activity",
+						"74"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/47\n"
+			},
+			"response": []
+		},
+		{
+			"name": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/47",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Eliminación exitosa\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/58",
+					"protocol": "https",
+					"host": [
+						"sigma-backend-d9dednhzhyeug2h7",
+						"eastus-01",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"activity",
+						"58"
+					]
+				},
+				"description": "Generated from cURL: curl -X DELETE https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net/activity/47 \\\n  -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI\"\n"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMTE0OCwiZXhwIjoxNzQ4Mzg3NTQ4fQ.JgB1bylJ5m_x0caNyHrS0guaxya2UM43QhELBTEs9xI",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzc29yIiwic3ViIjoiMTIzNDU2NyIsImlhdCI6MTc0ODMwMjcwMiwiZXhwIjoxNzQ4Mzg5MTAyfQ.zg-NiG9vT_HCVSTk0qeQS7MwOdCLEaV5aefh7YJRFOI",
+			"type": "string"
+		}
+	]
+}
