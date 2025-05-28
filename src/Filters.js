@@ -8,14 +8,19 @@ function Dropdown() {
     const [programs, setPrograms] = useState([]); // State for Program options
     const [subject, setSubject] = useState([]); // State for Subject options
     const [state, setState] = useState([]); // State for State options
+    const context = useContext(MyContext);
 
-    const [selectedFaculty, setSelectedFaculty] = useState(""); // Selected Faculty
-    const [selectedProgram, setSelectedProgram] = useState(""); // Selected Program
-    const [selectedSubject, setSelectedSubject] = useState(""); // Selected Subject
-    const [selectedState, setSelectedState] = useState(""); // Selected State
+    const selectedFaculty = context?.selectedFaculty;
+    const setSelectedFaculty = context?.setSelectedFaculty;
+    const selectedProgram = context?.selectedProgram;
+    const setSelectedProgram = context?.setSelectedProgram;
+    const selectedSubject = context?.selectedSubject;
+    const setSelectedSubject = context?.setSelectedSubject;
+    const selectedState = context?.selectedState;
+    const setSelectedState = context?.setSelectedState;
 
     // Obtener el contexto y verificar que esté definido
-    const context = useContext(MyContext);
+    
     const setSelectedValue = context?.setSelectedValue;
     const setSelectedCondition = context?.setSelectedCondition;
     const setSelectedRequest = context?.setSelectedRequest;
@@ -123,6 +128,8 @@ function Dropdown() {
         setSelectedValue(event.target.value);
         setSelectedCondition(selectedState);
         setSelectedRequest('faculty')
+        setSelectedProgram('')
+        setSelectedSubject('')
     };
 
     // Handle change for Program dropdown
@@ -131,6 +138,7 @@ function Dropdown() {
         setSelectedValue(event.target.value);
         setSelectedCondition(selectedState);
         setSelectedRequest('program')
+        setSelectedSubject('')
     };
 
      // Handle change for Subject dropdown
