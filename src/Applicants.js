@@ -5,22 +5,19 @@ import {PopUp} from "./PopUp";
 import { BACKEND_URL } from './config/ApiBackend';
 import LoadingSpinner from './LoadingSpinner';
 
-// Función para generar la clave única para cada postulación
 const getApplicantKey = (applicant) => `${applicant.code}-${applicant.monitoringId}`;
 
 function Applicants() {
     const [records, setRecords] = useState([]);
     const [filteredRecords, setFilteredRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    // electionStatuses ahora mapeará una clave compuesta (ej: "A00379506-101") a un booleano
     const [electionStatuses, setElectionStatuses] = useState({});
     const recordsPerPage = 8;
     const [selectedCourse, setSelectedCourse] = useState("Todos");
 
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
-    // const [change, setChange] = useState(false); // Descomenta si la usas para re-fetch
-
+    
     const [isLoading, setIsLoading] = useState(false);
 
     const handleClose = () =>{
@@ -29,7 +26,7 @@ function Applicants() {
 
     useEffect(() => {
         setIsLoading(true);
-        fetch(`${BACKEND_URL}/monitor/getA`,{ // Asumimos que este endpoint devuelve las postulaciones
+        fetch(`${BACKEND_URL}/monitor/getA`,{ 
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -37,16 +34,14 @@ function Applicants() {
         })
         .then(response => response.json())
         .then(data => {
-            // Asegúrate que 'data' es un array de objetos postulación, y cada uno tiene:
-            // code, monitoringId, selectionStatus, name, lastName, etc.
-            console.log("Datos recibidos del backend:", data); // DEBUG: Verifica los datos y selectionStatus
+            
+            console.log("Datos recibidos del backend:", data); 
 
             const sortedRecords = data.sort((a, b) => {
-                // Ordenar primero por promedio y luego quizás por código o nombre para consistencia
                 if (b.gradeAverage !== a.gradeAverage) {
                     return b.gradeAverage - a.gradeAverage;
                 }
-                return a.code.localeCompare(b.code); // Ejemplo de segundo criterio
+                return a.code.localeCompare(b.code); 
             });
 
             setRecords(sortedRecords);
@@ -57,14 +52,13 @@ function Applicants() {
                 setFilteredRecords(sortedRecords.filter(a => a.course === selectedCourse));
             }
 
-            // Inicializa electionStatuses basado en el estado persistido usando la clave compuesta
             const initialElectionStatuses = {};
             sortedRecords.forEach(applicant => {
                 const key = getApplicantKey(applicant);
                 let isInitiallySelected = false; // Default to false
 
-                if (applicant.selectionStatus) { // O applicant.estadoSeleccion 
-                    const statusFromDB = applicant.selectionStatus.toLowerCase(); // O applicant.estadoSeleccion.toLowerCase()
+                if (applicant.selectionStatus) { 
+                    const statusFromDB = applicant.selectionStatus.toLowerCase(); 
                     if (statusFromDB === "seleccionado") {
                         isInitiallySelected = true;
                     }
@@ -84,110 +78,120 @@ function Applicants() {
             setIsOpen(true);
             setIsLoading(false);
         });
-    // }, [change, selectedCourse]); // Ajusta dependencias si es necesario
-    }, []); // Carga inicial
+    }, []); 
 
     const handleFinishClick = async () => {
         setIsLoading(true);
         let currentMessage = "";
         const errors = [];
         const selectionResultsForBackend = [];
-        const applicantsToKeepInUI = [];
+        const applicantsToActuallyDeleteFromUIAndBackend = []; // Para los DELETE post-email
 
-        // Usar 'records' para procesar todas las postulaciones, no solo las filtradas/paginadas
-        const applicantsToProcess = [...records];
+        // 1. Determinar el estado final de todos y preparar el payload para el backend
+        const applicantsToProcess = [...records]; // Trabaja sobre la lista completa
+        const updatedApplicantsForUI = []; // Para la actualización optimista de la UI
 
         for (const applicant of applicantsToProcess) {
             const applicantKey = getApplicantKey(applicant);
             const originalDbStatus = applicant.selectionStatus ? applicant.selectionStatus.toLowerCase() : null;
             const uiIsSelected = electionStatuses[applicantKey] || false;
-
             let finalStatusForApplicant = "";
 
             if (originalDbStatus === "seleccionado") {
                 finalStatusForApplicant = "seleccionado";
-                applicantsToKeepInUI.push({ ...applicant, selectionStatus: "seleccionado" });
-            } else { // No era "seleccionado" originalmente (era "no seleccionado", null, o nuevo)
-                if (uiIsSelected) { // Marcado como "Electo" en la UI
+                updatedApplicantsForUI.push({ ...applicant, selectionStatus: "seleccionado" });
+            } else {
+                if (uiIsSelected) {
                     finalStatusForApplicant = "seleccionado";
-                    applicantsToKeepInUI.push({ ...applicant, selectionStatus: "seleccionado" });
-                } else { // Marcado como "No electo" en la UI
+                    updatedApplicantsForUI.push({ ...applicant, selectionStatus: "seleccionado" });
+                } else {
                     finalStatusForApplicant = "no seleccionado";
-                    // Proceder a borrar la relación si es "no seleccionado"
-                    console.log(`Postulación no electa (se borrará relación): ${applicantKey}`);
-                    try {
-                        const deleteResponse = await fetch(`${BACKEND_URL}/monitoring-monitor/${applicant.monitoringId}/${applicant.code}`, {
-                            method: 'DELETE',
-                            headers: { 'Authorization': localStorage.getItem('token') }
-                        });
-                        if (!deleteResponse.ok) {
-                            const errorText = await deleteResponse.text();
-                            throw new Error(`Error ${deleteResponse.status} borrando ${applicantKey}: ${errorText}`);
-                        }
-                        // Si el borrado es exitoso, NO se añade a applicantsToKeepInUI
-                    } catch (error) {
-                        console.error('Error borrando relación de no electo:', error);
-                        errors.push(`Error borrando ${applicantKey}: ${error.message}`);
-                        applicantsToKeepInUI.push({ ...applicant, selectionStatus: originalDbStatus || "no seleccionado" });
-                    }
+                    // NO se añade a updatedApplicantsForUI si va a ser borrado
+                    // Pero sí lo marcamos para el borrado DESPUÉS del email
+                    applicantsToActuallyDeleteFromUIAndBackend.push(applicant);
                 }
             }
 
-            // Asegurarse de enviar al backend el estado final para esta postulación específica
             if (finalStatusForApplicant) {
                 selectionResultsForBackend.push({
                     idMonitoring: applicant.monitoringId,
                     code: applicant.code,
                     estadoSeleccion: finalStatusForApplicant
                 });
-            } else if (originalDbStatus !== "seleccionado" && !finalStatusForApplicant) {
-                // Caso de "no seleccionado" que se borró y no está en applicantsToKeepInUI,
-                // pero aún debe informarse al backend para el email.
-                 selectionResultsForBackend.push({
-                    idMonitoring: applicant.monitoringId,
-                    code: applicant.code,
-                    estadoSeleccion: "no seleccionado"
-                });
             }
+            // Si era "no seleccionado" y se mantuvo, ya está en selectionResultsForBackend
         }
 
+        // 2. Enviar TODOS los estados finales al backend para que guarde y envíe emails
         if (selectionResultsForBackend.length > 0) {
             console.log("Enviando al backend para emails/actualización de estado:", selectionResultsForBackend);
             try {
-                const response = await fetch(`${BACKEND_URL}/email-finish-selection`, {
+                const emailResponse = await fetch(`${BACKEND_URL}/email-finish-selection`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
                     body: JSON.stringify(selectionResultsForBackend)
                 });
-                const resultText = await response.text();
-                if (response.ok) {
+
+                const resultText = await emailResponse.text();
+                if (emailResponse.ok) {
                     currentMessage = resultText || "Proceso de selección finalizado y notificaciones enviadas.";
-                } else {
+                    console.log("Backend procesó /email-finish-selection exitosamente.");
+
+                    if (applicantsToActuallyDeleteFromUIAndBackend.length > 0) {
+                        console.log("Procediendo a borrar relaciones de 'no seleccionados' desde el frontend...");
+                        for (const appToDelete of applicantsToActuallyDeleteFromUIAndBackend) {
+                            try {
+                                const deleteResponse = await fetch(`${BACKEND_URL}/monitoring-monitor/${appToDelete.monitoringId}/${appToDelete.code}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': localStorage.getItem('token') }
+                                });
+                                if (!deleteResponse.ok) {
+                                    const errorTextDelete = await deleteResponse.text();
+                                    throw new Error(`Error ${deleteResponse.status} borrando ${getApplicantKey(appToDelete)}: ${errorTextDelete}`);
+                                }
+                                console.log(`Relación borrada para ${getApplicantKey(appToDelete)}`);
+                            } catch (deleteError) {
+                                console.error('Error borrando relación de no electo:', deleteError);
+                                errors.push(`Error borrando ${getApplicantKey(appToDelete)}: ${deleteError.message}`);
+                                
+                            }
+                        }
+                    }
+                    
+                    const finalRecordsToShow = records.filter(r => {
+                        const key = getApplicantKey(r);
+                        const isInDeleteList = applicantsToActuallyDeleteFromUIAndBackend.some(d => getApplicantKey(d) === key);
+                        const isSelectedInPayload = selectionResultsForBackend.find(s => `${s.code}-${s.idMonitoring}` === key && s.estadoSeleccion === "seleccionado");
+                        return isSelectedInPayload && !isInDeleteList;
+                    });
+
+                    setRecords(finalRecordsToShow);
+                    if (selectedCourse === "Todos") {
+                        setFilteredRecords(finalRecordsToShow);
+                    } else {
+                        setFilteredRecords(finalRecordsToShow.filter(a => a.course === selectedCourse));
+                    }
+                    const newElectionStatuses = {};
+                    finalRecordsToShow.forEach(app => {
+                        newElectionStatuses[getApplicantKey(app)] = app.selectionStatus === "seleccionado";
+                    });
+                    setElectionStatuses(newElectionStatuses);
+                    setCurrentPage(1);
+
+
+                } else { // emailResponse not ok
                     errors.push(`Error del backend al finalizar selección: ${resultText}`);
                 }
-            } catch (error) {
+            } catch (error) { 
                 console.error("Error llamando a /email-finish-selection:", error);
                 errors.push(`Error de red al finalizar selección: ${error.message}`);
+                
             }
         } else if (applicantsToProcess.length > 0) {
             currentMessage = "No hubo cambios de estado para procesar.";
         } else {
             currentMessage = "No hay postulaciones para procesar.";
         }
-
-        setRecords(applicantsToKeepInUI);
-        if (selectedCourse === "Todos") {
-            setFilteredRecords(applicantsToKeepInUI);
-        } else {
-            setFilteredRecords(applicantsToKeepInUI.filter(a => a.course === selectedCourse));
-        }
-
-        const newElectionStatuses = {};
-        applicantsToKeepInUI.forEach(app => {
-            newElectionStatuses[getApplicantKey(app)] = app.selectionStatus === "seleccionado";
-        });
-        setElectionStatuses(newElectionStatuses);
-        setCurrentPage(1);
 
         if (errors.length > 0) {
             setMessage((currentMessage ? currentMessage + "\n\n" : "") + "Errores:\n" + errors.join("\n"));
@@ -196,8 +200,6 @@ function Applicants() {
         }
         setIsOpen(true);
         setIsLoading(false);
-        // Considera recargar datos después de finalizar para asegurar consistencia:
-        // setChange(prev => !prev); // si usas `change` en el useEffect
     };
 
     const courses = ["Todos", ...new Set(records.map(a => a.course))];
@@ -260,7 +262,7 @@ function Applicants() {
             <button className="applicants-top-right-button" onClick={handleFinishClick}>Terminar selección</button>
             <VerticalNavbar />
             <div className="applicants-content">
-                {/* ... (título y filtro de curso sin cambios) ... */}
+                {/* ... (título y filtro de curso ) ... */}
                  <div className="applicants-title-container">
                     <h2 className="applicants-title">Mis postulantes</h2>
                 </div>
@@ -306,9 +308,7 @@ function Applicants() {
                                 <tbody>
                                     {currentRecords.map((applicant) => {
                                         const applicantKey = getApplicantKey(applicant);
-                                        // El estado de la UI viene de electionStatuses[applicantKey]
                                         const uiIsSelected = electionStatuses[applicantKey] || false;
-                                        // El estado original de la BD que determina si el botón se bloquea
                                         const isPermanentlySelected = applicant.selectionStatus && applicant.selectionStatus.toLowerCase() === "seleccionado";
                                         
                                         let buttonText = "No electo";
