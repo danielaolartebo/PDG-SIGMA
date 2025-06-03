@@ -13,7 +13,7 @@ function CreateMonitoria() {
     const [column, setColumn] = useState([]);
     const [records, setRecords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const recordsPerPage = 2;
+    const recordsPerPage = 5;
     const navigate = useNavigate();
 
     const [monitories, setMonitories] = useState([]); // State for Monitories list
