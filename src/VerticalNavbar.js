@@ -194,6 +194,11 @@ function VerticalNavbar() {
             >
               Mis postulantes
             </NavLink>
+          </>
+        )}
+
+        {(role === "professor" || role === "jfedpto") && (
+          <>
             <NavLink
               to="/Reports"
               className={({ isActive }) => (isActive ? "active" : "")}
