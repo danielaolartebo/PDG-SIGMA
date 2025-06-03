@@ -34,6 +34,8 @@ function CreateMonitoria() {
 
     // Fetch Faculty options
     useEffect(() => {
+        const idProfessor = localStorage.getItem('userId');
+        console.log(idProfessor);
         fetch(`${BACKEND_URL}/school/getSchools`)
             .then(res => {
                 if (!res.ok) {
@@ -50,7 +52,7 @@ function CreateMonitoria() {
             })
             .catch(error => console.error('Error fetching faculty data:', error));
 
-            fetch(`${BACKEND_URL}/monitoring/getA`)
+            fetch(`${BACKEND_URL}/monitoring/getAllByProfessor/${idProfessor}`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -99,7 +101,8 @@ function CreateMonitoria() {
     }, []);
 
     useEffect(() => {
-            fetch(`${BACKEND_URL}/monitoring/getA`)
+        const idProfessor = localStorage.getItem('userId');
+            fetch(`${BACKEND_URL}/monitoring/getAllByProfessor/${idProfessor}`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);

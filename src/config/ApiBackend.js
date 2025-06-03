@@ -1,5 +1,5 @@
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5433';
-//const BACKEND_URL = 'https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net';
+//const BACKEND_URL = 'http://localhost:5433';
+const BACKEND_URL = 'https://sigma-backend-d9dednhzhyeug2h7.eastus-01.azurewebsites.net';
 
 export { BACKEND_URL };
 
