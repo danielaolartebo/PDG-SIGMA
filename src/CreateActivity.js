@@ -224,7 +224,7 @@ function CreateActivity() {
   
     try {
       const val = cursos.find(monitoring => monitoring.id.toString() === curso);
-      console.log(val);
+      
       const cursoIdDef = val.course.id;
       const response = await fetch(`${BACKEND_URL}/category/create`, {
         method: "POST",
