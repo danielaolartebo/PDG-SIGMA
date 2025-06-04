@@ -32,7 +32,12 @@ function CreateActivity() {
   const [change, setChange] = useState(false)
   
   useEffect(() => {
-    fetch(`${BACKEND_URL}/monitoring/getA`)
+    fetch(`${BACKEND_URL}/monitoring/getAllActiveByUserId/${user}/${role}`,{
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' ,
+            'Authorization':localStorage.getItem('token')
+        },
+      })
       .then(res => res.json())
       .then(data => setCursos(data))
       .catch(error => console.error('Error al obtener los cursos:', error));
@@ -223,7 +228,7 @@ function CreateActivity() {
         method: "POST",
         headers: {
           "Content-Type": "application/json" ,
-              'Authorization':localStorage.getItem('token')
+          "Authorization":localStorage.getItem('token')
         },
         body: JSON.stringify({ 
           name: newCategory.trim(), 
