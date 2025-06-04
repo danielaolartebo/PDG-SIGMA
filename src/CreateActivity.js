@@ -236,10 +236,16 @@ function CreateActivity() {
         }),
       });
   
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.message || "Error al crear la categoría");
+      // }
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al crear la categoría");
-      }
+        const errorText = await response.text(); 
+        console.error(`Error del servidor (${response.status}): ${errorText}`);
+        throw new Error(`Server error ${response.status}: ${errorText}`);
+    }
   
       const createdCategory = await response.json();
   
@@ -258,7 +264,7 @@ function CreateActivity() {
     } catch (error) {
       console.error("Error al crear la categoría:", error);
       // alert("No se pudo crear la categoría");
-      setMessage("No se pudo crear la categoría:" + error)
+      setMessage("No se pudo crear la categoría:" + error.message)
       setIsOpen(!isOpen)
     }
   };
