@@ -100,7 +100,7 @@ function Reports() {
 
     const fetchAttendance = async () => {
       try {
-        const attendanceResponse = await fetch(`${BACKEND_URL}/monitoring/getAttendanceReport/${user}`,{
+        const attendanceResponse = await fetch(`${BACKEND_URL}/monitoring/getAttendanceReport/${role}/${user}`,{
             method: 'GET',
             headers: { 'Content-Type': 'application/json' ,
                 'Authorization':localStorage.getItem('token')
@@ -117,7 +117,8 @@ function Reports() {
 
     const fetchCategories = async () => {
 
-      const url = `${BACKEND_URL}/monitoring/getCategoriesReport/${user}`;
+      // const url = `${BACKEND_URL}/monitoring/getCategoriesReport/${user}`;
+      const url = `${BACKEND_URL}/monitoring/getCategoriesReport/${role}/${user}`;
 
       try {
         const categoriesResponse = await fetch(url,{
