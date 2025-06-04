@@ -325,7 +325,7 @@ function CreateMonitoria() {
             } else {
                 // console.error("Error: " + messageR)
                 // setMessage(error: messageR)
-                setMessage("No ha sido posible eliminar la monitoría")
+                setMessage("La monitoria no pudo ser eliminada debido a que esta asociada a monitores o postulantes a monitoria. Asegurate de revisar el proceso postulación")
             }
             setIsOpen(!isOpen)
         } catch (error) {
