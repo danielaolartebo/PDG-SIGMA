@@ -61,8 +61,12 @@ function CreateActivity() {
   };
 
   const fetchCategorias = async (cursoId) => {
+    
+    const val = cursos.find(monitoring => monitoring.id.toString() === cursoId);
+   
+    const cursoIdDef = val.course.id;
     try {
-      const response = await fetch(`${BACKEND_URL}/category/course/${cursoId}`,{
+      const response = await fetch(`${BACKEND_URL}/category/course/${cursoIdDef}`,{
         method: 'GET',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -219,6 +223,9 @@ function CreateActivity() {
     }
   
     try {
+      const val = cursos.find(monitoring => monitoring.id.toString() === curso);
+      console.log(val);
+      const cursoIdDef = val.course.id;
       const response = await fetch(`${BACKEND_URL}/category/create`, {
         method: "POST",
         headers: {
@@ -227,7 +234,7 @@ function CreateActivity() {
         },
         body: JSON.stringify({ 
           name: newCategory.trim(), 
-          course: { id: Number(curso) } 
+          course: { id: Number(cursoIdDef) } 
         }),
       });
   
