@@ -32,7 +32,12 @@ function CreateActivity() {
   const [change, setChange] = useState(false)
   
   useEffect(() => {
-    fetch(`${BACKEND_URL}/monitoring/getA`)
+    fetch(`${BACKEND_URL}/monitoring/getAllActiveByUserId/${user}/${role}`,{
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' ,
+            'Authorization':localStorage.getItem('token')
+        },
+      })
       .then(res => res.json())
       .then(data => setCursos(data))
       .catch(error => console.error('Error al obtener los cursos:', error));
@@ -61,8 +66,12 @@ function CreateActivity() {
   };
 
   const fetchCategorias = async (cursoId) => {
+    
+    const val = cursos.find(monitoring => monitoring.id.toString() === cursoId);
+   
+    const cursoIdDef = val.course.id;
     try {
-      const response = await fetch(`${BACKEND_URL}/category/course/${cursoId}`,{
+      const response = await fetch(`${BACKEND_URL}/category/course/${cursoIdDef}`,{
         method: 'GET',
         headers: { 'Content-Type': 'application/json' ,
             'Authorization':localStorage.getItem('token')
@@ -219,22 +228,31 @@ function CreateActivity() {
     }
   
     try {
+      const val = cursos.find(monitoring => monitoring.id.toString() === curso);
+      
+      const cursoIdDef = val.course.id;
       const response = await fetch(`${BACKEND_URL}/category/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json" ,
-              'Authorization':localStorage.getItem('token')
+          "Authorization":localStorage.getItem('token')
         },
         body: JSON.stringify({ 
           name: newCategory.trim(), 
-          course: { id: Number(curso) } 
+          course: { id: Number(cursoIdDef) } 
         }),
       });
   
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.message || "Error al crear la categoría");
+      // }
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al crear la categoría");
-      }
+        const errorText = await response.text(); 
+        console.error(`Error del servidor (${response.status}): ${errorText}`);
+        throw new Error(`Server error ${response.status}: ${errorText}`);
+    }
   
       const createdCategory = await response.json();
   
@@ -253,7 +271,7 @@ function CreateActivity() {
     } catch (error) {
       console.error("Error al crear la categoría:", error);
       // alert("No se pudo crear la categoría");
-      setMessage("No se pudo crear la categoría:" + error)
+      setMessage("No se pudo crear la categoría:" + error.message)
       setIsOpen(!isOpen)
     }
   };
