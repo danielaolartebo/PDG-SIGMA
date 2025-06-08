@@ -134,7 +134,7 @@ function Applicants() {
 
                 const resultText = await emailResponse.text();
                 if (emailResponse.ok) {
-                    currentMessage = resultText || "Proceso de selección finalizado y notificaciones enviadas.";
+                    currentMessage = resultText || "Proceso de selección finalizado. Se notificará por correo a los participantes y se les hará saber del resultado.";
                     console.log("Backend procesó /email-finish-selection exitosamente.");
 
                     if (applicantsToActuallyDeleteFromUIAndBackend.length > 0) {

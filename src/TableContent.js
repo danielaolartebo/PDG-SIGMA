@@ -49,7 +49,13 @@ function TableContent() {
             })
             .then(data => {
                 if (data && data.length > 0) {
-                    setColumn(Object.keys(data[0]));
+                    // setColumn(Object.keys(data[0]));
+                    const allKeys = Object.keys(data[0]);
+                    const desiredKeys = allKeys.filter(key =>
+                        key !== "monitoringMonitors" 
+                    );
+                    
+                    setColumn(desiredKeys);
                     setRecords(data); 
                 } else {
                     console.error("Data format is incorrect or 'monitoria' is empty.");

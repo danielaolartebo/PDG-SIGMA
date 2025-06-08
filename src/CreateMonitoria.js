@@ -34,6 +34,8 @@ function CreateMonitoria() {
 
     // Fetch Faculty options
     useEffect(() => {
+        const idProfessor = localStorage.getItem('userId');
+        console.log(idProfessor);
         fetch(`${BACKEND_URL}/school/getSchools`)
             .then(res => {
                 if (!res.ok) {
@@ -50,7 +52,7 @@ function CreateMonitoria() {
             })
             .catch(error => console.error('Error fetching faculty data:', error));
 
-            fetch(`${BACKEND_URL}/monitoring/getA`)
+            fetch(`${BACKEND_URL}/monitoring/getAllByProfessor/${idProfessor}`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -99,7 +101,8 @@ function CreateMonitoria() {
     }, []);
 
     useEffect(() => {
-            fetch(`${BACKEND_URL}/monitoring/getA`)
+        const idProfessor = localStorage.getItem('userId');
+            fetch(`${BACKEND_URL}/monitoring/getAllByProfessor/${idProfessor}`)
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);
@@ -322,7 +325,7 @@ function CreateMonitoria() {
             } else {
                 // console.error("Error: " + messageR)
                 // setMessage(error: messageR)
-                setMessage("No ha sido posible eliminar la monitoría")
+                setMessage("La monitoria no pudo ser eliminada debido a que esta asociada a monitores o postulantes a monitoria. Asegurate de revisar el proceso postulación")
             }
             setIsOpen(!isOpen)
         } catch (error) {
